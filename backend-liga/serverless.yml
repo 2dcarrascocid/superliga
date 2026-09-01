@@ -1,0 +1,65 @@
+service: backend-sls
+frameworkVersion: '>=4.0.0'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  stage: dev
+  environment:
+    API_KEY: ${env:API_KEY}
+    SUPABASE_URL_LIGA: ${env:SUPABASE_URL_LIGA}
+    SUPABASE_SERVICE_ROLE_KEY_LIGA: ${env:SUPABASE_SERVICE_ROLE_KEY_LIGA}
+    FRONTEND_URL: ${env:FRONTEND_URL, 'http://localhost:5173'}
+    SMTP_HOST: ${env:SMTP_HOST, ''}
+    SMTP_PORT: ${env:SMTP_PORT, '587'}
+    SMTP_USER: ${env:SMTP_USER, ''}
+    SMTP_PASS: ${env:SMTP_PASS, ''}
+    SMTP_FROM: ${env:SMTP_FROM, ''}
+
+  httpApi:
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedHeaders:
+        - '*'
+      allowedMethods:
+        - '*'
+      allowCredentials: false
+
+functions:
+  api:
+    handler: handler.handler
+    memorySize: 512
+    timeout: 29
+    events:
+      - httpApi:
+          path: /{proxy+}
+          method: ANY
+      - httpApi:
+          path: /
+          method: ANY
+
+plugins:
+  - serverless-offline
+
+package:
+  individually: false
+
+build:
+  esbuild:
+    bundle: true
+    minify: true
+    target: node20
+    platform: node
+    external:
+      - '@aws-sdk/*'
+      - aws-sdk
+    banner:
+      js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
+
+custom:
+  serverless-offline:
+    disableCookieValidation: true
+    httpPort: 3000
+    lambdaPort: 3003

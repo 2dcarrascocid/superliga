@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"neumorphic soft UI calm wellness\" --domain style -n 3)",
+      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"wellness health meditation landing hero testimonial\" --domain landing -n 3)",
+      "Bash(python3 .claude/skills/ui-ux-pro-max/scripts/search.py \"animation accessibility reduced motion\" --domain ux -n 3)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5174/wellness-landing.html)",
+      "Bash(open /Users/dcarrasco/Documents/FPCH/Liga/frontend-liga/public/wellness-landing.html)",
+      "Bash(grep -E \"Offline|http|3000|started|Error\" /tmp/sls-offline.log | tail -15)",
+      "Read(//private/tmp/**)",
+      "Bash(lsof -ti:3000,3002)",
+      "Bash(xargs kill -9)",
+      "Bash(python3 -m json.tool)",
+      "Bash(lsof -ti:3000,3001,3002)",
+      "Bash(pbcopy)",
+      "Bash(nvm exec *)",
+      "Bash(lsof -ti:5173)"
+    ]
+  }
+}

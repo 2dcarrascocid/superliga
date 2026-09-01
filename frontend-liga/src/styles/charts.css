@@ -1,0 +1,264 @@
+/* ============================================================
+   LIGA — Gráficos y visualizaciones
+   Compatible con Chart.js / Recharts / ApexCharts
+   ============================================================ */
+
+/* ── Contenedor de gráfico ── */
+.chart-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.chart-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.chart-header__info { display: flex; flex-direction: column; gap: 2px; }
+
+.chart-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.chart-period {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* ── Tabs de periodo ── */
+.chart-tabs {
+  display: flex;
+  background: var(--surface-input);
+  border-radius: var(--border-radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+
+.chart-tab {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  padding: 4px 10px;
+  border-radius: var(--border-radius-xs);
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.chart-tab.active {
+  background: var(--surface-card);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Área del canvas ── */
+.chart-area {
+  position: relative;
+  width: 100%;
+}
+
+.chart-area--sm  { height: 160px; }
+.chart-area--md  { height: 220px; }
+.chart-area--lg  { height: 300px; }
+.chart-area--xl  { height: 380px; }
+
+.chart-area canvas,
+.chart-area svg {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ── Leyenda personalizada ── */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.chart-legend-item.hidden { opacity: .35; text-decoration: line-through; }
+
+.chart-legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* Swatches por variable CSS → úsalos inline style="--swatch-color: var(--chart-1)" */
+.chart-legend-swatch { background: var(--swatch-color, var(--chart-1)); }
+
+/* ── Tooltip personalizado ── */
+.chart-tooltip {
+  background: var(--surface-overlay);
+  border: 1px solid var(--border-default);
+  border-radius: var(--border-radius-md);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-lg);
+  pointer-events: none;
+  min-width: 140px;
+}
+
+.chart-tooltip__label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: var(--space-1);
+}
+
+.chart-tooltip__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.chart-tooltip__series {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--text-secondary);
+}
+
+.chart-tooltip__swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.chart-tooltip__value {
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Mini sparkline ── */
+.sparkline-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sparkline-cell svg { overflow: visible; }
+
+/* ── Donut / Pie summary ── */
+.donut-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.donut-summary__chart { flex-shrink: 0; }
+
+.donut-summary__items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.donut-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.donut-item__label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.donut-item__bar-track {
+  flex: 1;
+  height: 4px;
+  background: var(--surface-muted);
+  border-radius: 2px;
+  overflow: hidden;
+  min-width: 60px;
+}
+
+.donut-item__bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--bar-color, var(--chart-1));
+  transition: width var(--transition-slow);
+}
+
+.donut-item__value {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  min-width: 32px;
+  text-align: right;
+}
+
+/* ── Heatmap de jornadas ── */
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(28px, 1fr));
+  gap: 4px;
+}
+
+.heatmap-cell {
+  aspect-ratio: 1;
+  border-radius: var(--border-radius-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.heatmap-cell:hover { transform: scale(1.2); z-index: 1; }
+
+.heatmap-cell--win  { background: var(--color-green-950); color: var(--color-green-400); }
+.heatmap-cell--draw { background: rgba(255,213,79,.15);   color: var(--color-gold); }
+.heatmap-cell--loss { background: rgba(239,83,80,.15);    color: var(--color-danger); }
+.heatmap-cell--none { background: var(--surface-muted);   color: var(--text-disabled); }
+
+/* ── Config base para Chart.js / Recharts ── */
+:root {
+  /* Usar estos valores al configurar chart libraries */
+  --chartjs-grid-color:    rgba(255,255,255,0.06);
+  --chartjs-tick-color:    #505668;
+  --chartjs-font-family:   'Inter', system-ui, sans-serif;
+  --chartjs-font-size:     11;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .chart-area--lg { height: 220px; }
+  .chart-area--xl { height: 260px; }
+  .donut-summary  { flex-direction: column; }
+}

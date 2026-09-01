@@ -1,0 +1,168 @@
+/* ============================================================
+   LIGA — Design Tokens
+   Dark-mode first, mobile-first SaaS deportivo
+   ============================================================ */
+
+:root {
+  /* ── Primitivos de color ── */
+  --color-neutral-950: #060608;
+  --color-neutral-900: #0d0e12;
+  --color-neutral-850: #13141a;
+  --color-neutral-800: #1a1c23;
+  --color-neutral-750: #20222b;
+  --color-neutral-700: #272a34;
+  --color-neutral-600: #363a48;
+  --color-neutral-500: #505668;
+  --color-neutral-400: #737a94;
+  --color-neutral-300: #9aa0bb;
+  --color-neutral-200: #c0c6dc;
+  --color-neutral-100: #e4e7f2;
+  --color-neutral-50:  #f2f4fa;
+
+  /* Acento principal — verde campo */
+  --color-green-600: #00e676;
+  --color-green-500: #33ec8e;
+  --color-green-400: #66f1a6;
+  --color-green-300: #99f5be;
+  --color-green-200: #ccfade;
+  --color-green-950: #001f0e;
+  --color-green-900: #003d1c;
+
+  /* Acento secundario — azul estadísticas */
+  --color-blue-500: #4fc3f7;
+  --color-blue-600: #29b6f6;
+  --color-blue-700: #0288d1;
+  --color-blue-900: #01579b;
+
+  /* Semánticos */
+  --color-gold:    #ffd54f;
+  --color-silver:  #90a4ae;
+  --color-bronze:  #bf8d5e;
+  --color-win:     #00e676;
+  --color-draw:    #ffd54f;
+  --color-loss:    #ef5350;
+  --color-danger:  #ef5350;
+  --color-warning: #ffa726;
+  --color-info:    #4fc3f7;
+
+  /* Chart palette — 8 colores accesibles en fondo oscuro */
+  --chart-1: #00e676;
+  --chart-2: #4fc3f7;
+  --chart-3: #ffd54f;
+  --chart-4: #ff7043;
+  --chart-5: #ab47bc;
+  --chart-6: #26c6da;
+  --chart-7: #ec407a;
+  --chart-8: #9ccc65;
+
+  /* ── Superficie / Elevación ── */
+  --surface-base:    var(--color-neutral-950);
+  --surface-raised:  var(--color-neutral-900);
+  --surface-overlay: var(--color-neutral-850);
+  --surface-card:    var(--color-neutral-800);
+  --surface-input:   var(--color-neutral-750);
+  --surface-hover:   var(--color-neutral-700);
+  --surface-border:  var(--color-neutral-600);
+  --surface-muted:   var(--color-neutral-700);
+
+  /* ── Texto ── */
+  --text-primary:   var(--color-neutral-50);
+  --text-secondary: var(--color-neutral-300);
+  --text-muted:     var(--color-neutral-500);
+  --text-disabled:  var(--color-neutral-600);
+  --text-accent:    var(--color-green-500);
+  --text-link:      var(--color-blue-500);
+  --text-on-accent: #000000;
+
+  /* ── Bordes ── */
+  --border-subtle:  var(--color-neutral-800);
+  --border-default: var(--color-neutral-700);
+  --border-strong:  var(--color-neutral-600);
+  --border-accent:  var(--color-green-600);
+  --border-radius-xs: 4px;
+  --border-radius-sm: 6px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 16px;
+  --border-radius-xl: 24px;
+  --border-radius-full: 9999px;
+
+  /* ── Espaciado (base 4px) ── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* ── Tipografía ── */
+  --font-sans:  'Inter', 'Geist', system-ui, -apple-system, sans-serif;
+  --font-mono:  'JetBrains Mono', 'Fira Code', monospace;
+  --font-display: 'Inter', sans-serif;
+
+  --text-xs:   0.75rem;   /* 12px */
+  --text-sm:   0.875rem;  /* 14px */
+  --text-base: 1rem;      /* 16px */
+  --text-lg:   1.125rem;  /* 18px */
+  --text-xl:   1.25rem;   /* 20px */
+  --text-2xl:  1.5rem;    /* 24px */
+  --text-3xl:  1.875rem;  /* 30px */
+  --text-4xl:  2.25rem;   /* 36px */
+
+  --font-regular:   400;
+  --font-medium:    500;
+  --font-semibold:  600;
+  --font-bold:      700;
+  --font-extrabold: 800;
+
+  --leading-tight:  1.25;
+  --leading-snug:   1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed:1.625;
+
+  /* ── Sombras ── */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.4);
+  --shadow-md:  0 4px 12px rgba(0,0,0,.5);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,.6);
+  --shadow-xl:  0 20px 60px rgba(0,0,0,.7);
+  --shadow-glow-green: 0 0 24px rgba(0,230,118,.2);
+  --shadow-glow-blue:  0 0 24px rgba(79,195,247,.2);
+
+  /* ── Transiciones ── */
+  --transition-fast:   150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow:   400ms ease;
+
+  /* ── Layout ── */
+  --sidebar-width:       240px;
+  --sidebar-width-collapsed: 64px;
+  --topbar-height:       56px;
+  --content-max-width:   1200px;
+  --card-gap:            var(--space-4);
+}
+
+/* ── Light mode override (opt-in) ── */
+[data-theme="light"] {
+  --surface-base:    #f2f4fa;
+  --surface-raised:  #ffffff;
+  --surface-overlay: #f8f9fc;
+  --surface-card:    #ffffff;
+  --surface-input:   #f2f4fa;
+  --surface-hover:   #e8eaf2;
+  --surface-border:  #d0d4e8;
+  --surface-muted:   #e4e7f2;
+
+  --text-primary:   #0d0e12;
+  --text-secondary: #363a48;
+  --text-muted:     #737a94;
+  --text-disabled:  #9aa0bb;
+  --text-accent:    #00a050;
+
+  --border-subtle:  #e4e7f2;
+  --border-default: #d0d4e8;
+  --border-strong:  #9aa0bb;
+}

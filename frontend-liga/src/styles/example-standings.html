@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Liga — Posiciones</title>
+  <link rel="stylesheet" href="./index.css" />
+</head>
+<body>
+
+<!-- ── App Shell ── -->
+<div class="app-shell">
+
+  <!-- Sidebar (tablet+) -->
+  <aside class="sidebar">
+    <div class="sidebar__logo">
+      <span style="font-weight:800;font-size:1.25rem;letter-spacing:-.02em">
+        LIGA <span class="topbar__logo-badge">PRO</span>
+      </span>
+    </div>
+    <nav class="sidebar__nav">
+      <span class="sidebar__section-label">General</span>
+      <button class="sidebar__nav-item active">⚽ Posiciones</button>
+      <button class="sidebar__nav-item">📅 Fixture</button>
+      <button class="sidebar__nav-item">🏆 Equipos</button>
+      <button class="sidebar__nav-item">👤 Jugadores</button>
+      <span class="sidebar__section-label">Estadísticas</span>
+      <button class="sidebar__nav-item">📊 Rendimiento</button>
+      <button class="sidebar__nav-item">⚡ Goles</button>
+    </nav>
+  </aside>
+
+  <!-- Topbar (mobile) -->
+  <header class="topbar">
+    <div class="topbar__logo">⚽ LIGA <span class="topbar__logo-badge">PRO</span></div>
+    <div class="topbar__actions">
+      <button class="btn btn--ghost btn--icon">🔔</button>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="main-content">
+
+    <!-- Page header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Tabla de Posiciones</h1>
+        <p class="page-subtitle">Temporada 2025–2026 · Jornada 28 de 34</p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn--secondary btn--sm">Exportar CSV</button>
+        <button class="btn btn--primary btn--sm">+ Registrar resultado</button>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="stats-grid">
+      <div class="stat-card stat-card--green">
+        <span class="stat-card__label">Goles totales</span>
+        <span class="stat-card__value">712</span>
+        <div class="stat-card__meta">
+          <span class="stat-card__trend stat-card__trend--up">↑ 4.3%</span>
+          <span>vs jornada anterior</span>
+        </div>
+      </div>
+      <div class="stat-card stat-card--blue">
+        <span class="stat-card__label">Partidos jugados</span>
+        <span class="stat-card__value">196</span>
+        <div class="stat-card__meta">
+          <span class="stat-card__trend stat-card__trend--flat">= sin cambio</span>
+        </div>
+      </div>
+      <div class="stat-card stat-card--gold">
+        <span class="stat-card__label">Promedio goles</span>
+        <span class="stat-card__value">3.6</span>
+        <div class="stat-card__meta">
+          <span class="stat-card__trend stat-card__trend--up">↑ 0.2</span>
+          <span>por partido</span>
+        </div>
+      </div>
+      <div class="stat-card stat-card--red">
+        <span class="stat-card__label">Tarjetas rojas</span>
+        <span class="stat-card__value">18</span>
+        <div class="stat-card__meta">
+          <span class="stat-card__trend stat-card__trend--down">↑ 3</span>
+          <span>esta jornada</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content grid -->
+    <div class="content-grid content-grid--2col">
+
+      <!-- Tabla de posiciones -->
+      <div class="standings-card">
+        <div class="standings-card__header">
+          <span class="standings-card__title">Clasificación General</span>
+          <span class="standings-card__jornada">J28</span>
+        </div>
+
+        <div class="standings-table-wrapper">
+          <table class="standings-table">
+            <thead>
+              <tr>
+                <th class="col-pos">#</th>
+                <th class="col-team">Equipo</th>
+                <th class="col-stat">PJ</th>
+                <th class="col-stat col-hide-mobile">PG</th>
+                <th class="col-stat col-hide-mobile">PE</th>
+                <th class="col-stat col-hide-mobile">PP</th>
+                <th class="col-stat col-hide-mobile">GF</th>
+                <th class="col-stat col-hide-mobile">GC</th>
+                <th class="col-stat">DG</th>
+                <th class="col-pts">PTS</th>
+                <th class="col-form">Forma</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Zona champions: filas 1-4 -->
+              <tr class="zone-border--champions">
+                <td class="pos-cell"><span class="pos-indicator pos-indicator--champions">1</span></td>
+                <td>
+                  <div class="team-cell">
+                    <div class="team-cell__logo-placeholder">FC</div>
+                    <span class="team-cell__name">FC Metropolitano</span>
+                    <span class="team-cell__abbr">FCM</span>
+                  </div>
+                </td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell col-hide-mobile">19</td>
+                <td class="stat-cell col-hide-mobile">6</td>
+                <td class="stat-cell col-hide-mobile">3</td>
+                <td class="stat-cell col-hide-mobile">58</td>
+                <td class="stat-cell col-hide-mobile">22</td>
+                <td class="stat-cell gd-cell gd-cell--pos">+36</td>
+                <td class="stat-cell stat-cell--pts">63</td>
+                <td>
+                  <div class="form-cell">
+                    <span class="form-dot form-dot--W">V</span>
+                    <span class="form-dot form-dot--W">V</span>
+                    <span class="form-dot form-dot--D">E</span>
+                    <span class="form-dot form-dot--W">V</span>
+                    <span class="form-dot form-dot--W">V</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- Fila destacada (equipo del user) -->
+              <tr class="zone-border--champions row--highlight">
+                <td class="pos-cell"><span class="pos-indicator pos-indicator--champions">2</span></td>
+                <td>
+                  <div class="team-cell">
+                    <div class="team-cell__logo-placeholder">AS</div>
+                    <span class="team-cell__name">Atlético Sur ★</span>
+                    <span class="team-cell__abbr">ATS</span>
+                  </div>
+                </td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell col-hide-mobile">17</td>
+                <td class="stat-cell col-hide-mobile">8</td>
+                <td class="stat-cell col-hide-mobile">3</td>
+                <td class="stat-cell col-hide-mobile">51</td>
+                <td class="stat-cell col-hide-mobile">24</td>
+                <td class="stat-cell gd-cell gd-cell--pos">+27</td>
+                <td class="stat-cell stat-cell--pts">59</td>
+                <td>
+                  <div class="form-cell">
+                    <span class="form-dot form-dot--W">V</span>
+                    <span class="form-dot form-dot--L">D</span>
+                    <span class="form-dot form-dot--W">V</span>
+                    <span class="form-dot form-dot--W">V</span>
+                    <span class="form-dot form-dot--D">E</span>
+                  </div>
+                </td>
+              </tr>
+              <!-- Zona relegación -->
+              <tr class="zone-border--relegation">
+                <td class="pos-cell"><span class="pos-indicator pos-indicator--relegation">18</span></td>
+                <td>
+                  <div class="team-cell">
+                    <div class="team-cell__logo-placeholder">CD</div>
+                    <span class="team-cell__name">CD Descenso</span>
+                    <span class="team-cell__abbr">CDD</span>
+                  </div>
+                </td>
+                <td class="stat-cell">28</td>
+                <td class="stat-cell col-hide-mobile">4</td>
+                <td class="stat-cell col-hide-mobile">6</td>
+                <td class="stat-cell col-hide-mobile">18</td>
+                <td class="stat-cell col-hide-mobile">18</td>
+                <td class="stat-cell col-hide-mobile">52</td>
+                <td class="stat-cell gd-cell gd-cell--neg">-34</td>
+                <td class="stat-cell stat-cell--pts">18</td>
+                <td>
+                  <div class="form-cell">
+                    <span class="form-dot form-dot--L">D</span>
+                    <span class="form-dot form-dot--L">D</span>
+                    <span class="form-dot form-dot--D">E</span>
+                    <span class="form-dot form-dot--L">D</span>
+                    <span class="form-dot form-dot--L">D</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="standings-legend">
+          <div class="legend-item"><span class="legend-dot legend-dot--champions"></span> Champions</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--europe"></span> Europa League</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--playoff"></span> Playoff</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--relegation"></span> Descenso</div>
+        </div>
+      </div>
+
+      <!-- Panel lateral -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+
+        <!-- Donut W/D/L -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-header__info">
+              <span class="chart-title">Resultados del líder</span>
+              <span class="chart-period">FC Metropolitano</span>
+            </div>
+          </div>
+          <div class="donut-summary">
+            <div class="chart-area chart-area--sm" style="width:100px;flex-shrink:0">
+              <!-- Chart.js canvas aquí -->
+            </div>
+            <div class="donut-summary__items">
+              <div class="donut-item">
+                <div class="donut-item__label">
+                  <span class="legend-dot" style="background:var(--color-win);border-radius:2px;width:8px;height:8px"></span>
+                  Victorias
+                </div>
+                <div class="donut-item__bar-track">
+                  <div class="donut-item__bar-fill" style="width:68%;--bar-color:var(--color-win)"></div>
+                </div>
+                <span class="donut-item__value">19</span>
+              </div>
+              <div class="donut-item">
+                <div class="donut-item__label">
+                  <span class="legend-dot" style="background:var(--color-draw);border-radius:2px;width:8px;height:8px"></span>
+                  Empates
+                </div>
+                <div class="donut-item__bar-track">
+                  <div class="donut-item__bar-fill" style="width:21%;--bar-color:var(--color-draw)"></div>
+                </div>
+                <span class="donut-item__value">6</span>
+              </div>
+              <div class="donut-item">
+                <div class="donut-item__label">
+                  <span class="legend-dot" style="background:var(--color-loss);border-radius:2px;width:8px;height:8px"></span>
+                  Derrotas
+                </div>
+                <div class="donut-item__bar-track">
+                  <div class="donut-item__bar-fill" style="width:11%;--bar-color:var(--color-loss)"></div>
+                </div>
+                <span class="donut-item__value">3</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Heatmap de forma -->
+        <div class="card">
+          <div class="card__header">
+            <div>
+              <div class="card__title">Historial por jornada</div>
+              <div class="card__subtitle">FC Metropolitano · J1–J28</div>
+            </div>
+          </div>
+          <div class="heatmap-grid">
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--loss">D</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--draw">E</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--draw">E</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--loss">D</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--draw">E</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--draw">E</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--loss">D</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--draw">E</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--draw">E</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+            <div class="heatmap-cell heatmap-cell--win">V</div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+            <div class="legend-item"><span class="heatmap-cell heatmap-cell--win" style="width:14px;height:14px;font-size:0"></span> Victoria</div>
+            <div class="legend-item"><span class="heatmap-cell heatmap-cell--draw" style="width:14px;height:14px;font-size:0"></span> Empate</div>
+            <div class="legend-item"><span class="heatmap-cell heatmap-cell--loss" style="width:14px;height:14px;font-size:0"></span> Derrota</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Bottom nav (mobile) -->
+  <nav class="bottom-nav">
+    <button class="bottom-nav__item active">
+      <span class="bottom-nav__icon">⚽</span>
+      Posiciones
+    </button>
+    <button class="bottom-nav__item">
+      <span class="bottom-nav__icon">📅</span>
+      Fixture
+    </button>
+    <button class="bottom-nav__item">
+      <span class="bottom-nav__icon">🏆</span>
+      Equipos
+    </button>
+    <button class="bottom-nav__item">
+      <span class="bottom-nav__icon">📊</span>
+      Stats
+    </button>
+  </nav>
+
+</div>
+
+</body>
+</html>

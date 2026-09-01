@@ -1,0 +1,90 @@
+createPlayerInClub:
+  handler: ${file(./routes/players/functionPlayers.yml):createPlayerInClub.handler}
+  events:
+    - httpApi:
+        path: /clubs/{clubId}/players
+        method: post
+
+listPlayersByClub:
+  handler: ${file(./routes/players/functionPlayers.yml):listPlayersByClub.handler}
+  events:
+    - httpApi:
+        path: /clubs/{clubId}/players
+        method: get
+
+listPlayersByOrg:
+  handler: ${file(./routes/players/functionPlayers.yml):listPlayersByOrg.handler}
+  events:
+    - httpApi:
+        path: /orgs/{orgId}/players
+        method: get
+
+listActivePlayersByOrg:
+  handler: ${file(./routes/players/functionPlayers.yml):listPlayersByOrg.handler}
+  events:
+    - httpApi:
+        path: /orgs/{orgId}/players/active
+        method: get
+
+getPlayer:
+  handler: ${file(./routes/players/functionPlayers.yml):getPlayer.handler}
+  events:
+    - httpApi:
+        path: /players/{playerId}
+        method: get
+
+updatePlayer:
+  handler: ${file(./routes/players/functionPlayers.yml):updatePlayer.handler}
+  events:
+    - httpApi:
+        path: /players/{playerId}
+        method: patch
+
+updatePlayerStatus:
+  handler: ${file(./routes/players/functionPlayers.yml):updatePlayerStatus.handler}
+  events:
+    - httpApi:
+        path: /clubs/{clubId}/players/{playerId}/status
+        method: patch
+
+changeClub:
+  handler: ${file(./routes/players/functionPlayers.yml):changeClub.handler}
+  events:
+    - httpApi:
+        path: /players/{playerId}/change-club
+        method: post
+
+uploadPlayerPhoto:
+  handler: ${file(./routes/players/functionPlayers.yml):uploadPlayerPhoto.handler}
+  events:
+    - httpApi:
+        path: /players/{playerId}/photo
+        method: post
+
+listPlayerDocuments:
+  handler: ${file(./routes/players/functionPlayers.yml):listPlayerDocuments.handler}
+  events:
+    - httpApi:
+        path: /players/{playerId}/documents
+        method: get
+
+registerPlayerDocument:
+  handler: ${file(./routes/players/functionPlayers.yml):registerPlayerDocument.handler}
+  events:
+    - httpApi:
+        path: /players/{playerId}/documents
+        method: post
+
+getPlayerDocument:
+  handler: ${file(./routes/players/functionPlayers.yml):getPlayerDocument.handler}
+  events:
+    - httpApi:
+        path: /players/{playerId}/documents/{documentId}
+        method: get
+
+deletePlayerDocument:
+  handler: ${file(./routes/players/functionPlayers.yml):deletePlayerDocument.handler}
+  events:
+    - httpApi:
+        path: /players/{playerId}/documents/{documentId}
+        method: delete

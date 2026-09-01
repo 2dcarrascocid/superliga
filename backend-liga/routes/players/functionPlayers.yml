@@ -1,0 +1,24 @@
+createPlayerInClub:
+  handler: routes/players/players.createPlayerInClub
+listPlayersByClub:
+  handler: routes/players/players.listPlayersByClub
+listPlayersByOrg:
+  handler: routes/players/players.listPlayersByOrg
+getPlayer:
+  handler: routes/players/players.getPlayer
+updatePlayer:
+  handler: routes/players/players.updatePlayer
+updatePlayerStatus:
+  handler: routes/players/players.updatePlayerStatus
+changeClub:
+  handler: routes/players/players.changeClub
+uploadPlayerPhoto:
+  handler: routes/players/players.uploadPlayerPhoto
+listPlayerDocuments:
+  handler: routes/players/player_documents.listDocuments
+registerPlayerDocument:
+  handler: routes/players/player_documents.registerDocument
+getPlayerDocument:
+  handler: routes/players/player_documents.getDocument
+deletePlayerDocument:
+  handler: routes/players/player_documents.deleteDocument

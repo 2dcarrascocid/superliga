@@ -1,0 +1,10 @@
+/* ============================================================
+   LIGA — Design System Entry Point
+   Importar este único archivo en main.js / main.ts
+   ============================================================ */
+@import './tokens.css';
+@import './base.css';
+@import './layout.css';
+@import './components.css';
+@import './standings.css';
+@import './charts.css';
