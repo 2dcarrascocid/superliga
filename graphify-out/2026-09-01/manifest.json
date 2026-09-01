@@ -1,0 +1,1088 @@
+{
+  ".claude/evidence/T-20260825-113906/backend.md": {
+    "mtime": 1787674328.809001,
+    "seen": 1788271432.5379624,
+    "ast_hash": "c9d233a0428e0dce5b8a8b0f60e4a206",
+    "semantic_hash": "c9d233a0428e0dce5b8a8b0f60e4a206"
+  },
+  ".claude/evidence/T-20260825-113906/db.md": {
+    "mtime": 1787672744.781436,
+    "seen": 1788271432.5379639,
+    "ast_hash": "e444944aa6227c90a5d97db24f340f83",
+    "semantic_hash": "e444944aa6227c90a5d97db24f340f83"
+  },
+  ".claude/evidence/T-20260825-113906/frontend.md": {
+    "mtime": 1787673602.0878694,
+    "seen": 1788271432.5379648,
+    "ast_hash": "08dd43647352ec0f3214d38af0faaffd",
+    "semantic_hash": "08dd43647352ec0f3214d38af0faaffd"
+  },
+  ".claude/evidence/T-20260825-113906/plan.md": {
+    "mtime": 1787674470.9091272,
+    "seen": 1788271432.537966,
+    "ast_hash": "79b9277d7b9734fa0bcbb419f65d9168",
+    "semantic_hash": "79b9277d7b9734fa0bcbb419f65d9168"
+  },
+  ".claude/evidence/T-20260825-113906/qa-report.md": {
+    "mtime": 1787673819.2341375,
+    "seen": 1788271432.5379677,
+    "ast_hash": "4777228f83ad437fd7323af0d2097ab3",
+    "semantic_hash": "4777228f83ad437fd7323af0d2097ab3"
+  },
+  ".claude/evidence/T-20260825-113906/security-review.md": {
+    "mtime": 1787674466.9298685,
+    "seen": 1788271432.5379686,
+    "ast_hash": "23249ebef179d10ba79f34580d0356f6",
+    "semantic_hash": "23249ebef179d10ba79f34580d0356f6"
+  },
+  ".claude/evidence/T-20260828-103923/backend.md": {
+    "mtime": 1787928830.027459,
+    "seen": 1788271432.5379698,
+    "ast_hash": "2117db56bcd06b8b25ba891091dc71f1",
+    "semantic_hash": "2117db56bcd06b8b25ba891091dc71f1"
+  },
+  ".claude/evidence/T-20260828-103923/db.md": {
+    "mtime": 1787928234.038093,
+    "seen": 1788271432.5379713,
+    "ast_hash": "fefba258489d6b56014d624bf5809b25",
+    "semantic_hash": "fefba258489d6b56014d624bf5809b25"
+  },
+  ".claude/evidence/T-20260828-103923/frontend.md": {
+    "mtime": 1787949521.9078147,
+    "seen": 1788271432.5379722,
+    "ast_hash": "7112a3fc2141924a9ef67572dc4dd2ec",
+    "semantic_hash": "7112a3fc2141924a9ef67572dc4dd2ec"
+  },
+  ".claude/evidence/T-20260828-103923/plan.md": {
+    "mtime": 1787949931.7552636,
+    "seen": 1788271432.5379732,
+    "ast_hash": "83fea1c456d0487d31ffc84a5c8f0ab0",
+    "semantic_hash": "83fea1c456d0487d31ffc84a5c8f0ab0"
+  },
+  ".claude/evidence/T-20260828-103923/qa-report.md": {
+    "mtime": 1787949902.319364,
+    "seen": 1788271432.5379744,
+    "ast_hash": "0f08ff84eb301f82f1d71401f490f6a0",
+    "semantic_hash": "0f08ff84eb301f82f1d71401f490f6a0"
+  },
+  ".claude/evidence/T-20260828-103923/security-review.md": {
+    "mtime": 1787949920.0824964,
+    "seen": 1788271432.5379755,
+    "ast_hash": "d5452c3af9a2febe2df75d20f69d280e",
+    "semantic_hash": "d5452c3af9a2febe2df75d20f69d280e"
+  },
+  "AGENTS.md": {
+    "mtime": 1788270950.1431775,
+    "seen": 1788271432.537983,
+    "ast_hash": "eb5b94b7a1c88d02e142f0d15b11c92a",
+    "semantic_hash": "eb5b94b7a1c88d02e142f0d15b11c92a"
+  },
+  "CLAUDE.md": {
+    "mtime": 1788270950.1431775,
+    "seen": 1788271432.537984,
+    "ast_hash": "eb5b94b7a1c88d02e142f0d15b11c92a",
+    "semantic_hash": "eb5b94b7a1c88d02e142f0d15b11c92a"
+  },
+  "GEMINI.md": {
+    "mtime": 1788270950.1431775,
+    "seen": 1788271432.5379853,
+    "ast_hash": "eb5b94b7a1c88d02e142f0d15b11c92a",
+    "semantic_hash": "eb5b94b7a1c88d02e142f0d15b11c92a"
+  },
+  "PROJECT.md": {
+    "mtime": 1788270950.1431775,
+    "seen": 1788271432.5379863,
+    "ast_hash": "eb5b94b7a1c88d02e142f0d15b11c92a",
+    "semantic_hash": "eb5b94b7a1c88d02e142f0d15b11c92a"
+  },
+  "backend-liga/.claude/settings.json": {
+    "mtime": 1777560221.9211528,
+    "seen": 1788289369.346297,
+    "ast_hash": "9832b37cee607d44328cf9799ffee284",
+    "semantic_hash": "9832b37cee607d44328cf9799ffee284"
+  },
+  "backend-liga/.claude/settings.local.json": {
+    "mtime": 1774042757.3676088,
+    "seen": 1788289369.3463027,
+    "ast_hash": "69c23061000e6ef329f5ca20c9703347",
+    "semantic_hash": "69c23061000e6ef329f5ca20c9703347"
+  },
+  "backend-liga/adf/adapters/__tests__/lambda_adapter.test.js": {
+    "mtime": 1787928920.0088735,
+    "seen": 1788289369.3463054,
+    "ast_hash": "394ef56b06fd1fb911e0cf1667c675eb",
+    "semantic_hash": "394ef56b06fd1fb911e0cf1667c675eb"
+  },
+  "backend-liga/adf/adapters/lambda_adapter.js": {
+    "mtime": 1787928909.8385363,
+    "seen": 1788289369.3463068,
+    "ast_hash": "ea72d104b95d2ba5fdc584b39cf8e70a",
+    "semantic_hash": "ea72d104b95d2ba5fdc584b39cf8e70a"
+  },
+  "backend-liga/adf/check_adf.js": {
+    "mtime": 1774043609.4359465,
+    "seen": 1788289369.3463085,
+    "ast_hash": "f16b1b5f46647ee350a51ee4df1ccd52",
+    "semantic_hash": "f16b1b5f46647ee350a51ee4df1ccd52"
+  },
+  "backend-liga/adf/contracts/skill_contract.js": {
+    "mtime": 1774042930.766828,
+    "seen": 1788289369.3463097,
+    "ast_hash": "580a429199bff6b2a4e07760cfc94062",
+    "semantic_hash": "580a429199bff6b2a4e07760cfc94062"
+  },
+  "backend-liga/adf/contracts/task_schema.js": {
+    "mtime": 1774042946.843083,
+    "seen": 1788289369.346312,
+    "ast_hash": "2078d1d65171c438d4672c1930c9ee59",
+    "semantic_hash": "2078d1d65171c438d4672c1930c9ee59"
+  },
+  "backend-liga/adf/examples/loans_handler_adf.js": {
+    "mtime": 1774043352.5746512,
+    "seen": 1788289369.3463132,
+    "ast_hash": "908c7329b4423117bf639690064b877c",
+    "semantic_hash": "908c7329b4423117bf639690064b877c"
+  },
+  "backend-liga/adf/index.js": {
+    "mtime": 1787355708.1154146,
+    "seen": 1788289369.3463144,
+    "ast_hash": "3caf4fafb53c14ce336574bc671278ad",
+    "semantic_hash": "3caf4fafb53c14ce336574bc671278ad"
+  },
+  "backend-liga/adf/observability/artifact_logger.js": {
+    "mtime": 1774042964.2974005,
+    "seen": 1788289369.3463156,
+    "ast_hash": "39f01dc114172da62fa75e5868a07875",
+    "semantic_hash": "39f01dc114172da62fa75e5868a07875"
+  },
+  "backend-liga/adf/observability/trace_builder.js": {
+    "mtime": 1774042981.146025,
+    "seen": 1788289369.346317,
+    "ast_hash": "d369e726a1c0e75eb34b1b6863afb5b2",
+    "semantic_hash": "d369e726a1c0e75eb34b1b6863afb5b2"
+  },
+  "backend-liga/adf/orchestrator/agent_orchestrator.js": {
+    "mtime": 1787928726.5538585,
+    "seen": 1788289369.3463182,
+    "ast_hash": "e1f1bdfb18d3b28cd1bdab8eaf6b54f3",
+    "semantic_hash": "e1f1bdfb18d3b28cd1bdab8eaf6b54f3"
+  },
+  "backend-liga/adf/specialists/__tests__/auth_specialist_accept_player_invite.test.js": {
+    "mtime": 1787928689.1593633,
+    "seen": 1788289369.3463194,
+    "ast_hash": "ea66fd804e2eb2cff98a9ee02c81e523",
+    "semantic_hash": "ea66fd804e2eb2cff98a9ee02c81e523"
+  },
+  "backend-liga/adf/specialists/__tests__/ledger.test.js": {
+    "mtime": 1787673115.6039615,
+    "seen": 1788289369.3463206,
+    "ast_hash": "c7d2c1e264d44079521b5fa92a6727dd",
+    "semantic_hash": "c7d2c1e264d44079521b5fa92a6727dd"
+  },
+  "backend-liga/adf/specialists/__tests__/players_specialist_player_role.test.js": {
+    "mtime": 1787928675.3612208,
+    "seen": 1788289369.3463218,
+    "ast_hash": "53271652bca8ca50ff339fa296ebfd36",
+    "semantic_hash": "53271652bca8ca50ff339fa296ebfd36"
+  },
+  "backend-liga/adf/specialists/__tests__/test_utils/mock_db.js": {
+    "mtime": 1787928726.554856,
+    "seen": 1788289369.3463233,
+    "ast_hash": "c88e9cc786d82e115c06bdd57a4f914d",
+    "semantic_hash": "c88e9cc786d82e115c06bdd57a4f914d"
+  },
+  "backend-liga/adf/specialists/__tests__/tournaments_specialist.test.js": {
+    "mtime": 1787868238.9888191,
+    "seen": 1788289369.3463387,
+    "ast_hash": "0ca76d9b628a8f944463798bd9c9d687",
+    "semantic_hash": "0ca76d9b628a8f944463798bd9c9d687"
+  },
+  "backend-liga/adf/specialists/auth_specialist.js": {
+    "mtime": 1787928726.5558567,
+    "seen": 1788289369.3463402,
+    "ast_hash": "664f2ceb64b95d81fcdc56b2005d659a",
+    "semantic_hash": "664f2ceb64b95d81fcdc56b2005d659a"
+  },
+  "backend-liga/adf/specialists/categories_specialist.js": {
+    "mtime": 1787361780.4783537,
+    "seen": 1788289369.3463411,
+    "ast_hash": "c22e8af7460b88b2238fc57eb93ec29f",
+    "semantic_hash": "c22e8af7460b88b2238fc57eb93ec29f"
+  },
+  "backend-liga/adf/specialists/club_finance_specialist.js": {
+    "mtime": 1787355612.298951,
+    "seen": 1788289369.3463423,
+    "ast_hash": "7819707508e689b3bd578f1aa2fc45b0",
+    "semantic_hash": "7819707508e689b3bd578f1aa2fc45b0"
+  },
+  "backend-liga/adf/specialists/club_series_specialist.js": {
+    "mtime": 1787020628.379895,
+    "seen": 1788289369.3463438,
+    "ast_hash": "b1c9a76e1ccd4814e5b41b4e3fae827a",
+    "semantic_hash": "b1c9a76e1ccd4814e5b41b4e3fae827a"
+  },
+  "backend-liga/adf/specialists/clubs_specialist.js": {
+    "mtime": 1787342781.7546654,
+    "seen": 1788289369.346345,
+    "ast_hash": "bae35530bec9a21416e81015691a91f3",
+    "semantic_hash": "bae35530bec9a21416e81015691a91f3"
+  },
+  "backend-liga/adf/specialists/lib/bracket_propagation.js": {
+    "mtime": 1786752794.5446336,
+    "seen": 1788289369.3463464,
+    "ast_hash": "0a9114e46583931048b1481b1aaad6ff",
+    "semantic_hash": "0a9114e46583931048b1481b1aaad6ff"
+  },
+  "backend-liga/adf/specialists/lib/club_access.js": {
+    "mtime": 1787355241.5624495,
+    "seen": 1788289369.3463476,
+    "ast_hash": "836f156817a96d6241e69318d0391f1f",
+    "semantic_hash": "836f156817a96d6241e69318d0391f1f"
+  },
+  "backend-liga/adf/specialists/lib/fixture_generator.js": {
+    "mtime": 1786731909.8470824,
+    "seen": 1788289369.3463485,
+    "ast_hash": "32b5718bf2cdbecf7422af5c108a7774",
+    "semantic_hash": "32b5718bf2cdbecf7422af5c108a7774"
+  },
+  "backend-liga/adf/specialists/lib/ledger.js": {
+    "mtime": 1787672947.2168965,
+    "seen": 1788289369.3463497,
+    "ast_hash": "2bc47084be594c5b129d20810564e62e",
+    "semantic_hash": "2bc47084be594c5b129d20810564e62e"
+  },
+  "backend-liga/adf/specialists/lib/player_access.js": {
+    "mtime": 1787928464.3433206,
+    "seen": 1788289369.3463511,
+    "ast_hash": "5f411d7e3b3eab8a5fe88980e668d0e3",
+    "semantic_hash": "5f411d7e3b3eab8a5fe88980e668d0e3"
+  },
+  "backend-liga/adf/specialists/lib/veteran_folio.js": {
+    "mtime": 1787334920.4392228,
+    "seen": 1788289369.346353,
+    "ast_hash": "9fe0af17109434baf0d8156067d5b0c7",
+    "semantic_hash": "9fe0af17109434baf0d8156067d5b0c7"
+  },
+  "backend-liga/adf/specialists/loans_specialist.js": {
+    "mtime": 1774043221.6358383,
+    "seen": 1788289369.3463542,
+    "ast_hash": "18b67b9dfc8321bbf91641b700b0b20f",
+    "semantic_hash": "18b67b9dfc8321bbf91641b700b0b20f"
+  },
+  "backend-liga/adf/specialists/matches_specialist.js": {
+    "mtime": 1787085184.4096162,
+    "seen": 1788289369.3463554,
+    "ast_hash": "35a72c30e372e47f28ce8f24437eef73",
+    "semantic_hash": "35a72c30e372e47f28ce8f24437eef73"
+  },
+  "backend-liga/adf/specialists/player_documents_specialist.js": {
+    "mtime": 1774489340.380847,
+    "seen": 1788289369.3463564,
+    "ast_hash": "8b315feed2dc7a6edf6e8a3b26f80a6d",
+    "semantic_hash": "8b315feed2dc7a6edf6e8a3b26f80a6d"
+  },
+  "backend-liga/adf/specialists/players_specialist.js": {
+    "mtime": 1787928726.5588584,
+    "seen": 1788289369.3463578,
+    "ast_hash": "b42d04cda04ce9faa2367c201dc9efb9",
+    "semantic_hash": "b42d04cda04ce9faa2367c201dc9efb9"
+  },
+  "backend-liga/adf/specialists/referees_specialist.js": {
+    "mtime": 1786148942.3220813,
+    "seen": 1788289369.346359,
+    "ast_hash": "941021a5dedb5fc20fdc67d0145fcc6e",
+    "semantic_hash": "941021a5dedb5fc20fdc67d0145fcc6e"
+  },
+  "backend-liga/adf/specialists/seasons_specialist.js": {
+    "mtime": 1787342611.589453,
+    "seen": 1788289369.34636,
+    "ast_hash": "15d9bfae0d3acf707b4eacf27187ecab",
+    "semantic_hash": "15d9bfae0d3acf707b4eacf27187ecab"
+  },
+  "backend-liga/adf/specialists/tournament_costs_specialist.js": {
+    "mtime": 1786732286.9624374,
+    "seen": 1788289369.3463612,
+    "ast_hash": "7d13e3cf7ee416d46e45a6b42632f42b",
+    "semantic_hash": "7d13e3cf7ee416d46e45a6b42632f42b"
+  },
+  "backend-liga/adf/specialists/tournaments_specialist.js": {
+    "mtime": 1787868196.4055226,
+    "seen": 1788289369.3463624,
+    "ast_hash": "175bcd14cce157d745873166d8c6e66b",
+    "semantic_hash": "175bcd14cce157d745873166d8c6e66b"
+  },
+  "backend-liga/adf/specialists/transfers_specialist.js": {
+    "mtime": 1786229727.0496018,
+    "seen": 1788289369.3463635,
+    "ast_hash": "e6011e5a9fe7f91e1d1add69787ac337",
+    "semantic_hash": "e6011e5a9fe7f91e1d1add69787ac337"
+  },
+  "backend-liga/adf/specialists/venue_scheduling_specialist.js": {
+    "mtime": 1786229534.389089,
+    "seen": 1788289369.346365,
+    "ast_hash": "b984e719f1b519a410380bfa5783cf8e",
+    "semantic_hash": "b984e719f1b519a410380bfa5783cf8e"
+  },
+  "backend-liga/adf/specialists/venues_specialist.js": {
+    "mtime": 1786224876.9279425,
+    "seen": 1788289369.3463662,
+    "ast_hash": "658cdcc5a4d03fc26786363f269ae7da",
+    "semantic_hash": "658cdcc5a4d03fc26786363f269ae7da"
+  },
+  "backend-liga/adf/validators/business_validator.js": {
+    "mtime": 1774043070.0948,
+    "seen": 1788289369.3463671,
+    "ast_hash": "54e2ecc9357837e38ccd3fbf61e48518",
+    "semantic_hash": "54e2ecc9357837e38ccd3fbf61e48518"
+  },
+  "backend-liga/adf/validators/request_validator.js": {
+    "mtime": 1787928726.5598567,
+    "seen": 1788289369.3463686,
+    "ast_hash": "d0daa417b31a28fd178a52d05f4e14e1",
+    "semantic_hash": "d0daa417b31a28fd178a52d05f4e14e1"
+  },
+  "backend-liga/adf/validators/security_validator.js": {
+    "mtime": 1777560168.7934263,
+    "seen": 1788289369.3463695,
+    "ast_hash": "6382f2160b8f9a92020574771abe28c3",
+    "semantic_hash": "6382f2160b8f9a92020574771abe28c3"
+  },
+  "backend-liga/config/env.js": {
+    "mtime": 1787084074.2454474,
+    "seen": 1788289369.3463707,
+    "ast_hash": "7cab7dba23e74140a7a8ea2ed9e1e63d",
+    "semantic_hash": "7cab7dba23e74140a7a8ea2ed9e1e63d"
+  },
+  "backend-liga/handler.js": {
+    "mtime": 1787928726.5598567,
+    "seen": 1788289369.3463721,
+    "ast_hash": "6137ece75ba4cfeee6500ae22c12c8ad",
+    "semantic_hash": "6137ece75ba4cfeee6500ae22c12c8ad"
+  },
+  "backend-liga/package.json": {
+    "mtime": 1787673221.9432821,
+    "seen": 1788289369.346373,
+    "ast_hash": "ed9b6aa263d1f59ee24ad16791ca428c",
+    "semantic_hash": "ed9b6aa263d1f59ee24ad16791ca428c"
+  },
+  "backend-liga/routes/adf/health.js": {
+    "mtime": 1774043684.8369699,
+    "seen": 1788289369.3463745,
+    "ast_hash": "3358eb2acc0b65e18b3ee97ffd165c4a",
+    "semantic_hash": "3358eb2acc0b65e18b3ee97ffd165c4a"
+  },
+  "backend-liga/routes/auth/bootstrap.js": {
+    "mtime": 1768542472.4275682,
+    "seen": 1788289369.3463757,
+    "ast_hash": "d67a1dd8f2cbda45113d101f5b15e80d",
+    "semantic_hash": "d67a1dd8f2cbda45113d101f5b15e80d"
+  },
+  "backend-liga/routes/auth/forgotPassword.js": {
+    "mtime": 1787084085.179596,
+    "seen": 1788289369.3463767,
+    "ast_hash": "bf006566e267e9e33481103775e3e7a1",
+    "semantic_hash": "bf006566e267e9e33481103775e3e7a1"
+  },
+  "backend-liga/routes/auth/functionAuth.js": {
+    "mtime": 1768542212.3053925,
+    "seen": 1788289369.346378,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "backend-liga/routes/auth/loginFacebook.js": {
+    "mtime": 1768546487.2102966,
+    "seen": 1788289369.3463793,
+    "ast_hash": "6cebb427696f91e56c17e87d50eac9b3",
+    "semantic_hash": "6cebb427696f91e56c17e87d50eac9b3"
+  },
+  "backend-liga/routes/auth/loginGoogle.js": {
+    "mtime": 1768546476.811753,
+    "seen": 1788289369.3463802,
+    "ast_hash": "d64667e13e42207f9131b4f8448294e3",
+    "semantic_hash": "d64667e13e42207f9131b4f8448294e3"
+  },
+  "backend-liga/routes/auth/loginLocal.js": {
+    "mtime": 1768546468.2062273,
+    "seen": 1788289369.3463817,
+    "ast_hash": "56ce30d1787c297d82273effa92e60a3",
+    "semantic_hash": "56ce30d1787c297d82273effa92e60a3"
+  },
+  "backend-liga/routes/auth/resetPassword.js": {
+    "mtime": 1786123281.8641968,
+    "seen": 1788289369.3463829,
+    "ast_hash": "f4e6ae9da536b70b481c8e4000cb16e2",
+    "semantic_hash": "f4e6ae9da536b70b481c8e4000cb16e2"
+  },
+  "backend-liga/routes/categories/categories.js": {
+    "mtime": 1774129414.5232265,
+    "seen": 1788289369.3463838,
+    "ast_hash": "5fd611f8f2a5b00188c7a19cfc2ef187",
+    "semantic_hash": "5fd611f8f2a5b00188c7a19cfc2ef187"
+  },
+  "backend-liga/routes/clubs/clubs.js": {
+    "mtime": 1774222941.7587047,
+    "seen": 1788289369.3463855,
+    "ast_hash": "bc7eefd4fa5ed058a004889d241b3f8b",
+    "semantic_hash": "bc7eefd4fa5ed058a004889d241b3f8b"
+  },
+  "backend-liga/routes/clubs/roster.js": {
+    "mtime": 1768594469.1599293,
+    "seen": 1788289369.3463867,
+    "ast_hash": "20844e7601ab59d53e21d78b4dc6251e",
+    "semantic_hash": "20844e7601ab59d53e21d78b4dc6251e"
+  },
+  "backend-liga/routes/docs/docs.js": {
+    "mtime": 1786229733.7251363,
+    "seen": 1788289369.3464003,
+    "ast_hash": "5d314a9db5d8fea480abe305175cf8bd",
+    "semantic_hash": "5d314a9db5d8fea480abe305175cf8bd"
+  },
+  "backend-liga/routes/players/loans.js": {
+    "mtime": 1768590821.0896652,
+    "seen": 1788289369.3464017,
+    "ast_hash": "254d77322e7cd0ae4ffb72ccde7a370c",
+    "semantic_hash": "254d77322e7cd0ae4ffb72ccde7a370c"
+  },
+  "backend-liga/routes/players/player_documents.js": {
+    "mtime": 1774489355.8568795,
+    "seen": 1788289369.346403,
+    "ast_hash": "6d4672803f95926f1a4c49a9c95f006a",
+    "semantic_hash": "6d4672803f95926f1a4c49a9c95f006a"
+  },
+  "backend-liga/routes/players/players.js": {
+    "mtime": 1786141962.1085582,
+    "seen": 1788289369.3464038,
+    "ast_hash": "14283007bf835e34b40ffa39a91f7b2e",
+    "semantic_hash": "14283007bf835e34b40ffa39a91f7b2e"
+  },
+  "backend-liga/routes/transfers/transfers.js": {
+    "mtime": 1774400419.7486951,
+    "seen": 1788289369.346405,
+    "ast_hash": "87b7ce9ba8ba6bee337e95ee9f1aab08",
+    "semantic_hash": "87b7ce9ba8ba6bee337e95ee9f1aab08"
+  },
+  "backend-liga/services/db.js": {
+    "mtime": 1787084078.3375194,
+    "seen": 1788289369.3464065,
+    "ast_hash": "d3994737c2aa24d0571c0eda8993a1a4",
+    "semantic_hash": "d3994737c2aa24d0571c0eda8993a1a4"
+  },
+  "backend-liga/sql/json/territorios.json": {
+    "mtime": 1786155277.846201,
+    "seen": 1788289369.3464074,
+    "ast_hash": "c9f3faa0463e708b06e8b61273553350",
+    "semantic_hash": "c9f3faa0463e708b06e8b61273553350"
+  },
+  "backend-liga/utils/apiKeyMiddleware.js": {
+    "mtime": 1768517897.2615943,
+    "seen": 1788289369.3464086,
+    "ast_hash": "08cb1fc8650d9f6a2451bd3801a10eb9",
+    "semantic_hash": "08cb1fc8650d9f6a2451bd3801a10eb9"
+  },
+  "backend-liga/utils/authMiddleware.js": {
+    "mtime": 1768517897.2615943,
+    "seen": 1788289369.3464098,
+    "ast_hash": "60c5f29269ef0d9a0611490e554aa55f",
+    "semantic_hash": "60c5f29269ef0d9a0611490e554aa55f"
+  },
+  "backend-liga/utils/errors.js": {
+    "mtime": 1768544276.1456816,
+    "seen": 1788289369.346411,
+    "ast_hash": "7f7b0431a8e21fb166e585deacd7e15c",
+    "semantic_hash": "7f7b0431a8e21fb166e585deacd7e15c"
+  },
+  "backend-liga/utils/mailer.js": {
+    "mtime": 1787928726.5618567,
+    "seen": 1788289369.3464122,
+    "ast_hash": "4239243083793e02e42fc74be1c521a1",
+    "semantic_hash": "4239243083793e02e42fc74be1c521a1"
+  },
+  "backend-liga/utils/middleware.js": {
+    "mtime": 1768517897.262595,
+    "seen": 1788289369.3464134,
+    "ast_hash": "2884a5fa0a7fd6150c10c57f70cec6e5",
+    "semantic_hash": "2884a5fa0a7fd6150c10c57f70cec6e5"
+  },
+  "backend-liga/utils/pagination.js": {
+    "mtime": 1786129042.1206365,
+    "seen": 1788289369.3464146,
+    "ast_hash": "7f7fc417cbea1f222b278704e5a5c23a",
+    "semantic_hash": "7f7fc417cbea1f222b278704e5a5c23a"
+  },
+  "backend-liga/utils/response.js": {
+    "mtime": 1774045509.0309958,
+    "seen": 1788289369.3464155,
+    "ast_hash": "6629e15ad248c7fc7386aa89865c5d83",
+    "semantic_hash": "6629e15ad248c7fc7386aa89865c5d83"
+  },
+  "backend-liga/utils/security.js": {
+    "mtime": 1768542350.174645,
+    "seen": 1788289369.3464184,
+    "ast_hash": "2d559977647dd0ff50c2afc57b73b0d6",
+    "semantic_hash": "2d559977647dd0ff50c2afc57b73b0d6"
+  },
+  "backend-liga/utils/validator.js": {
+    "mtime": 1768542349.9372678,
+    "seen": 1788289369.3464198,
+    "ast_hash": "ffbd65e39a09f48096ba3969af7e415c",
+    "semantic_hash": "ffbd65e39a09f48096ba3969af7e415c"
+  },
+  "backend-liga/utils/withAuth.js": {
+    "mtime": 1768517897.2636018,
+    "seen": 1788289369.3464208,
+    "ast_hash": "2b031fd6fd18655411bf1d4036683fa7",
+    "semantic_hash": "2b031fd6fd18655411bf1d4036683fa7"
+  },
+  "backend-liga/utils/withJsonResponse.js": {
+    "mtime": 1768517897.2636018,
+    "seen": 1788289369.3464217,
+    "ast_hash": "1788d344898559cda5570ab8db2023df",
+    "semantic_hash": "1788d344898559cda5570ab8db2023df"
+  },
+  "frontend-liga/.claude/settings.json": {
+    "mtime": 1786123308.4305632,
+    "seen": 1788289369.3464231,
+    "ast_hash": "39b04eefb73ac024ba9e34e3d0c650fe",
+    "semantic_hash": "39b04eefb73ac024ba9e34e3d0c650fe"
+  },
+  "frontend-liga/.claude/skills/ui-ux-pro-max/scripts/core.py": {
+    "mtime": 1777557475.068409,
+    "seen": 1788289369.3464243,
+    "ast_hash": "3df4734a785963a8242a56c1b926adfd",
+    "semantic_hash": "3df4734a785963a8242a56c1b926adfd"
+  },
+  "frontend-liga/.claude/skills/ui-ux-pro-max/scripts/design_system.py": {
+    "mtime": 1777557475.0724082,
+    "seen": 1788289369.3464253,
+    "ast_hash": "08f84d04608a19049c90fc2b1ef314f9",
+    "semantic_hash": "08f84d04608a19049c90fc2b1ef314f9"
+  },
+  "frontend-liga/.claude/skills/ui-ux-pro-max/scripts/search.py": {
+    "mtime": 1777557475.081407,
+    "seen": 1788289369.3464265,
+    "ast_hash": "8c7e35426fe8f6f3ed91e9dce0ed7af1",
+    "semantic_hash": "8c7e35426fe8f6f3ed91e9dce0ed7af1"
+  },
+  "frontend-liga/.vscode/extensions.json": {
+    "mtime": 1768588183.6496427,
+    "seen": 1788289369.3464277,
+    "ast_hash": "42f3854edd48c8cd22c8bef246810290",
+    "semantic_hash": "42f3854edd48c8cd22c8bef246810290"
+  },
+  "frontend-liga/package.json": {
+    "mtime": 1774097362.2298298,
+    "seen": 1788289369.346429,
+    "ast_hash": "63782410a3230fd7303f5aa186a51602",
+    "semantic_hash": "63782410a3230fd7303f5aa186a51602"
+  },
+  "frontend-liga/src/App.vue": {
+    "mtime": 1786751654.8460188,
+    "seen": 1788289369.3464303,
+    "ast_hash": "2d0c296b873588989bf486609b2eca8d",
+    "semantic_hash": "2d0c296b873588989bf486609b2eca8d"
+  },
+  "frontend-liga/src/api/index.js": {
+    "mtime": 1787949574.3147357,
+    "seen": 1788289369.3464315,
+    "ast_hash": "9a5855578f4b31098faf4c09b57bd5cc",
+    "semantic_hash": "9a5855578f4b31098faf4c09b57bd5cc"
+  },
+  "frontend-liga/src/components/ClubHeader.vue": {
+    "mtime": 1787861145.4166045,
+    "seen": 1788289369.3464324,
+    "ast_hash": "b42b3d8fdc1933530cfc5d3acfe74e43",
+    "semantic_hash": "b42b3d8fdc1933530cfc5d3acfe74e43"
+  },
+  "frontend-liga/src/components/ClubSeriesTable.vue": {
+    "mtime": 1787863377.3308434,
+    "seen": 1788289369.3464339,
+    "ast_hash": "2c5603d94cdb50eb5f14bd50c24c3659",
+    "semantic_hash": "2c5603d94cdb50eb5f14bd50c24c3659"
+  },
+  "frontend-liga/src/components/HelloWorld.vue": {
+    "mtime": 1768588183.655635,
+    "seen": 1788289369.346435,
+    "ast_hash": "1067c42bb2318385bed4b7941d108eaf",
+    "semantic_hash": "1067c42bb2318385bed4b7941d108eaf"
+  },
+  "frontend-liga/src/components/LoadingState.vue": {
+    "mtime": 1787338378.42298,
+    "seen": 1788289369.346436,
+    "ast_hash": "f8b41c1def4f8d1e0e94ee1602b559ec",
+    "semantic_hash": "f8b41c1def4f8d1e0e94ee1602b559ec"
+  },
+  "frontend-liga/src/components/Navbar.vue": {
+    "mtime": 1787949574.316738,
+    "seen": 1788289369.3464375,
+    "ast_hash": "13b38c220ec63d61a5091df03add9823",
+    "semantic_hash": "13b38c220ec63d61a5091df03add9823"
+  },
+  "frontend-liga/src/components/NotifyModal.vue": {
+    "mtime": 1787949627.138093,
+    "seen": 1788289369.3464384,
+    "ast_hash": "a8acf825e2c9a4b9824526ec7a6a5c22",
+    "semantic_hash": "a8acf825e2c9a4b9824526ec7a6a5c22"
+  },
+  "frontend-liga/src/components/PlayerDocuments.vue": {
+    "mtime": 1774527474.2280304,
+    "seen": 1788289369.3464394,
+    "ast_hash": "27b3eabd7ede6e11ddb4260f7039db2f",
+    "semantic_hash": "27b3eabd7ede6e11ddb4260f7039db2f"
+  },
+  "frontend-liga/src/components/SeriesRosterDetail.vue": {
+    "mtime": 1787861553.9667943,
+    "seen": 1788289369.3464408,
+    "ast_hash": "b055bcfcbf2c8db32cf451b279083efa",
+    "semantic_hash": "b055bcfcbf2c8db32cf451b279083efa"
+  },
+  "frontend-liga/src/composables/useGoogleAuth.js": {
+    "mtime": 1787949574.3177383,
+    "seen": 1788289369.3464417,
+    "ast_hash": "cf254a4cecd149417c18ac552eb21eb9",
+    "semantic_hash": "cf254a4cecd149417c18ac552eb21eb9"
+  },
+  "frontend-liga/src/composables/useTheme.js": {
+    "mtime": 1787870138.6660123,
+    "seen": 1788289369.346443,
+    "ast_hash": "ffe7bce1f632728abe955e02e62cc476",
+    "semantic_hash": "ffe7bce1f632728abe955e02e62cc476"
+  },
+  "frontend-liga/src/data/territorios.json": {
+    "mtime": 1786224795.6342,
+    "seen": 1788289369.3464444,
+    "ast_hash": "c9f3faa0463e708b06e8b61273553350",
+    "semantic_hash": "c9f3faa0463e708b06e8b61273553350"
+  },
+  "frontend-liga/src/main.js": {
+    "mtime": 1787870138.668015,
+    "seen": 1788289369.3464453,
+    "ast_hash": "cee956642bbcd53c9636520608356f73",
+    "semantic_hash": "cee956642bbcd53c9636520608356f73"
+  },
+  "frontend-liga/src/router/index.js": {
+    "mtime": 1787949574.3187377,
+    "seen": 1788289369.3464465,
+    "ast_hash": "dfbebb1c8853fcbd89dfb4b7a2ea4140",
+    "semantic_hash": "dfbebb1c8853fcbd89dfb4b7a2ea4140"
+  },
+  "frontend-liga/src/services/categories.service.js": {
+    "mtime": 1787361816.8562968,
+    "seen": 1788289369.346448,
+    "ast_hash": "eacf0255ef17d3b9d663cc7874d1615d",
+    "semantic_hash": "eacf0255ef17d3b9d663cc7874d1615d"
+  },
+  "frontend-liga/src/services/cloudinary.service.js": {
+    "mtime": 1774489301.8150887,
+    "seen": 1788289369.3464491,
+    "ast_hash": "f42a0866f8e866538e7a5e4b99b3465f",
+    "semantic_hash": "f42a0866f8e866538e7a5e4b99b3465f"
+  },
+  "frontend-liga/src/services/clubFinance.service.js": {
+    "mtime": 1787356374.069898,
+    "seen": 1788289369.34645,
+    "ast_hash": "559aa85f1b7db3d84a5824d3657bc16b",
+    "semantic_hash": "559aa85f1b7db3d84a5824d3657bc16b"
+  },
+  "frontend-liga/src/services/clubSeries.service.js": {
+    "mtime": 1786752884.6732566,
+    "seen": 1788289369.3464515,
+    "ast_hash": "ff377da49097365805d60cedb9c496e8",
+    "semantic_hash": "ff377da49097365805d60cedb9c496e8"
+  },
+  "frontend-liga/src/services/clubs.service.js": {
+    "mtime": 1787337076.6184087,
+    "seen": 1788289369.3464525,
+    "ast_hash": "3fe3fedaa9b38d1e81ce9dd983ef869b",
+    "semantic_hash": "3fe3fedaa9b38d1e81ce9dd983ef869b"
+  },
+  "frontend-liga/src/services/import.service.js": {
+    "mtime": 1774399231.1501355,
+    "seen": 1788289369.3464537,
+    "ast_hash": "57850c7f3a506fa9869102dee751d198",
+    "semantic_hash": "57850c7f3a506fa9869102dee751d198"
+  },
+  "frontend-liga/src/services/loans.service.js": {
+    "mtime": 1768590981.360435,
+    "seen": 1788289369.3464549,
+    "ast_hash": "ebb8338a7c57767241bab49d1e470594",
+    "semantic_hash": "ebb8338a7c57767241bab49d1e470594"
+  },
+  "frontend-liga/src/services/matches.service.js": {
+    "mtime": 1787085403.571093,
+    "seen": 1788289369.346456,
+    "ast_hash": "448f5ae44f60d4aa9faef4bc31189dc6",
+    "semantic_hash": "448f5ae44f60d4aa9faef4bc31189dc6"
+  },
+  "frontend-liga/src/services/player_documents.service.js": {
+    "mtime": 1774527221.3413236,
+    "seen": 1788289369.346457,
+    "ast_hash": "e8142da5e5d8effce62c9f0b7af15929",
+    "semantic_hash": "e8142da5e5d8effce62c9f0b7af15929"
+  },
+  "frontend-liga/src/services/players.service.js": {
+    "mtime": 1787949574.3197386,
+    "seen": 1788289369.3464584,
+    "ast_hash": "53b9b6275c4335a71859f357f75f4a8a",
+    "semantic_hash": "53b9b6275c4335a71859f357f75f4a8a"
+  },
+  "frontend-liga/src/services/referees.service.js": {
+    "mtime": 1786145420.1869535,
+    "seen": 1788289369.3464596,
+    "ast_hash": "7560cab8e5e74720fea4149a2ce2b898",
+    "semantic_hash": "7560cab8e5e74720fea4149a2ce2b898"
+  },
+  "frontend-liga/src/services/roster.service.js": {
+    "mtime": 1768590978.9867814,
+    "seen": 1788289369.3464606,
+    "ast_hash": "3af8c6c62bfc308222898728e3cf9d76",
+    "semantic_hash": "3af8c6c62bfc308222898728e3cf9d76"
+  },
+  "frontend-liga/src/services/seasons.service.js": {
+    "mtime": 1787342819.7669182,
+    "seen": 1788289369.346462,
+    "ast_hash": "dd6a412bb64d1cb0df431546589fb5be",
+    "semantic_hash": "dd6a412bb64d1cb0df431546589fb5be"
+  },
+  "frontend-liga/src/services/tournamentCosts.service.js": {
+    "mtime": 1786733139.5076876,
+    "seen": 1788289369.346463,
+    "ast_hash": "6a7bdb1834880f6236e6eb7d594adc11",
+    "semantic_hash": "6a7bdb1834880f6236e6eb7d594adc11"
+  },
+  "frontend-liga/src/services/tournaments.service.js": {
+    "mtime": 1787673433.789106,
+    "seen": 1788289369.346464,
+    "ast_hash": "90b47e60981701650872ecabc256b2c4",
+    "semantic_hash": "90b47e60981701650872ecabc256b2c4"
+  },
+  "frontend-liga/src/services/transfers.service.js": {
+    "mtime": 1774131092.026484,
+    "seen": 1788289369.3464653,
+    "ast_hash": "f4c0bbb4a894550d9b94e225b63aef97",
+    "semantic_hash": "f4c0bbb4a894550d9b94e225b63aef97"
+  },
+  "frontend-liga/src/services/transfersService.js": {
+    "mtime": 1786230479.319394,
+    "seen": 1788289369.3464663,
+    "ast_hash": "8ca486a43f042b3ca451198190ba7da6",
+    "semantic_hash": "8ca486a43f042b3ca451198190ba7da6"
+  },
+  "frontend-liga/src/services/venueScheduling.service.js": {
+    "mtime": 1786229573.883933,
+    "seen": 1788289369.3464675,
+    "ast_hash": "5127eebb5287e52f2911efc980875154",
+    "semantic_hash": "5127eebb5287e52f2911efc980875154"
+  },
+  "frontend-liga/src/services/venues.service.js": {
+    "mtime": 1786150572.9408033,
+    "seen": 1788289369.3464687,
+    "ast_hash": "00757629c79f794be7c99ff2cc8a3ebf",
+    "semantic_hash": "00757629c79f794be7c99ff2cc8a3ebf"
+  },
+  "frontend-liga/src/stores/auth.js": {
+    "mtime": 1787949574.320741,
+    "seen": 1788289369.3464699,
+    "ast_hash": "0a11a82e5c0ded311d57dc590abe2b56",
+    "semantic_hash": "0a11a82e5c0ded311d57dc590abe2b56"
+  },
+  "frontend-liga/src/stores/clubSeries.js": {
+    "mtime": 1786752896.7927818,
+    "seen": 1788289369.346471,
+    "ast_hash": "8392363654a8a8996c2602d3c0433f86",
+    "semantic_hash": "8392363654a8a8996c2602d3c0433f86"
+  },
+  "frontend-liga/src/stores/clubs.js": {
+    "mtime": 1786123308.4401484,
+    "seen": 1788289369.3464723,
+    "ast_hash": "abf6500dcea6fbae3c247fe7b4ed6d4d",
+    "semantic_hash": "abf6500dcea6fbae3c247fe7b4ed6d4d"
+  },
+  "frontend-liga/src/stores/matches.js": {
+    "mtime": 1787085418.1736064,
+    "seen": 1788289369.3464735,
+    "ast_hash": "d67b41f03d28bb162697201ea6ecf1bb",
+    "semantic_hash": "d67b41f03d28bb162697201ea6ecf1bb"
+  },
+  "frontend-liga/src/stores/notify.js": {
+    "mtime": 1787949627.139095,
+    "seen": 1788289369.3464751,
+    "ast_hash": "dca9c6799da4e2f7194050cf6263671e",
+    "semantic_hash": "dca9c6799da4e2f7194050cf6263671e"
+  },
+  "frontend-liga/src/stores/players.js": {
+    "mtime": 1786142251.689287,
+    "seen": 1788289369.3464763,
+    "ast_hash": "845adf6d5d70d16d7a73bc8fef3f3eda",
+    "semantic_hash": "845adf6d5d70d16d7a73bc8fef3f3eda"
+  },
+  "frontend-liga/src/stores/referees.js": {
+    "mtime": 1786145431.5945525,
+    "seen": 1788289369.3464773,
+    "ast_hash": "c565132772c43e3576b13396510db889",
+    "semantic_hash": "c565132772c43e3576b13396510db889"
+  },
+  "frontend-liga/src/stores/roster.js": {
+    "mtime": 1777561317.3182228,
+    "seen": 1788289369.3464787,
+    "ast_hash": "d89067f77fd72a9ddc448d84425b7355",
+    "semantic_hash": "d89067f77fd72a9ddc448d84425b7355"
+  },
+  "frontend-liga/src/stores/seasons.js": {
+    "mtime": 1787345292.5221555,
+    "seen": 1788289369.3464797,
+    "ast_hash": "3b4f7a4e7c5e6b4449bc146de99fac17",
+    "semantic_hash": "3b4f7a4e7c5e6b4449bc146de99fac17"
+  },
+  "frontend-liga/src/stores/tournaments.js": {
+    "mtime": 1787673449.6584918,
+    "seen": 1788289369.3464808,
+    "ast_hash": "40c343b4da99b29d281b74a7b915eaa1",
+    "semantic_hash": "40c343b4da99b29d281b74a7b915eaa1"
+  },
+  "frontend-liga/src/stores/venueScheduling.js": {
+    "mtime": 1786229589.8918595,
+    "seen": 1788289369.346482,
+    "ast_hash": "d9a61601868f617f87897ae0075eb06d",
+    "semantic_hash": "d9a61601868f617f87897ae0075eb06d"
+  },
+  "frontend-liga/src/stores/venues.js": {
+    "mtime": 1786150583.9792082,
+    "seen": 1788289369.3464832,
+    "ast_hash": "0475e6389340055bc110d250ebdc7471",
+    "semantic_hash": "0475e6389340055bc110d250ebdc7471"
+  },
+  "frontend-liga/src/styles/chart-config.js": {
+    "mtime": 1777557951.4866004,
+    "seen": 1788289369.3464842,
+    "ast_hash": "080f7e53b5efbded3400b60947d6c7fa",
+    "semantic_hash": "080f7e53b5efbded3400b60947d6c7fa"
+  },
+  "frontend-liga/src/utils/folio.js": {
+    "mtime": 1787334989.2441063,
+    "seen": 1788289369.3464856,
+    "ast_hash": "8886e2c1f38195e49e8cc00fd6cac5bc",
+    "semantic_hash": "8886e2c1f38195e49e8cc00fd6cac5bc"
+  },
+  "frontend-liga/src/views/AcceptInvite.vue": {
+    "mtime": 1786124958.3636186,
+    "seen": 1788289369.3464868,
+    "ast_hash": "3bb895e1f0a481d6f67590bab4c80da5",
+    "semantic_hash": "3bb895e1f0a481d6f67590bab4c80da5"
+  },
+  "frontend-liga/src/views/AcceptPlayerInvite.vue": {
+    "mtime": 1787949574.3227355,
+    "seen": 1788289369.346488,
+    "ast_hash": "a6413c697806568d3765d987286ed00e",
+    "semantic_hash": "a6413c697806568d3765d987286ed00e"
+  },
+  "frontend-liga/src/views/Bootstrap.vue": {
+    "mtime": 1768589305.110502,
+    "seen": 1788289369.3464894,
+    "ast_hash": "b00793d69d2427e8ec5491621760a8c1",
+    "semantic_hash": "b00793d69d2427e8ec5491621760a8c1"
+  },
+  "frontend-liga/src/views/CategoriesList.vue": {
+    "mtime": 1787949627.1410959,
+    "seen": 1788289369.3464906,
+    "ast_hash": "cbb1aab6c805f3876e2e94b3796f4e5a",
+    "semantic_hash": "cbb1aab6c805f3876e2e94b3796f4e5a"
+  },
+  "frontend-liga/src/views/ClubDetail.vue": {
+    "mtime": 1787861145.4356046,
+    "seen": 1788289369.3464918,
+    "ast_hash": "7a9ffc576aa5f7a2aff244fc0193a033",
+    "semantic_hash": "7a9ffc576aa5f7a2aff244fc0193a033"
+  },
+  "frontend-liga/src/views/ClubPlayers.vue": {
+    "mtime": 1787335000.178934,
+    "seen": 1788289369.346493,
+    "ast_hash": "5f78310a39be93f4b42b711e304b8f95",
+    "semantic_hash": "5f78310a39be93f4b42b711e304b8f95"
+  },
+  "frontend-liga/src/views/ClubSeries.vue": {
+    "mtime": 1787863377.3328428,
+    "seen": 1788289369.3464942,
+    "ast_hash": "54da6747b492ba7fd9c1b3615f190951",
+    "semantic_hash": "54da6747b492ba7fd9c1b3615f190951"
+  },
+  "frontend-liga/src/views/ClubsList.vue": {
+    "mtime": 1786751710.8335924,
+    "seen": 1788289369.3464954,
+    "ast_hash": "8d8ddd95c413605879bfbc1c5128f6f0",
+    "semantic_hash": "8d8ddd95c413605879bfbc1c5128f6f0"
+  },
+  "frontend-liga/src/views/ForgotPassword.vue": {
+    "mtime": 1786124958.551435,
+    "seen": 1788289369.3464966,
+    "ast_hash": "9c2cf4744751c17ff32a596f32253079",
+    "semantic_hash": "9c2cf4744751c17ff32a596f32253079"
+  },
+  "frontend-liga/src/views/Home.vue": {
+    "mtime": 1768592288.9512365,
+    "seen": 1788289369.3464978,
+    "ast_hash": "655cfb785222731cb10786a073550c56",
+    "semantic_hash": "655cfb785222731cb10786a073550c56"
+  },
+  "frontend-liga/src/views/Landing.vue": {
+    "mtime": 1786124031.107327,
+    "seen": 1788289369.3464987,
+    "ast_hash": "f16d3bc0b1313fd88b40a779aaeace31",
+    "semantic_hash": "f16d3bc0b1313fd88b40a779aaeace31"
+  },
+  "frontend-liga/src/views/LedgerView.vue": {
+    "mtime": 1787949627.1430962,
+    "seen": 1788289369.3465002,
+    "ast_hash": "e13fb8e9237e8a8a51e64093401ed3d9",
+    "semantic_hash": "e13fb8e9237e8a8a51e64093401ed3d9"
+  },
+  "frontend-liga/src/views/Login.vue": {
+    "mtime": 1787949574.3247385,
+    "seen": 1788289369.3465014,
+    "ast_hash": "513386f73f82a7be8aa7148b845e8f55",
+    "semantic_hash": "513386f73f82a7be8aa7148b845e8f55"
+  },
+  "frontend-liga/src/views/MatchControlSheet.vue": {
+    "mtime": 1787949627.1450968,
+    "seen": 1788289369.3465025,
+    "ast_hash": "e83303df506655fd226fe8ee4574880b",
+    "semantic_hash": "e83303df506655fd226fe8ee4574880b"
+  },
+  "frontend-liga/src/views/PlayerChangeClub.vue": {
+    "mtime": 1787949627.1460948,
+    "seen": 1788289369.346504,
+    "ast_hash": "e899ad4146171b6d8155a0c7745f5b02",
+    "semantic_hash": "e899ad4146171b6d8155a0c7745f5b02"
+  },
+  "frontend-liga/src/views/PlayerCreate.vue": {
+    "mtime": 1787335590.4170828,
+    "seen": 1788289369.3465052,
+    "ast_hash": "dc4815c2f73b2ea9b2dfc61667c39591",
+    "semantic_hash": "dc4815c2f73b2ea9b2dfc61667c39591"
+  },
+  "frontend-liga/src/views/PlayerDetail.vue": {
+    "mtime": 1787949574.3267384,
+    "seen": 1788289369.3465066,
+    "ast_hash": "1d1744323c3fa8b5bd63452d6ed637c1",
+    "semantic_hash": "1d1744323c3fa8b5bd63452d6ed637c1"
+  },
+  "frontend-liga/src/views/PlayerEdit.vue": {
+    "mtime": 1777582069.435362,
+    "seen": 1788289369.3465078,
+    "ast_hash": "0da29e88d8e37c2cdb97bb56b705f037",
+    "semantic_hash": "0da29e88d8e37c2cdb97bb56b705f037"
+  },
+  "frontend-liga/src/views/PlayerProfile.vue": {
+    "mtime": 1787949574.3277378,
+    "seen": 1788289369.3465087,
+    "ast_hash": "76ced0fba8caf397da349bfee5e90e55",
+    "semantic_hash": "76ced0fba8caf397da349bfee5e90e55"
+  },
+  "frontend-liga/src/views/PlayersImport.vue": {
+    "mtime": 1786751692.773484,
+    "seen": 1788289369.3465102,
+    "ast_hash": "54cf1a1e03b2fe77367b032719cb2a4d",
+    "semantic_hash": "54cf1a1e03b2fe77367b032719cb2a4d"
+  },
+  "frontend-liga/src/views/PlayersList.vue": {
+    "mtime": 1787335009.0231922,
+    "seen": 1788289369.3465114,
+    "ast_hash": "793d06659d1ecf62d943b8146dbebe8b",
+    "semantic_hash": "793d06659d1ecf62d943b8146dbebe8b"
+  },
+  "frontend-liga/src/views/RefereesList.vue": {
+    "mtime": 1787949627.1480956,
+    "seen": 1788289369.3465123,
+    "ast_hash": "d7041af61909e81aa5c39338d2a2ec06",
+    "semantic_hash": "d7041af61909e81aa5c39338d2a2ec06"
+  },
+  "frontend-liga/src/views/ResetPassword.vue": {
+    "mtime": 1786124958.630435,
+    "seen": 1788289369.3465137,
+    "ast_hash": "ef07ee59205c1c6cdd5bc69dfa4d122d",
+    "semantic_hash": "ef07ee59205c1c6cdd5bc69dfa4d122d"
+  },
+  "frontend-liga/src/views/RosterView.vue": {
+    "mtime": 1787949627.1490977,
+    "seen": 1788289369.3465147,
+    "ast_hash": "28e9040c3cd27b5d73989fea4fa84288",
+    "semantic_hash": "28e9040c3cd27b5d73989fea4fa84288"
+  },
+  "frontend-liga/src/views/SchedulesList.vue": {
+    "mtime": 1787949627.1520958,
+    "seen": 1788289369.346516,
+    "ast_hash": "033ac76d020c3510acf84501d3a28c18",
+    "semantic_hash": "033ac76d020c3510acf84501d3a28c18"
+  },
+  "frontend-liga/src/views/SeasonsList.vue": {
+    "mtime": 1787949627.153094,
+    "seen": 1788289369.346517,
+    "ast_hash": "e5ddfae6915c2ef2b5bff131a8e294e6",
+    "semantic_hash": "e5ddfae6915c2ef2b5bff131a8e294e6"
+  },
+  "frontend-liga/src/views/TournamentCosts.vue": {
+    "mtime": 1787949627.1560936,
+    "seen": 1788289369.3465183,
+    "ast_hash": "731b52fda38a3a97bf1bec4c98e596bd",
+    "semantic_hash": "731b52fda38a3a97bf1bec4c98e596bd"
+  },
+  "frontend-liga/src/views/TournamentDetail.vue": {
+    "mtime": 1787868378.9537258,
+    "seen": 1788289369.3465233,
+    "ast_hash": "6d78d2bf68523a6af58c89b6b96610d0",
+    "semantic_hash": "6d78d2bf68523a6af58c89b6b96610d0"
+  },
+  "frontend-liga/src/views/TournamentFairplay.vue": {
+    "mtime": 1787949574.329736,
+    "seen": 1788289369.3465247,
+    "ast_hash": "c127787fc1eabe99e53abcf84ce42323",
+    "semantic_hash": "c127787fc1eabe99e53abcf84ce42323"
+  },
+  "frontend-liga/src/views/TournamentFixture.vue": {
+    "mtime": 1786753065.2419763,
+    "seen": 1788289369.346526,
+    "ast_hash": "e932836d303b640cde2f8c2f41463ff0",
+    "semantic_hash": "e932836d303b640cde2f8c2f41463ff0"
+  },
+  "frontend-liga/src/views/TournamentStandings.vue": {
+    "mtime": 1787949574.330737,
+    "seen": 1788289369.3465269,
+    "ast_hash": "acb6751e89aa8e92207eb85f6a62d820",
+    "semantic_hash": "acb6751e89aa8e92207eb85f6a62d820"
+  },
+  "frontend-liga/src/views/TournamentTopScorers.vue": {
+    "mtime": 1787949574.3317375,
+    "seen": 1788289369.3465283,
+    "ast_hash": "9457fd41b43453730908e58e880afa50",
+    "semantic_hash": "9457fd41b43453730908e58e880afa50"
+  },
+  "frontend-liga/src/views/TournamentsList.vue": {
+    "mtime": 1787949627.1580958,
+    "seen": 1788289369.3465295,
+    "ast_hash": "b2bc43c5aa6e1e14f0c494088a95aca5",
+    "semantic_hash": "b2bc43c5aa6e1e14f0c494088a95aca5"
+  },
+  "frontend-liga/src/views/TransfersKpiDashboard.vue": {
+    "mtime": 1786230512.9276588,
+    "seen": 1788289369.346531,
+    "ast_hash": "479b18c110043d262b41872cc60f5ecc",
+    "semantic_hash": "479b18c110043d262b41872cc60f5ecc"
+  },
+  "frontend-liga/src/views/TransfersView.vue": {
+    "mtime": 1787949627.1620953,
+    "seen": 1788289369.3465319,
+    "ast_hash": "e98434522c44026e231d5e8dff9e9ed3",
+    "semantic_hash": "e98434522c44026e231d5e8dff9e9ed3"
+  },
+  "frontend-liga/src/views/VenuesList.vue": {
+    "mtime": 1788283683.0068612,
+    "seen": 1788289369.346533,
+    "ast_hash": "70e8ab3fbe7b610f4123ac64d16c8d8e",
+    "semantic_hash": "70e8ab3fbe7b610f4123ac64d16c8d8e"
+  },
+  "frontend-liga/vite.config.js": {
+    "mtime": 1768588183.666796,
+    "seen": 1788289369.3465343,
+    "ast_hash": "26be88be6ee9abfd55310126e9d4163d",
+    "semantic_hash": "26be88be6ee9abfd55310126e9d4163d"
+  }
+}
