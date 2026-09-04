@@ -10,6 +10,11 @@
  *   - Operar sobre lg_club_series y el campo series_id de lg_club_rosters
  *   - Verificar que el roster del jugador pertenece al club de la serie
  *     antes de asignar
+ *   - La edad mínima y el modo de cálculo ("Cálculo de edad": edad cumplida
+ *     vs año de nacimiento) son configuración de la CATEGORÍA de la serie
+ *     (lg_categories.age_from/age_restriction — ver categories_specialist.js),
+ *     NO de la serie ni del club (T-20260904). CREATE_SERIES/UPDATE_SERIES
+ *     ya no reciben ni escriben minAge/ageRestriction.
  *
  * DON'T:
  *   - No crear registros de roster (usar clubs_specialist.ADD_ROSTER) —
@@ -30,7 +35,7 @@ const CAPABILITIES = [
   'ASSIGN_PLAYER', 'UNASSIGN_PLAYER', 'GET_SERIES_ROSTER',
 ];
 
-const SERIES_SELECT = '*, club:lg_clubs(id,name,short_name,logo_url,org_id)';
+const SERIES_SELECT = '*, club:lg_clubs(id,name,short_name,logo_url,org_id), category:lg_categories(id,name,color,serie,gender,age_from,age_to,age_restriction)';
 
 // Edad cumplida: años reales, considerando si ya pasó el cumpleaños de este año.
 function exactAge(birthDate) {
@@ -84,10 +89,9 @@ export class ClubSeriesSpecialist extends Skill {
       },
       checklist: [
         'CREATE_SERIES valida clubId/name',
-        'minAge, si viene, es un entero entre 1 y 100 (constraint lg_club_series_min_age_check)',
-        'ageRestriction=true exige edad cumplida (edad real >= minAge); false calcula elegibilidad por año de nacimiento parametrizado en minAge',
         'ASSIGN_PLAYER verifica que el jugador tiene roster ACTIVE en el club de la serie',
-        'ASSIGN_PLAYER rechaza con AGE_NOT_ELIGIBLE si la edad del jugador (calculada según age_restriction) es menor a min_age de la serie',
+        'ASSIGN_PLAYER resuelve edad mínima/modo de cálculo desde series.category (lg_categories.age_from/age_restriction), no desde la serie',
+        'ASSIGN_PLAYER rechaza con AGE_NOT_ELIGIBLE si la edad del jugador (calculada según category.age_restriction) es menor a category.age_from',
         'ASSIGN_PLAYER setea series_status = INSCRITO; UNASSIGN_PLAYER lo limpia junto con series_id (no toca el status ACTIVE/INACTIVE del roster del club)',
         'DELETE_SERIES no rompe partidos ya jugados (FK ON DELETE SET NULL en lg_matches)',
       ],
@@ -152,7 +156,25 @@ export class ClubSeriesSpecialist extends Skill {
     const { data: seriesList, error } = await query;
     if (error) return createSkillResult({ success: false, errorCode: 'LIST_SERIES_FAILED', errorMessage: error.message });
 
-    return createSkillResult({ success: true, data: { seriesList } });
+    const seriesIds = (seriesList ?? []).map((series) => series.id);
+    let counts = new Map();
+    if (seriesIds.length > 0) {
+      const { data: registrations, error: registrationsError } = await db
+        .from('lg_tournament_teams').select('series_id').in('series_id', seriesIds);
+      if (registrationsError) {
+        console.error('[club_series] registration counts failed:', registrationsError.message);
+        return createSkillResult({ success: false, errorCode: 'LIST_SERIES_FAILED', errorMessage: 'No fue posible listar las series' });
+      }
+      counts = (registrations ?? []).reduce((map, row) => {
+        map.set(row.series_id, (map.get(row.series_id) ?? 0) + 1);
+        return map;
+      }, new Map());
+    }
+    const decorated = (seriesList ?? []).map((series) => {
+      const registrationCount = counts.get(series.id) ?? 0;
+      return { ...series, registration_count: registrationCount, can_delete: registrationCount === 0 };
+    });
+    return createSkillResult({ success: true, data: { seriesList: decorated } });
   }
 
   async _getSeries({ seriesId }, db, userId) {
@@ -169,7 +191,7 @@ export class ClubSeriesSpecialist extends Skill {
     return createSkillResult({ success: true, data: { series } });
   }
 
-  async _createSeries({ clubId, name, description, categoryId, minAge, ageRestriction, active }, db, userId) {
+  async _createSeries({ clubId, name, description, categoryId, active }, db, userId) {
     if (!clubId || !name) {
       return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'clubId y name son requeridos' });
     }
@@ -186,9 +208,7 @@ export class ClubSeriesSpecialist extends Skill {
         name,
         description: description ?? null,
         category_id: categoryId ?? null,
-        min_age: minAge ?? null,
-        age_restriction: ageRestriction ?? false,
-        active: active ?? true,
+        active: true,
       })
       .select(SERIES_SELECT)
       .single();
@@ -197,7 +217,7 @@ export class ClubSeriesSpecialist extends Skill {
     return createSkillResult({ success: true, data: { series } });
   }
 
-  async _updateSeries({ seriesId, name, description, categoryId, minAge, ageRestriction, active }, db, userId) {
+  async _updateSeries({ seriesId, name, description, categoryId, active }, db, userId) {
     const { data: existing } = await db.from('lg_club_series').select('club_id').eq('id', seriesId).maybeSingle();
     if (!existing) {
       return createSkillResult({ success: false, errorCode: 'SERIES_NOT_FOUND', errorMessage: 'Serie no encontrada' });
@@ -212,8 +232,6 @@ export class ClubSeriesSpecialist extends Skill {
     if (name !== undefined) patch.name = name;
     if (description !== undefined) patch.description = description;
     if (categoryId !== undefined) patch.category_id = categoryId;
-    if (minAge !== undefined) patch.min_age = minAge;
-    if (ageRestriction !== undefined) patch.age_restriction = ageRestriction;
     if (active !== undefined) patch.active = active;
 
     const { data: series, error } = await db
@@ -234,8 +252,26 @@ export class ClubSeriesSpecialist extends Skill {
       return createSkillResult({ success: false, errorCode: accessError, errorMessage: 'No tienes permisos para eliminar esta serie' });
     }
 
+    const { count: registrationCount, error: registrationError } = await db
+      .from('lg_tournament_teams').select('id', { count: 'exact', head: true }).eq('series_id', seriesId);
+    if (registrationError) {
+      console.error('[club_series] registration precheck failed:', registrationError.message);
+      return createSkillResult({ success: false, errorCode: 'DELETE_SERIES_FAILED', errorMessage: 'No fue posible validar si la serie puede eliminarse' });
+    }
+    if ((registrationCount ?? 0) > 0) {
+      return createSkillResult({
+        success: false,
+        errorCode: 'SERIES_REGISTERED_IN_TOURNAMENT',
+        errorMessage: 'La serie no puede eliminarse porque está inscrita en un torneo',
+      });
+    }
+
     const { error } = await db.from('lg_club_series').delete().eq('id', seriesId);
-    if (error) return createSkillResult({ success: false, errorCode: 'DELETE_SERIES_FAILED', errorMessage: error.message });
+    if (error) {
+      const code = error.code === '23503' ? 'SERIES_REGISTERED_IN_TOURNAMENT' : 'DELETE_SERIES_FAILED';
+      if (code === 'DELETE_SERIES_FAILED') console.error('[club_series] delete failed:', error.message);
+      return createSkillResult({ success: false, errorCode: code, errorMessage: code === 'SERIES_REGISTERED_IN_TOURNAMENT' ? 'La serie no puede eliminarse porque está inscrita en un torneo' : 'No fue posible eliminar la serie' });
+    }
 
     return createSkillResult({ success: true, data: { deleted: true, seriesId } });
   }
@@ -267,7 +303,7 @@ export class ClubSeriesSpecialist extends Skill {
       return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'seriesId y playerId son requeridos' });
     }
 
-    const { data: series } = await db.from('lg_club_series').select('club_id, min_age, age_restriction').eq('id', seriesId).maybeSingle();
+    const { data: series } = await db.from('lg_club_series').select('club_id, category:lg_categories(age_from, age_restriction)').eq('id', seriesId).maybeSingle();
     if (!series) return createSkillResult({ success: false, errorCode: 'SERIES_NOT_FOUND', errorMessage: 'Serie no encontrada' });
 
     const accessError = await assertClubAccess(series.club_id, userId, db);
@@ -287,14 +323,19 @@ export class ClubSeriesSpecialist extends Skill {
       return createSkillResult({ success: false, errorCode: 'PLAYER_NOT_IN_CLUB', errorMessage: 'El jugador no tiene un roster activo en el club de esta serie' });
     }
 
-    if (series.min_age) {
-      const age = computePlayerAge(roster.player?.birth_date, series.age_restriction);
-      if (age !== null && age < series.min_age) {
-        const modo = series.age_restriction ? 'edad cumplida' : 'año de nacimiento';
+    // La edad mínima y el modo de cálculo son configuración de la CATEGORÍA
+    // de la serie (lg_categories.age_from/age_restriction), no de la serie
+    // ni del club — dos series de clubes distintos en la misma categoría
+    // comparten siempre la misma regla.
+    const minAge = series.category?.age_from;
+    if (minAge) {
+      const age = computePlayerAge(roster.player?.birth_date, series.category?.age_restriction);
+      if (age !== null && age < minAge) {
+        const modo = series.category?.age_restriction ? 'edad cumplida' : 'año de nacimiento';
         return createSkillResult({
           success: false,
           errorCode: 'AGE_NOT_ELIGIBLE',
-          errorMessage: `El jugador no cumple la edad mínima de la serie (${series.min_age}, por ${modo}). Edad calculada: ${age}.`,
+          errorMessage: `El jugador no cumple la edad mínima de la categoría (${minAge}, por ${modo}). Edad calculada: ${age}.`,
         });
       }
     }

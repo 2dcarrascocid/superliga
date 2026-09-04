@@ -179,9 +179,11 @@
                     </span>
                   </td>
                   <td>
-                    <button class="btn btn-sm btn-secondary" @click="goToDetail(club.id)">
-                      Ver Detalle
-                    </button>
+                    <ActionsMenu>
+                      <button class="btn btn-sm btn-secondary" @click="goToDetail(club.id)">
+                        Ver Detalle
+                      </button>
+                    </ActionsMenu>
                   </td>
                 </tr>
               </tbody>
@@ -294,6 +296,7 @@ import { useClubsStore } from '../stores/clubs';
 import { useAuthStore } from '../stores/auth';
 import { useNotifyStore } from '../stores/notify';
 import { uploadImage } from '../services/cloudinary.service';
+import ActionsMenu from '../components/ActionsMenu.vue';
 
 const router = useRouter();
 const { items, loading, error, fetchClubs, createOrUpdateClub } = useClubsStore();

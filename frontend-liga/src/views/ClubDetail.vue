@@ -75,7 +75,8 @@
                   <th>Folio</th>
                   <th>Foto</th>
                   <th>Nombre</th>
-                  <th>Categoría</th>
+                  <th>Edad</th>
+                  <th>Categoría / Serie</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -88,33 +89,32 @@
                     </div>
                   </td>
                   <td>{{ item.player?.first_name }} {{ item.player?.last_name }}</td>
+                  <td>{{ getPlayerAge(item) ?? '—' }}</td>
                   <td>
                     <span
-                      v-if="getPlayerCategory(item.player?.birth_date)"
+                      v-if="getPlayerSeriesBadge(item)"
                       class="badge"
-                      :style="{ backgroundColor: getPlayerCategory(item.player?.birth_date).color, color: '#fff' }"
+                      :style="{ backgroundColor: getPlayerSeriesBadge(item).color, color: '#fff' }"
                     >
-                      {{ getPlayerCategory(item.player?.birth_date).name }}
+                      {{ getPlayerSeriesBadge(item).label }}
                     </span>
-                    <span v-else class="text-muted">—</span>
+                    <span v-else class="text-muted">Sin serie asignada</span>
                   </td>
                   <td>
-                    <div class="flex gap-sm">
+                    <ActionsMenu>
                       <button
                         class="btn btn-sm btn-secondary"
                         @click="$router.push(`/players/${item.player_id}`)"
-                        title="Ver detalle"
                       >
-                        Ver
+                        Ver detalle
                       </button>
                       <button
                         class="btn btn-sm btn-secondary"
                         @click="$router.push(`/players/${item.player_id}/edit`)"
-                        title="Editar"
                       >
                         Editar
                       </button>
-                    </div>
+                    </ActionsMenu>
                   </td>
                 </tr>
               </tbody>
@@ -197,13 +197,14 @@
                     {{ item.valid_to ? formatDate(item.valid_to) : '—' }}
                   </td>
                   <td>
-                    <button
-                      class="btn btn-sm btn-secondary"
-                      @click="$router.push(`/players/${item.player_id}`)"
-                      title="Ver detalle"
-                    >
-                      Ver
-                    </button>
+                    <ActionsMenu>
+                      <button
+                        class="btn btn-sm btn-secondary"
+                        @click="$router.push(`/players/${item.player_id}`)"
+                      >
+                        Ver detalle
+                      </button>
+                    </ActionsMenu>
                   </td>
                 </tr>
               </tbody>
@@ -400,13 +401,12 @@
                 </td>
                 <td>{{ formatDate(t.created_at) }}</td>
                 <td>
-                  <button
-                    v-if="t.status === 'ENVIADO'"
-                    class="btn btn-sm btn-danger"
-                    @click="cancelar(t)"
-                  >
-                    Cancelar
-                  </button>
+                  <ActionsMenu v-if="t.status === 'ENVIADO'">
+                    <button class="btn btn-sm btn-danger" @click="cancelar(t)">
+                      Cancelar
+                    </button>
+                  </ActionsMenu>
+                  <span v-else class="text-muted">—</span>
                 </td>
               </tr>
             </tbody>
@@ -438,10 +438,11 @@
                 </td>
                 <td>{{ formatDate(t.created_at) }}</td>
                 <td>
-                  <div v-if="t.status === 'ENVIADO'" class="flex gap-sm">
+                  <ActionsMenu v-if="t.status === 'ENVIADO'">
                     <button class="btn btn-sm btn-success" @click="aceptar(t)">Aceptar</button>
                     <button class="btn btn-sm btn-danger"  @click="rechazar(t)">Rechazar</button>
-                  </div>
+                  </ActionsMenu>
+                  <span v-else class="text-muted">—</span>
                 </td>
               </tr>
             </tbody>
@@ -505,6 +506,7 @@ import { computed, onMounted, ref, reactive } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useClubsStore } from '../stores/clubs';
 import { usePlayersStore } from '../stores/players';
+import { useClubSeriesStore } from '../stores/clubSeries';
 import { useAuthStore } from '../stores/auth';
 import { useNotifyStore } from '../stores/notify';
 import { uploadImage } from '../services/cloudinary.service';
@@ -513,11 +515,13 @@ import * as transfersService  from '../services/transfers.service.js';
 import { formatFolio } from '../utils/folio.js';
 import LoadingState from '../components/LoadingState.vue';
 import ClubHeader from '../components/ClubHeader.vue';
+import ActionsMenu from '../components/ActionsMenu.vue';
 
 const route  = useRoute();
 const router = useRouter();
 const { current, users, admins, loading, error, fetchClubById, addUserToClub, removeUserFromClub, createOrUpdateClub, fetchClubAdmins, inviteAdmin, removeAdmin } = useClubsStore();
 const playersStore = usePlayersStore();
+const { items: clubSeriesItems, fetchClubSeries } = useClubSeriesStore();
 const authStore    = useAuthStore();
 const { notifySuccess, notifyError, confirm } = useNotifyStore();
 
@@ -673,6 +677,45 @@ const getPlayerCategory = (birthDate) => {
     const toOk   = cat.age_to   == null || age <= cat.age_to;
     return fromOk && toOk;
   }) ?? null;
+};
+
+// ── Edad / Categoría-Serie real de la tabla "Jugadores del Club" ──────
+// A diferencia de getPlayerCategory (que arriba estima una categoría
+// "elegible" por rango de edad, usada solo para el filtro), acá se muestra
+// la SERIE a la que el jugador está realmente asignado (roster.series_id) y
+// su edad se calcula con el criterio configurado en la CATEGORÍA de esa
+// serie ("Cálculo de edad": edad cumplida si category.age_restriction=true,
+// por año de nacimiento si no — la edad mínima y el modo de cálculo son
+// configuración de categoría, no de serie ni de club; mismo cálculo que
+// SeriesRosterDetail.vue y que el backend en club_series_specialist.js).
+const seriesById = computed(() => new Map(clubSeriesItems.value.map(s => [s.id, s])));
+
+const getAssignedSeries = (item) => item.series_id ? seriesById.value.get(item.series_id) ?? null : null;
+
+const exactAge = (birthDate) => {
+  const b = new Date(birthDate);
+  const today = new Date();
+  let age = today.getFullYear() - b.getFullYear();
+  const hadBirthdayThisYear = today.getMonth() > b.getMonth()
+    || (today.getMonth() === b.getMonth() && today.getDate() >= b.getDate());
+  if (!hadBirthdayThisYear) age--;
+  return age;
+};
+const ageByBirthYear = (birthDate) => new Date().getFullYear() - new Date(birthDate).getFullYear();
+
+const getPlayerAge = (item) => {
+  const birthDate = item.player?.birth_date;
+  if (!birthDate) return null;
+  const series = getAssignedSeries(item);
+  return series?.category?.age_restriction ? exactAge(birthDate) : ageByBirthYear(birthDate);
+};
+
+// Badge de la tabla: nombre de la serie asignada, con el color de su
+// categoría (ya viene incluida en cada serie vía el join de LIST_SERIES).
+const getPlayerSeriesBadge = (item) => {
+  const series = getAssignedSeries(item);
+  if (!series) return null;
+  return { label: series.name, color: series.category?.color || '#6366f1' };
 };
 
 const fetchPlayers = async (token = null) => {
@@ -959,6 +1002,7 @@ onMounted(async () => {
       fetchClubById(route.params.clubId).then(syncEditForm),
       fetchPlayers(),
       fetchCategories(),
+      fetchClubSeries(route.params.clubId),
       fetchTransfers(),
       fetchAllClubs(),
     ]);

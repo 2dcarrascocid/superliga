@@ -1,7 +1,8 @@
 <template>
   <div id="app">
+    <a class="skip-link" href="#main-content">Saltar al contenido principal</a>
     <Navbar v-if="isAuthenticated" />
-    <main :class="{ 'with-navbar': isAuthenticated }">
+    <main id="main-content" :class="{ 'with-navbar': isAuthenticated }">
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <component :is="Component" />
@@ -24,12 +25,12 @@ const isAuthenticated = computed(() => authStore.isAuthenticated.value);
 
 <style scoped>
 #app {
-  min-height: 100vh;
+  min-height: 100dvh;
 }
 
 main {
-  min-height: 100vh;
-  transition: all var(--transition-base);
+  min-height: 100dvh;
+  transition: opacity var(--transition-base);
 }
 
 main.with-navbar {
@@ -50,5 +51,12 @@ main.with-navbar {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-20px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-enter-active,
+  .fade-leave-active { transition: none; }
+  .fade-enter-from,
+  .fade-leave-to { transform: none; }
 }
 </style>

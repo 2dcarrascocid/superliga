@@ -131,13 +131,14 @@
                   </span>
                 </td>
                 <td>
-                  <button
-                    v-if="entry.status !== 'PAGADO'"
-                    class="btn btn-sm btn-secondary"
-                    @click="openPaymentPrompt(entry)"
-                  >
-                    Registrar pago
-                  </button>
+                  <ActionsMenu v-if="entry.status !== 'PAGADO'">
+                    <button
+                      class="btn btn-sm btn-secondary"
+                      @click="openPaymentPrompt(entry)"
+                    >
+                      Registrar pago
+                    </button>
+                  </ActionsMenu>
                 </td>
               </tr>
             </tbody>
@@ -237,6 +238,7 @@ import { getClubs } from '../services/clubs.service.js';
 import { getClubSeries } from '../services/clubSeries.service.js';
 import { getLedgerEntries, createLedgerEntry, recordPayment, getPaymentStats } from '../services/clubFinance.service.js';
 import LoadingState from '../components/LoadingState.vue';
+import ActionsMenu from '../components/ActionsMenu.vue';
 
 const authStore = useAuthStore();
 const { notifySuccess, notifyError, prompt } = useNotifyStore();

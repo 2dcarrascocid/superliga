@@ -1,11 +1,9 @@
-# --- Copiado de .gitignore (mantener sincronizado, especialmente .env) ---
-.env
-node_modules/
-# (pegá acá el resto de las líneas reales de tu .gitignore)
-
-# --- Excepción: sí indexar el código de los repos hijos, aunque
-#     .gitignore los excluya de git por otra razón ---
-!backend-liga/
+tools/dev-toolkit/
+CLAUDE.md
+GEMINI.md
+AGENTS.md
+.claude/
+.gemini/
+.codex/
 !backend-liga/**
-!frontend-liga/
 !frontend-liga/**

@@ -1,6 +1,10 @@
 import apiClient from '../api/index.js';
 
 export const getTournaments = (params) => apiClient.get('/tournaments', { params });
+export const getClubActiveTournaments = (clubId, params) => apiClient.get(`/clubs/${clubId}/active-tournaments`, { params });
+export const getClubTournamentDetail = (clubId, tournamentId) => apiClient.get(`/clubs/${clubId}/tournaments/${tournamentId}`);
+export const getSeriesTournamentEligibility = (clubId, seriesId, tournamentId) => apiClient.get(`/clubs/${clubId}/series/${seriesId}/tournaments/${tournamentId}/eligibility`);
+export const registerSeriesInTournament = (clubId, seriesId, tournamentId, data = {}) => apiClient.post(`/clubs/${clubId}/series/${seriesId}/tournaments/${tournamentId}/registration`, data);
 export const createTournament = (data) => apiClient.post('/tournaments', data);
 export const getTournamentById = (tournamentId) => apiClient.get(`/tournaments/${tournamentId}`);
 export const updateTournament = (tournamentId, data) => apiClient.patch(`/tournaments/${tournamentId}`, data);

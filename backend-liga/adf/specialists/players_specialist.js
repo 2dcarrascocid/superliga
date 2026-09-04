@@ -19,11 +19,15 @@
  * Reglas de folio:
  *   - El club define folio_start, folio_end, max_players en lg_clubs
  *   - Solo los rosters ACTIVE cuentan como "folio ocupado" — los INACTIVE liberan su folio
- *   - Los rosters ACTIVE de jugadores veteranos (55+ años, ver lib/veteran_folio.js) también
- *     liberan su folio numérico — puede reasignarse a otro jugador del club
- *   - Al crear jugador: buscar primer folio libre en [folio_start, folio_end] entre rosters ACTIVE
- *     no-veteranos
- *   - Si se provee club_folio manual: validar rango y que no esté en uso en roster ACTIVE no-veterano
+ *   - Los jugadores veteranos (55+ años, ver lib/veteran_folio.js) conservan su folio numérico
+ *     mientras su roster siga ACTIVE — solo cambia el DISPLAY ("D-<folio>", ver decorateFolio),
+ *     el número no se libera para reasignarse a otro jugador (la constraint UNIQUE(club_id,
+ *     club_folio) de lg_club_rosters no admite dos rosters ACTIVE con el mismo folio, veterano
+ *     o no — intentar "liberarlo" mientras sigue activo revienta esa constraint en cuanto un
+ *     club tiene 2+ veteranos activos)
+ *   - Al crear jugador: buscar primer folio libre en [folio_start, folio_end] entre TODOS los
+ *     rosters ACTIVE del club
+ *   - Si se provee club_folio manual: validar rango y que no esté en uso en ningún roster ACTIVE
  *   - Errores: ROSTER_FULL | NO_FOLIO_AVAILABLE | FOLIO_OUT_OF_RANGE | FOLIO_IN_USE
  *
  * Capabilities:
@@ -56,7 +60,7 @@ import { Skill } from '../contracts/skill_contract.js';
 import { createSkillResult } from '../contracts/task_schema.js';
 import { encodeNext, decodeNext } from '../../utils/pagination.js';
 import { assertClubAccess } from './lib/club_access.js';
-import { decorateFolio, isVeteranByBirthDate } from './lib/veteran_folio.js';
+import { decorateFolio } from './lib/veteran_folio.js';
 import crypto from 'crypto';
 import { sendPlayerInviteEmail } from '../../utils/mailer.js';
 
@@ -178,16 +182,12 @@ export class PlayersSpecialist extends Skill {
 
     const { data: usedRows } = await db
       .from('lg_club_rosters')
-      .select('club_folio, player:lg_players!inner(birth_date)')
+      .select('club_folio')
       .eq('club_id', clubId)
       .eq('status', 'ACTIVE')
       .not('club_folio', 'is', null);
 
-    const used = new Set(
-      (usedRows ?? [])
-        .filter(r => !isVeteranByBirthDate(r.player?.birth_date))
-        .map(r => r.club_folio)
-    );
+    const used = new Set((usedRows ?? []).map(r => r.club_folio));
 
     return { club, folioStart, folioEnd, maxPlayers, activeCount: activeCount ?? 0, used };
   }
@@ -751,7 +751,7 @@ export class PlayersSpecialist extends Skill {
     if (roster?.series_id) {
       const { data: seriesRow } = await db
         .from('lg_club_series')
-        .select('id, name, description, category_id, min_age, age_restriction, active')
+        .select('id, name, description, category_id, active, category:lg_categories(id,name,age_from,age_to,age_restriction)')
         .eq('id', roster.series_id)
         .maybeSingle();
       series = seriesRow || null;

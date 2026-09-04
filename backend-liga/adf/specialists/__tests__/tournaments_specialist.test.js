@@ -8,6 +8,119 @@ function run(operation, payload, db, userId) {
   return specialist.execute({ input: { operation, payload, db, userId } });
 }
 
+test('GET_SERIES_TOURNAMENT_ELIGIBILITY informa razones estables y no confía en club_id del cliente', async () => {
+  const db = createMockDb({
+    lg_clubs: [
+      { data: { org_id: 'org-1' } },
+      { data: { id: 'club-1', org_id: 'org-1' } },
+    ],
+    lg_org_users: [{ data: { role: 'ADMIN' } }],
+    lg_club_users: [{ data: null }],
+    lg_club_series: [{ data: { id: 'series-1', club_id: 'club-1', category_id: 'cat-2', active: false } }],
+    lg_tournaments: [{ data: { id: 't-1', org_id: 'org-1', season_id: 'season-1', status: 'REGISTRATION', category_id: 'cat-1' } }],
+    lg_seasons: [{ data: { active: true } }],
+    lg_tournament_teams: [{ data: null }],
+  });
+  const result = await run('GET_SERIES_TOURNAMENT_ELIGIBILITY', {
+    clubId: 'club-1', seriesId: 'series-1', tournamentId: 't-1',
+  }, db, 'admin-1');
+  assert.equal(result.success, true);
+  assert.equal(result.data.eligibility.eligible, false);
+  assert.deepEqual(result.data.eligibility.reasons, ['SERIES_NOT_ACTIVE', 'CATEGORY_MISMATCH']);
+});
+
+test('REGISTER_CLUB_SERIES_ATOMIC inscribe club + cobro + serie (sin depender de la RPC restringida a service_role) e ignora dueDate del cliente', async () => {
+  let clubUpsertPayload;
+  const db = createMockDb({
+    lg_clubs: [
+      { data: { org_id: 'org-1' } },
+      { data: { id: 'club-1', org_id: 'org-1' } },
+    ],
+    lg_org_users: [{ data: { role: 'ADMIN' } }],
+    lg_club_users: [{ data: null }],
+    lg_club_series: [{ data: { id: 'series-1', club_id: 'club-1', category_id: 'cat-1', active: true } }],
+    lg_tournaments: [{ data: { id: 't-1', org_id: 'org-1', season_id: 'season-1', status: 'REGISTRATION', category_id: 'cat-1', inscription_fee: 15000 } }],
+    lg_seasons: [{ data: { active: true } }],
+    lg_tournament_teams: [
+      { data: null }, // ALREADY_REGISTERED check en _loadEligibility
+      { data: { id: 'team-1' }, error: null }, // upsert de REGISTER_TEAM
+    ],
+    lg_tournament_clubs: [{ data: { id: 'tc-1' }, error: null }],
+    lg_ledger_entries: [{ data: { id: 'ledger-1' }, error: null }],
+  }, { onInsert: (table, payload) => { if (table === 'lg_tournament_clubs') clubUpsertPayload = payload; } });
+  const result = await run('REGISTER_CLUB_SERIES_ATOMIC', {
+    clubId: 'club-1', seriesId: 'series-1', tournamentId: 't-1', dueDate: '2026-09-30',
+  }, db, 'admin-1');
+  assert.equal(result.success, true);
+  assert.equal(result.data.registration.tournamentClubId, 'tc-1');
+  assert.equal(result.data.registration.teamId, 'team-1');
+  assert.equal(clubUpsertPayload.registered_by, 'admin-1');
+  assert.equal('due_date' in clubUpsertPayload, false); // dueDate del payload del cliente nunca llega a la inscripción del club
+});
+
+test('LIST_ACTIVE_TOURNAMENTS_FOR_CLUB agrega teams_count y clubs_count reales en dos consultas agrupadas', async () => {
+  const db = createMockDb({
+    lg_clubs: [{ data: { org_id: 'org-1' } }, { data: { org_id: 'org-1' } }],
+    lg_org_users: [{ data: { role: 'ADMIN' } }],
+    lg_club_users: [{ data: null }],
+    lg_tournaments: [{ data: [{ id: 't-1' }, { id: 't-2' }], error: null }],
+    lg_tournament_teams: [{ data: [{ tournament_id: 't-1' }, { tournament_id: 't-1' }] }],
+    lg_tournament_clubs: [{ data: [{ tournament_id: 't-1' }, { tournament_id: 't-2' }] }],
+  });
+  const result = await run('LIST_ACTIVE_TOURNAMENTS_FOR_CLUB', { clubId: 'club-1' }, db, 'admin-1');
+  assert.equal(result.success, true);
+  assert.deepEqual(result.data.tournaments.map(({ id, teams_count, clubs_count }) => ({ id, teams_count, clubs_count })), [
+    { id: 't-1', teams_count: 2, clubs_count: 1 },
+    { id: 't-2', teams_count: 0, clubs_count: 1 },
+  ]);
+});
+
+test('GET_CLUB_TOURNAMENT_DETAIL no expone montos ni identificador del cobro', async () => {
+  const db = createMockDb({
+    lg_clubs: [{ data: { org_id: 'org-1' } }, { data: { org_id: 'org-1' } }],
+    lg_org_users: [{ data: null }],
+    lg_club_users: [{ data: { role: 'ADMIN_CLUB' } }],
+    lg_tournaments: [{ data: { id: 't-1', org_id: 'org-1', status: 'REGISTRATION' } }],
+    lg_tournament_teams: [{ data: [{ id: 'team-1', status: 'ACTIVE', series: { club_id: 'club-2' } }], error: null }],
+    lg_ledger_entries: [{ data: [{ id: 'secret-ledger', club_id: 'club-2', amount: 10000, paid_amount: 0, due_date: null }] }],
+  });
+  const result = await run('GET_CLUB_TOURNAMENT_DETAIL', { clubId: 'club-1', tournamentId: 't-1' }, db, 'club-admin');
+  assert.equal(result.success, true);
+  assert.equal(result.data.participants[0].inscription_status, 'PENDIENTE');
+  assert.equal('inscription_charge' in result.data.participants[0], false);
+  assert.equal(JSON.stringify(result.data).includes('secret-ledger'), false);
+  assert.equal(JSON.stringify(result.data).includes('10000'), false);
+});
+
+test('GET_CLUB_TOURNAMENT_DETAIL bloquea torneo de otra organización', async () => {
+  const db = createMockDb({
+    lg_clubs: [{ data: { org_id: 'org-1' } }, { data: { org_id: 'org-1' } }],
+    lg_org_users: [{ data: { role: 'ADMIN' } }],
+    lg_club_users: [{ data: null }],
+    lg_tournaments: [{ data: { id: 't-other', org_id: 'org-2', status: 'REGISTRATION' } }],
+  });
+  const result = await run('GET_CLUB_TOURNAMENT_DETAIL', { clubId: 'club-1', tournamentId: 't-other' }, db, 'admin-1');
+  assert.equal(result.success, false);
+  assert.equal(result.error.code, 'CLUB_ORG_MISMATCH');
+});
+
+test('REGISTER_CLUB_SERIES_ATOMIC no filtra error DB al cliente', async () => {
+  const db = createMockDb({
+    lg_clubs: [{ data: { org_id: 'org-1' } }, { data: { id: 'club-1', org_id: 'org-1' } }],
+    lg_org_users: [{ data: { role: 'ADMIN' } }],
+    lg_club_users: [{ data: null }],
+    lg_club_series: [{ data: { id: 'series-1', club_id: 'club-1', category_id: 'cat-1', active: true } }],
+    lg_tournaments: [{ data: { id: 't-1', org_id: 'org-1', season_id: 'season-1', status: 'REGISTRATION', category_id: 'cat-1', inscription_fee: 15000 } }],
+    lg_seasons: [{ data: { active: true } }],
+    lg_tournament_teams: [{ data: null }],
+    lg_tournament_clubs: [{ data: null, error: new Error('secret database detail') }],
+  });
+  const result = await run('REGISTER_CLUB_SERIES_ATOMIC', { clubId: 'club-1', seriesId: 'series-1', tournamentId: 't-1' }, db, 'admin-1');
+  assert.equal(result.success, false);
+  assert.equal(result.error.code, 'REGISTER_SERIES_FAILED');
+  assert.equal(result.error.message.includes('secret database detail'), false);
+});
+
 // ── CREATE_TOURNAMENT: inscriptionFee obligatorio + autorización ───────────
 
 test('CREATE_TOURNAMENT rechaza sin inscriptionFee (MISSING_FIELDS) — sin llegar a tocar la DB', async () => {

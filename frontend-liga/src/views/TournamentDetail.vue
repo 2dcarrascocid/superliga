@@ -109,7 +109,7 @@
                 </span>
               </td>
               <td>
-                <div class="flex gap-sm">
+                <ActionsMenu>
                   <button
                     v-if="authStore.isOrgAdmin() && tc.inscription_charge && tc.inscription_status !== 'PAGADO'"
                     class="btn btn-sm btn-secondary"
@@ -118,7 +118,7 @@
                     Registrar pago
                   </button>
                   <button class="btn btn-sm btn-danger" @click="onRemoveClub(tc)">Quitar</button>
-                </div>
+                </ActionsMenu>
               </td>
             </tr>
           </tbody>
@@ -193,7 +193,9 @@
                 <span class="status-badge" :class="`status-badge--team-${team.status?.toLowerCase()}`">{{ teamStatusLabel(team.status) }}</span>
               </td>
               <td>
-                <button v-if="registrationOpen" class="btn btn-sm btn-danger" @click="onRemoveTeam(team)">Quitar</button>
+                <ActionsMenu v-if="registrationOpen">
+                  <button class="btn btn-sm btn-danger" @click="onRemoveTeam(team)">Quitar</button>
+                </ActionsMenu>
                 <span v-else class="text-muted text-sm">—</span>
               </td>
             </tr>
@@ -213,6 +215,7 @@ import { useNotifyStore } from '../stores/notify';
 import { useClubSeriesStore } from '../stores/clubSeries';
 import { recordPayment } from '../services/clubFinance.service.js';
 import { updateTournament } from '../services/tournaments.service.js';
+import ActionsMenu from '../components/ActionsMenu.vue';
 
 const route = useRoute();
 const tournamentId = route.params.tournamentId;

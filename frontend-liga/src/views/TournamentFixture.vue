@@ -49,13 +49,15 @@
                 {{ match.referee?.full_name || 'Sin árbitro' }}
               </td>
               <td>
-                <button
-                  class="btn btn-sm btn-secondary"
-                  :disabled="!match.home_series_id || !match.away_series_id"
-                  @click="$router.push(`/matches/${match.id}`)"
-                >
-                  Planilla
-                </button>
+                <ActionsMenu>
+                  <button
+                    class="btn btn-sm btn-secondary"
+                    :disabled="!match.home_series_id || !match.away_series_id"
+                    @click="$router.push(`/matches/${match.id}`)"
+                  >
+                    Planilla
+                  </button>
+                </ActionsMenu>
               </td>
             </tr>
           </tbody>
@@ -70,6 +72,7 @@ import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useMatchesStore } from '../stores/matches';
 import { useTournamentsStore } from '../stores/tournaments';
+import ActionsMenu from '../components/ActionsMenu.vue';
 
 const route = useRoute();
 const tournamentId = route.params.tournamentId;

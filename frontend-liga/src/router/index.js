@@ -20,6 +20,7 @@ const PlayerEdit = () => import('../views/PlayerEdit.vue');
 const PlayerChangeClub = () => import('../views/PlayerChangeClub.vue');
 const PlayersImport    = () => import('../views/PlayersImport.vue');
 const ClubSeries = () => import('../views/ClubSeries.vue');
+const ClubTournamentDetail = () => import('../views/ClubTournamentDetail.vue');
 const RefereesList = () => import('../views/RefereesList.vue');
 const CategoriesList = () => import('../views/CategoriesList.vue');
 const VenuesList = () => import('../views/VenuesList.vue');
@@ -115,6 +116,12 @@ const routes = [
         path: '/clubs/:clubId/series',
         name: 'ClubSeries',
         component: ClubSeries,
+        meta: { requiresAuth: true, requiresOrg: true },
+    },
+    {
+        path: '/clubs/:clubId/tournaments/:tournamentId',
+        name: 'ClubTournamentDetail',
+        component: ClubTournamentDetail,
         meta: { requiresAuth: true, requiresOrg: true },
     },
     {

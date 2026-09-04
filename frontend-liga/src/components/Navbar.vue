@@ -11,8 +11,8 @@
             <circle cx="15" cy="18.5" r="3" fill="white"/>
             <defs>
               <linearGradient id="nav-grad" x1="0" y1="0" x2="30" y2="30">
-                <stop offset="0%" stop-color="#00c853"/>
-                <stop offset="100%" stop-color="#00e676"/>
+                <stop offset="0%" stop-color="var(--primary-dark)"/>
+                <stop offset="100%" stop-color="var(--primary-solid)"/>
               </linearGradient>
             </defs>
           </svg>
@@ -21,7 +21,7 @@
       </div>
 
       <!-- Menu principal -->
-      <div class="navbar-menu" :class="{ 'is-active': mobileMenuOpen }">
+      <div id="navbar-menu" class="navbar-menu" :class="{ 'is-active': mobileMenuOpen }">
 
         <template v-if="authStore.isOrgAdmin()">
           <!-- Home -->
@@ -157,14 +157,21 @@
           @click="toggleTheme"
           :aria-label="theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
           :title="theme === 'dark' ? 'Modo claro' : 'Modo oscuro'"
+          :aria-pressed="theme === 'dark'"
         >
           <svg v-if="theme === 'dark'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
 
-        <div class="user-menu" @click="toggleUserMenu" role="button" tabindex="0" :aria-expanded="userMenuOpen" aria-haspopup="true" :aria-label="`Menú de ${userName}`">
+        <button class="mobile-menu-toggle" @click="toggleMobileMenu" :aria-expanded="mobileMenuOpen" :aria-label="mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'" aria-controls="navbar-menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="user-menu" @click="toggleUserMenu" @keydown.enter.prevent="toggleUserMenu" @keydown.space.prevent="toggleUserMenu" role="button" tabindex="0" :aria-expanded="userMenuOpen" aria-haspopup="true" :aria-label="`Menú de ${userName}`">
           <div class="user-avatar" aria-hidden="true">{{ userInitials }}</div>
-          <span class="user-name">{{ userName }}</span>
+          <span class="user-name" :title="userName">{{ userName }}</span>
           <svg class="dropdown-arrow" :class="{ 'is-rotated': userMenuOpen }" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
 
           <div class="user-dropdown" v-if="userMenuOpen" role="menu">
@@ -174,12 +181,6 @@
             </button>
           </div>
         </div>
-
-        <button class="mobile-menu-toggle" @click="toggleMobileMenu" :aria-expanded="mobileMenuOpen" aria-label="Abrir menú" aria-controls="navbar-menu">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
       </div>
 
     </div>
@@ -225,9 +226,17 @@ const userInitials = computed(() => {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 });
 
-const toggleMobileMenu = () => { mobileMenuOpen.value = !mobileMenuOpen.value; };
+const toggleMobileMenu = () => {
+  mobileMenuOpen.value = !mobileMenuOpen.value;
+  userMenuOpen.value = false;
+};
 const closeMobileMenu  = () => { mobileMenuOpen.value = false; paramsMenuOpen.value = false; playersMenuOpen.value = false; };
-const toggleUserMenu   = () => { userMenuOpen.value = !userMenuOpen.value; };
+const toggleUserMenu   = () => {
+  userMenuOpen.value = !userMenuOpen.value;
+  mobileMenuOpen.value = false;
+  paramsMenuOpen.value = false;
+  playersMenuOpen.value = false;
+};
 const toggleParamsMenu = () => { paramsMenuOpen.value = !paramsMenuOpen.value; playersMenuOpen.value = false; };
 const togglePlayersMenu = () => { playersMenuOpen.value = !playersMenuOpen.value; paramsMenuOpen.value = false; };
 const closeAllMenus    = () => { paramsMenuOpen.value = false; playersMenuOpen.value = false; closeMobileMenu(); };
@@ -258,24 +267,29 @@ const handleLogout = async () => {
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 32px);
-  max-width: 1200px;
+  max-width: 1440px;
   height: 62px;
-  background: rgba(13, 14, 20, 0.78);
+  background: color-mix(in srgb, var(--surface-raised) 88%, transparent);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border-radius: 60px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.5);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
   z-index: 1000;
 }
 
 .navbar-content {
+  position: relative;
+  width: 100%;
+  max-width: none;
+  margin: 0;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
   gap: var(--spacing-xl);
+  min-width: 0;
 }
 
 /* ── Logo ────────────────────────────────────────────────────────────────── */
@@ -287,7 +301,7 @@ const handleLogout = async () => {
   gap: 8px;
   text-decoration: none;
   color: var(--text-primary);
-  font-family: 'Lora', serif;
+  font-family: var(--font-ui);
   font-weight: 700;
   font-size: 1.2rem;
   transition: opacity var(--transition-fast);
@@ -295,7 +309,7 @@ const handleLogout = async () => {
 .logo:hover { opacity: 0.8; }
 .logo-icon { flex-shrink: 0; }
 .logo-text {
-  background: linear-gradient(135deg, #00e676, #4fc3f7);
+  background: linear-gradient(135deg, var(--primary-solid), var(--sport-blue));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -307,6 +321,7 @@ const handleLogout = async () => {
   align-items: center;
   gap: var(--spacing-sm);
   flex: 1;
+  min-width: 0;
 }
 
 /* ── Nav link base ───────────────────────────────────────────────────────── */
@@ -318,10 +333,9 @@ const handleLogout = async () => {
   color: var(--text-muted);
   text-decoration: none;
   border-radius: var(--radius-full);
-  font-family: 'Raleway', sans-serif;
+  font-family: var(--font-ui);
   font-weight: 600;
   font-size: 0.9rem;
-  transition: all var(--transition-base);
   background: none;
   border: none;
   cursor: pointer;
@@ -329,12 +343,12 @@ const handleLogout = async () => {
 
 .nav-link:hover {
   color: var(--primary-solid);
-  background: rgba(0, 230, 118, 0.1);
+  background: var(--success-bg);
 }
 .nav-link.router-link-active {
   color: var(--primary-solid);
-  background: rgba(0, 230, 118, 0.14);
-  box-shadow: inset 0 0 0 1px rgba(0, 230, 118, 0.25);
+  background: var(--success-bg);
+  box-shadow: inset 0 0 0 1px var(--primary-solid);
 }
 
 .nav-icon { flex-shrink: 0; }
@@ -353,12 +367,12 @@ const handleLogout = async () => {
   top: calc(100% + 8px);
   left: 0;
   min-width: 180px;
-  background: rgba(16, 17, 24, 0.97);
+  background: var(--surface-overlay);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: 16px;
   border: 1px solid var(--border-color);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-xl);
   padding: var(--spacing-sm);
   display: flex;
   flex-direction: column;
@@ -371,23 +385,24 @@ const handleLogout = async () => {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-height: 44px;
+  box-sizing: border-box;
   padding: 0.6rem 0.8rem;
   color: var(--text-muted);
   text-decoration: none;
   border-radius: 12px;
-  font-family: 'Raleway', sans-serif;
+  font-family: var(--font-ui);
   font-weight: 600;
   font-size: 0.875rem;
-  transition: all var(--transition-base);
   white-space: nowrap;
 }
 .nav-dropdown__item:hover {
   color: var(--primary-solid);
-  background: rgba(0, 230, 118, 0.1);
+  background: var(--success-bg);
 }
 .nav-dropdown__item.router-link-active {
   color: var(--primary-solid);
-  background: rgba(0, 230, 118, 0.14);
+  background: var(--success-bg);
 }
 
 @keyframes dropdownIn {
@@ -400,24 +415,26 @@ const handleLogout = async () => {
   display: flex;
   align-items: center;
   gap: var(--spacing-md);
+  min-width: 0;
+  margin-left: auto;
+  flex: 0 1 auto;
 }
 
 .theme-toggle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--surface-hover);
+  border: 1px solid var(--border-color);
   border-radius: 50%;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all var(--transition-base);
 }
 .theme-toggle:hover {
-  background: rgba(0, 230, 118, 0.1);
+  background: var(--success-bg);
   color: var(--primary-solid);
 }
 
@@ -427,36 +444,45 @@ const handleLogout = async () => {
   align-items: center;
   gap: 8px;
   padding: 6px 14px 6px 6px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--surface-hover);
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-full);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-sm);
   cursor: pointer;
-  transition: all var(--transition-base);
+  min-width: 0;
+  max-width: min(220px, 100%);
+  min-height: 44px;
+  flex: 0 1 auto;
 }
 .user-menu:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--surface-overlay);
 }
 
 .user-avatar {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #00c853, #4fc3f7);
+  background: linear-gradient(135deg, var(--primary-dark), var(--sport-blue));
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 0.8125rem;
-  color: #04120a;
+  color: var(--text-on-accent);
   flex-shrink: 0;
 }
 
 .user-name {
-  font-family: 'Raleway', sans-serif;
+  font-family: var(--font-ui);
   font-weight: 600;
   font-size: 0.875rem;
+  line-height: 1.4;
   color: var(--text-primary);
+  min-width: 0;
+  max-width: 18ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .dropdown-arrow {
   color: var(--text-muted);
@@ -470,14 +496,14 @@ const handleLogout = async () => {
   top: calc(100% + 8px);
   right: 0;
   min-width: 200px;
-  background: rgba(16, 17, 24, 0.97);
+  background: var(--surface-overlay);
   backdrop-filter: blur(12px);
   border-radius: 18px;
   border: 1px solid var(--border-color);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-xl);
   padding: var(--spacing-sm);
   animation: dropdownIn 0.18s ease-out;
-  z-index: 20;
+  z-index: 40;
 }
 
 .dropdown-item {
@@ -491,15 +517,14 @@ const handleLogout = async () => {
   color: var(--text-muted);
   border-radius: 12px;
   cursor: pointer;
-  transition: all var(--transition-base);
-  font-family: 'Raleway', sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.875rem;
   font-weight: 600;
   text-align: left;
 }
-.dropdown-item:hover        { background: rgba(0, 230, 118, 0.1); color: var(--primary-solid); }
+.dropdown-item:hover        { background: var(--success-bg); color: var(--primary-solid); }
 .dropdown-item.logout       { color: var(--accent-red); }
-.dropdown-item.logout:hover { background: rgba(248, 113, 113, 0.1); color: var(--accent-red); }
+.dropdown-item.logout:hover { background: var(--danger-bg); color: var(--accent-red); }
 
 /* ── Mobile hamburger ────────────────────────────────────────────────────── */
 .mobile-menu-toggle {
@@ -507,14 +532,17 @@ const handleLogout = async () => {
   flex-direction: column;
   gap: 5px;
   background: none;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
   border: none;
   cursor: pointer;
   padding: 8px;
   border-radius: var(--radius-md);
-  transition: box-shadow var(--transition-base);
 }
 .mobile-menu-toggle:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--surface-hover);
 }
 .mobile-menu-toggle span {
   width: 22px;
@@ -522,39 +550,40 @@ const handleLogout = async () => {
   background: var(--text-primary);
   border-radius: 2px;
   display: block;
-  transition: all var(--transition-base);
+  transition: transform var(--transition-base), opacity var(--transition-base);
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
-@media (max-width: 768px) {
-  .navbar {
-    top: 0;
-    width: 100%;
-    border-radius: 0 0 24px 24px;
-  }
-
+/* La navegación horizontal completa necesita el ancho máximo del navbar.
+   Antes de que compita con las acciones de usuario, pasa a un panel compacto. */
+@media (max-width: 1360px) {
   .navbar-menu {
-    position: fixed;
-    top: 72px;
-    left: 12px;
-    right: 12px;
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
     flex-direction: column;
     align-items: stretch;
-    background: rgba(16, 17, 24, 0.97);
+    background: var(--surface-overlay);
     backdrop-filter: blur(14px);
     border-radius: 20px;
     border: 1px solid var(--border-color);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+    box-shadow: var(--shadow-xl);
     padding: var(--spacing-md);
     gap: 4px;
     transform: translateY(-10px);
     opacity: 0;
-    transition: all var(--transition-base);
+    visibility: hidden;
+    transition: transform var(--transition-base), opacity var(--transition-base);
     pointer-events: none;
+    max-height: calc(100dvh - 98px);
+    overflow-y: auto;
+    z-index: 30;
   }
   .navbar-menu.is-active {
     transform: translateY(0);
     opacity: 1;
+    visibility: visible;
     pointer-events: all;
   }
 
@@ -566,10 +595,31 @@ const handleLogout = async () => {
     margin-top: 4px;
     box-shadow: none;
     border-color: transparent;
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--surface-hover);
   }
 
   .mobile-menu-toggle { display: flex; }
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    top: 0;
+    width: 100%;
+    border-radius: 0 0 24px 24px;
+  }
+
+  .navbar-content {
+    padding-inline: var(--spacing-md);
+    gap: var(--spacing-md);
+  }
+
+  .navbar-menu {
+    top: calc(100% + 10px);
+    left: 12px;
+    right: 12px;
+    max-height: calc(100dvh - 84px);
+  }
+
   .user-name { display: none; }
 }
 </style>

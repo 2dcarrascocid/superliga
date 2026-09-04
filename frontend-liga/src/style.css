@@ -1,5 +1,4 @@
 /* ==================== FONTS ==================== */
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700&display=swap');
 
 /* ==================== RESET & BASE ==================== */
 *, *::before, *::after {
@@ -108,7 +107,7 @@
 }
 
 body {
-  font-family: 'Raleway', 'Inter', system-ui, sans-serif;
+  font-family: var(--font-ui, Inter, "Segoe UI", system-ui, sans-serif);
   background: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.65;
@@ -155,13 +154,12 @@ img, svg, video { display: block; max-width: 100%; }
 a {
   color: var(--accent-cyan);
   text-decoration: none;
-  transition: color var(--transition-fast);
 }
 a:hover { color: var(--primary-light); }
 
 /* ==================== TYPOGRAPHY ==================== */
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Lora', Georgia, serif;
+  font-family: var(--font-ui, Inter, "Segoe UI", system-ui, sans-serif);
   font-weight: 700;
   line-height: 1.25;
   color: var(--text-primary);
@@ -189,11 +187,11 @@ p {
   gap: var(--spacing-sm);
   padding: 0.65rem 1.4rem;
   border-radius: var(--radius-full);
-  font-family: 'Raleway', sans-serif;
+  font-family: var(--font-ui, Inter, "Segoe UI", system-ui, sans-serif);
   font-weight: 600;
   font-size: 0.9375rem;
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: transform var(--transition-base), opacity var(--transition-base);
   border: none;
   outline: none;
   text-decoration: none;
@@ -266,7 +264,7 @@ p {
   font-weight: 600;
   color: var(--text-secondary);
   margin-bottom: var(--spacing-xs);
-  font-family: 'Raleway', sans-serif;
+  font-family: var(--font-ui, Inter, "Segoe UI", system-ui, sans-serif);
 }
 
 .input {
@@ -276,10 +274,9 @@ p {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   color: var(--text-primary);
-  font-family: 'Raleway', sans-serif;
+  font-family: var(--font-ui, Inter, "Segoe UI", system-ui, sans-serif);
   font-size: 0.9375rem;
   box-shadow: var(--shadow-pressed);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   outline: none;
 }
 .input::placeholder { color: var(--text-muted); opacity: 0.7; }
@@ -333,7 +330,7 @@ select.input { cursor: pointer; }
   padding: var(--spacing-xl);
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border-color);
-  transition: box-shadow var(--transition-base), transform var(--transition-base), border-color var(--transition-base);
+  transition: transform var(--transition-base);
 }
 
 .card:hover {
@@ -435,13 +432,12 @@ select.input { cursor: pointer; }
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-family: 'Raleway', sans-serif;
+  font-family: var(--font-ui, Inter, "Segoe UI", system-ui, sans-serif);
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -2px;
-  transition: all var(--transition-fast);
   border-radius: var(--radius-md) var(--radius-md) 0 0;
 }
 .tab-btn:hover { color: var(--text-primary); background: rgba(0, 230, 118, 0.06); }
@@ -468,7 +464,7 @@ select.input { cursor: pointer; }
 
 .table th,
 .table td {
-  padding: 0.875rem 1rem;
+  padding-inline: var(--spacing-md);
   border-bottom: 1px solid var(--border-color);
   /* Evita que texto largo sin espacios (emails, RUT, URLs) se salga del
      borde de la celda cuando la columna es angosta. */
@@ -476,22 +472,27 @@ select.input { cursor: pointer; }
 }
 
 .table th {
+  padding-block: 0.75rem;
   background: var(--bg-tertiary);
-  font-family: 'Raleway', sans-serif;
+  font-family: var(--font-ui, Inter, "Segoe UI", system-ui, sans-serif);
   font-weight: 700;
   font-size: 0.8125rem;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
+  line-height: 1.4;
+  vertical-align: middle;
 }
 
 .table td {
+  padding-block: var(--spacing-md);
   color: var(--text-secondary);
   font-size: 0.9375rem;
+  line-height: 1.5;
+  vertical-align: middle;
 }
 
 .table tbody tr {
-  transition: background-color var(--transition-fast);
 }
 
 .table tbody tr:hover {
@@ -556,7 +557,6 @@ select.input { cursor: pointer; }
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   font-weight: 600;
-  transition: all var(--transition-fast);
 }
 
 .pagination-btn:hover:not(:disabled) {
@@ -581,4 +581,159 @@ select.input { cursor: pointer; }
   h2 { font-size: 1.5rem; }
   .card { padding: var(--spacing-lg); }
   .pagination { flex-direction: column; gap: var(--spacing-md); }
+}
+
+/* ==================== SPORTS UI 2026 ==================== */
+:root {
+  color-scheme: dark;
+  --font-ui: Inter, Geist, "Segoe UI", system-ui, -apple-system, sans-serif;
+  --sport-green: #18d66b;
+  --sport-green-strong: #0a9f4b;
+  --sport-blue: #38bdf8;
+  --sport-gold: #f6c945;
+  --surface-base: #07110d;
+  --surface-raised: #0d1b15;
+  --surface-overlay: #13241c;
+  --surface-card: #102019;
+  --surface-input: #15271f;
+  --surface-hover: #1c3228;
+  --surface-border: #355347;
+  --text-on-accent: #03120a;
+  --focus-ring: #7bf2ae;
+  --success-bg: rgba(24, 214, 107, .14);
+  --info-bg: rgba(56, 189, 248, .14);
+  --gold-bg: rgba(246, 201, 69, .14);
+  --danger-bg: rgba(248, 113, 113, .14);
+  --bg-primary: var(--surface-base);
+  --bg-secondary: var(--surface-raised);
+  --bg-tertiary: var(--surface-overlay);
+  --bg-card: var(--surface-card);
+  --bg-hover: var(--surface-hover);
+  --neu-bg: var(--surface-card);
+  --border-color: var(--surface-border);
+  --primary-solid: var(--sport-green);
+  --primary-dark: var(--sport-green-strong);
+  --primary-light: #7bf2ae;
+  --primary-gradient: linear-gradient(135deg, var(--sport-green-strong), var(--sport-green));
+  --accent-green: var(--sport-green);
+  --accent-cyan: var(--sport-blue);
+  --accent-orange: var(--sport-gold);
+  --color-gold: var(--sport-gold);
+  --text-primary: #f4fbf7;
+  --text-secondary: #c1d5ca;
+  --text-muted: #91aa9d;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .26);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, .24);
+  --shadow-lg: 0 16px 42px rgba(0, 0, 0, .3);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, .38);
+  --shadow-pressed: inset 0 0 0 2px rgba(123, 242, 174, .22);
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --surface-base: #f1f6f3;
+  --surface-raised: #ffffff;
+  --surface-overlay: #f7faf8;
+  --surface-card: #ffffff;
+  --surface-input: #f6faf7;
+  --surface-hover: #e8f2ec;
+  --surface-border: #c5d6cc;
+  --sport-green: #087a3b;
+  --sport-green-strong: #065f31;
+  --sport-blue: #0369a1;
+  --sport-gold: #8a6200;
+  --focus-ring: #087a3b;
+  --text-primary: #10231a;
+  --text-secondary: #334b3e;
+  --text-muted: #526b5e;
+  --text-on-accent: #ffffff;
+  --neu-shadow-dark: rgba(24, 61, 42, .13);
+  --neu-shadow-lite: rgba(255, 255, 255, .8);
+  --shadow-sm: 0 1px 3px rgba(24, 61, 42, .11);
+  --shadow-md: 0 8px 24px rgba(24, 61, 42, .12);
+  --shadow-lg: 0 16px 42px rgba(24, 61, 42, .14);
+  --shadow-xl: 0 24px 64px rgba(24, 61, 42, .17);
+}
+
+html { background: var(--bg-primary); scroll-padding-top: 96px; }
+body { font-family: var(--font-ui); min-width: 320px; min-height: 100dvh; }
+button, input, select, textarea { font: inherit; }
+button, [role="button"], a { touch-action: manipulation; }
+button, .btn, .nav-link, .theme-toggle, .mobile-menu-toggle,
+.pagination-btn, input, select, textarea { min-height: 44px; }
+button, .btn, [role="button"], .nav-link { cursor: pointer; }
+button:disabled, .btn:disabled { cursor: not-allowed; opacity: .48; }
+
+:focus-visible {
+  outline: 3px solid var(--focus-ring) !important;
+  outline-offset: 3px !important;
+  box-shadow: none;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 9999;
+  top: 8px;
+  left: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  color: var(--text-on-accent);
+  background: var(--primary-solid);
+  transform: translateY(-150%);
+  transition: transform var(--transition-fast);
+}
+.skip-link:focus { transform: translateY(0); }
+
+.container { width: min(100% - 32px, 1280px); margin-inline: auto; }
+.card, .modal-content, .table-container, .stat-card, .kpi-card {
+  background-color: var(--bg-card);
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-sm);
+}
+h1, h2, h3, .page-title { text-wrap: balance; letter-spacing: -.025em; }
+.stat-value, .stat-card__value, .kpi-value, td, .amount, .score,
+input[type="number"] { font-variant-numeric: tabular-nums; }
+
+input:not([type="checkbox"]):not([type="radio"]), select, textarea,
+.input, .form-input, .form-select, .search-input {
+  color: var(--text-primary);
+  background: var(--surface-input);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+input::placeholder, textarea::placeholder { color: var(--text-muted); opacity: 1; }
+input:focus, select:focus, textarea:focus { border-color: var(--primary-solid); }
+
+.btn-primary, .primary-button, .submit-btn, button.primary {
+  color: var(--text-on-accent);
+  background: var(--primary-gradient);
+}
+.btn-secondary, .secondary-button { color: var(--text-primary); background: var(--bg-hover); border-color: var(--border-color); }
+.badge-info, .stat-blue { color: var(--sport-blue); background: var(--info-bg); }
+.badge-warning, .achievement { color: var(--sport-gold); background: var(--gold-bg); }
+
+.table-container { max-width: 100%; overflow-x: auto; border: 1px solid var(--border-color); }
+.table { background: var(--bg-card); }
+.table th { color: var(--text-secondary); background: var(--bg-tertiary); }
+.table td { color: var(--text-secondary); }
+.table tbody tr:hover { background: var(--bg-hover); }
+
+@media (max-width: 640px) {
+  .container { width: min(100% - 24px, 1280px); }
+  main.with-navbar { padding-top: 78px; }
+  .card { padding: 16px; border-radius: var(--radius-md); }
+  .page-header, .header-actions, .form-actions, .filters { align-items: stretch; }
+  .header-actions, .form-actions { display: flex; flex-direction: column; gap: 8px; }
+  .header-actions > *, .form-actions > * { width: 100%; }
+  .stats-grid, .kpi-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

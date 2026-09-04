@@ -111,17 +111,17 @@
                 </span>
               </td>
               <td class="text-right">
-                <div class="action-buttons" v-if="isPending(t.status)">
-                  <button @click="processStatus(t.id, 'APPROVED')" class="btn-action approve" title="Aprobar pase">
+                <ActionsMenu v-if="isPending(t.status)">
+                  <button @click="processStatus(t.id, 'APPROVED')" class="btn-action approve">
                     ✓ Aprobar
                   </button>
-                  <button @click="processStatus(t.id, 'REJECTED')" class="btn-action reject" title="Rechazar pase">
+                  <button @click="processStatus(t.id, 'REJECTED')" class="btn-action reject">
                     ✕ Rechazar
                   </button>
-                  <button @click="processStatus(t.id, 'CANCELLED')" class="btn-action cancel" title="Cancelar solicitud">
+                  <button @click="processStatus(t.id, 'CANCELLED')" class="btn-action cancel">
                     🚫 Cancelar
                   </button>
-                </div>
+                </ActionsMenu>
                 <span v-else class="text-muted text-sm">Sin acciones pendientes</span>
               </td>
             </tr>
@@ -238,6 +238,7 @@ import transfersService from '../services/transfersService';
 import { getClubs } from '../services/clubs.service';
 import { listPlayersByClub } from '../services/players.service';
 import { useNotifyStore } from '../stores/notify';
+import ActionsMenu from '../components/ActionsMenu.vue';
 
 const defaultAvatar = 'https://raw.githubusercontent.com/shadcn-ui/ui/main/apps/www/public/avatars/01.png';
 

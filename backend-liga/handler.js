@@ -213,7 +213,7 @@ const ROUTES = [
     type: 'CREATE_SERIES', domain: 'club_series',
     input: {
       clubId: pp.clubId, name: body.name, description: body.description,
-      categoryId: body.category_id, minAge: body.min_age, ageRestriction: body.age_restriction,
+      categoryId: body.category_id,
       active: body.active,
     },
   })),
@@ -232,7 +232,7 @@ const ROUTES = [
     type: 'UPDATE_SERIES', domain: 'club_series',
     input: {
       seriesId: pp.seriesId, name: body.name, description: body.description,
-      categoryId: body.category_id, minAge: body.min_age, ageRestriction: body.age_restriction,
+      categoryId: body.category_id,
       active: body.active,
     },
   })),
@@ -240,6 +240,26 @@ const ROUTES = [
   route('DELETE', '/series/{seriesId}', (pp) => ({
     type: 'DELETE_SERIES', domain: 'club_series',
     input: { seriesId: pp.seriesId },
+  })),
+
+  route('GET', '/clubs/{clubId}/series/{seriesId}/tournaments/{tournamentId}/eligibility', (pp) => ({
+    type: 'GET_SERIES_TOURNAMENT_ELIGIBILITY', domain: 'tournaments',
+    input: { clubId: pp.clubId, seriesId: pp.seriesId, tournamentId: pp.tournamentId },
+  })),
+
+  route('POST', '/clubs/{clubId}/series/{seriesId}/tournaments/{tournamentId}/registration', (pp) => ({
+    type: 'REGISTER_CLUB_SERIES_ATOMIC', domain: 'tournaments',
+    input: { clubId: pp.clubId, seriesId: pp.seriesId, tournamentId: pp.tournamentId },
+  })),
+
+  route('GET', '/clubs/{clubId}/active-tournaments', (pp, _body, qs) => ({
+    type: 'LIST_ACTIVE_TOURNAMENTS_FOR_CLUB', domain: 'tournaments',
+    input: { clubId: pp.clubId, seriesId: qs.series_id },
+  })),
+
+  route('GET', '/clubs/{clubId}/tournaments/{tournamentId}', (pp) => ({
+    type: 'GET_CLUB_TOURNAMENT_DETAIL', domain: 'tournaments',
+    input: { clubId: pp.clubId, tournamentId: pp.tournamentId },
   })),
 
   route('GET', '/series/{seriesId}/roster', (pp) => ({
@@ -423,6 +443,7 @@ const ROUTES = [
       color:       body.color,
       ageFrom:     body.age_from,
       ageTo:       body.age_to,
+      ageRestriction: body.age_restriction,
       description: body.description,
       sportId:     body.sport_id,
       gender:      body.gender,
@@ -455,6 +476,7 @@ const ROUTES = [
       color:       body.color,
       ageFrom:     body.age_from,
       ageTo:       body.age_to,
+      ageRestriction: body.age_restriction,
       description: body.description,
       sportId:     body.sport_id,
       gender:      body.gender,
@@ -470,6 +492,7 @@ const ROUTES = [
       color:       body.color,
       ageFrom:     body.age_from,
       ageTo:       body.age_to,
+      ageRestriction: body.age_restriction,
       description: body.description,
       sportId:     body.sport_id,
       gender:      body.gender,
@@ -706,6 +729,11 @@ const ROUTES = [
   route('PATCH', '/seasons/{seasonId}', (pp, body) => ({
     type: 'UPDATE_SEASON', domain: 'seasons',
     input: { seasonId: pp.seasonId, name: body.name, year: body.year !== undefined ? Number(body.year) : undefined, active: body.active },
+  })),
+
+  route('POST', '/seasons/{seasonId}/close', (pp, body) => ({
+    type: 'CLOSE_SEASON', domain: 'seasons',
+    input: { seasonId: pp.seasonId, orgId: body.org_id },
   })),
 
   route('DELETE', '/seasons/{seasonId}', (pp, _body, qs) => ({

@@ -99,6 +99,8 @@ const CAPABILITIES = [
   'LIST_TOURNAMENTS', 'GET_TOURNAMENT', 'CREATE_TOURNAMENT', 'UPDATE_TOURNAMENT', 'DELETE_TOURNAMENT',
   'LIST_TOURNAMENT_TEAMS', 'REGISTER_TEAM', 'UNREGISTER_TEAM',
   'LIST_TOURNAMENT_CLUBS', 'REGISTER_CLUB', 'UNREGISTER_CLUB',
+  'LIST_ACTIVE_TOURNAMENTS_FOR_CLUB', 'GET_CLUB_TOURNAMENT_DETAIL',
+  'GET_SERIES_TOURNAMENT_ELIGIBILITY', 'REGISTER_CLUB_SERIES_ATOMIC',
   'LIST_STAGES', 'GENERATE_FIXTURE', 'GENERATE_KNOCKOUT_FROM_GROUPS', 'GENERATE_CONSOLATION',
   'GET_STANDINGS',
 ];
@@ -220,6 +222,10 @@ export class TournamentsSpecialist extends Skill {
         case 'LIST_TOURNAMENT_CLUBS': return this._listTournamentClubs(payload, db, userId);
         case 'REGISTER_CLUB': return this._registerClub(payload, db, userId);
         case 'UNREGISTER_CLUB': return this._unregisterClub(payload, db, userId);
+        case 'LIST_ACTIVE_TOURNAMENTS_FOR_CLUB': return this._listActiveForClub(payload, db, userId);
+        case 'GET_CLUB_TOURNAMENT_DETAIL': return this._getClubTournamentDetail(payload, db, userId);
+        case 'GET_SERIES_TOURNAMENT_ELIGIBILITY': return this._getSeriesEligibility(payload, db, userId);
+        case 'REGISTER_CLUB_SERIES_ATOMIC': return this._registerClubSeriesAtomic(payload, db, userId);
         case 'LIST_STAGES': return this._listStages(payload, db);
         case 'GENERATE_FIXTURE': return this._generateFixture(payload, db);
         case 'GENERATE_KNOCKOUT_FROM_GROUPS': return this._generateKnockoutFromGroups(payload, db);
@@ -292,6 +298,186 @@ export class TournamentsSpecialist extends Skill {
     }));
 
     return createSkillResult({ success: true, data: { tournaments: decoratedTournaments, nextToken: next, total } });
+  }
+
+  async _loadEligibility({ clubId, seriesId, tournamentId }, db, userId) {
+    const accessError = await assertClubAccess(clubId, userId, db);
+    if (accessError) return { accessError };
+
+    const [{ data: club }, { data: series }, { data: tournament }] = await Promise.all([
+      db.from('lg_clubs').select('id,org_id').eq('id', clubId).maybeSingle(),
+      db.from('lg_club_series').select('id,club_id,category_id,active').eq('id', seriesId).maybeSingle(),
+      db.from('lg_tournaments').select('id,org_id,season_id,status,category_id,inscription_fee').eq('id', tournamentId).maybeSingle(),
+    ]);
+    if (!series || series.club_id !== clubId) return { errorCode: 'SERIES_NOT_FOUND' };
+    if (!tournament) return { errorCode: 'TOURNAMENT_NOT_FOUND' };
+
+    const reasons = [];
+    if (!series.active) reasons.push('SERIES_NOT_ACTIVE');
+    if (!club || club.org_id !== tournament.org_id) reasons.push('CLUB_ORG_MISMATCH');
+    if (tournament.status !== 'REGISTRATION') reasons.push('TOURNAMENT_NOT_OPEN');
+    if (tournament.category_id && series.category_id !== tournament.category_id) reasons.push('CATEGORY_MISMATCH');
+
+    const { data: season } = tournament.season_id
+      ? await db.from('lg_seasons').select('active').eq('id', tournament.season_id).eq('org_id', tournament.org_id).maybeSingle()
+      : { data: null };
+    if (!season?.active) reasons.push('SEASON_NOT_ACTIVE');
+
+    const { data: registered } = await db.from('lg_tournament_teams')
+      .select('id').eq('tournament_id', tournamentId).eq('series_id', seriesId).maybeSingle();
+    if (registered) reasons.push('ALREADY_REGISTERED');
+
+    return { eligible: reasons.length === 0, reasons, series, tournament };
+  }
+
+  async _getSeriesEligibility(payload, db, userId) {
+    const result = await this._loadEligibility(payload, db, userId);
+    if (result.accessError) return createSkillResult({ success: false, errorCode: result.accessError, errorMessage: 'No tienes permisos para consultar esta serie' });
+    if (result.errorCode) return createSkillResult({ success: false, errorCode: result.errorCode, errorMessage: 'Recurso no encontrado' });
+    return createSkillResult({ success: true, data: { eligibility: { eligible: result.eligible, reasons: result.reasons } } });
+  }
+
+  /**
+   * Inscribe club + serie en un torneo (con su cobro INSCRIPCION) en una
+   * sola operación, con el mismo resultado que REGISTER_CLUB seguido de
+   * REGISTER_TEAM pero en un solo llamado. NO usa la RPC
+   * fn_register_club_series_atomic (SECURITY INVOKER, EXECUTE otorgado solo
+   * a service_role vía 20260901_lg_series_tournament_integrity.sql) — la key
+   * de Supabase que usa este backend hoy no tiene ese rol, así que la RPC
+   * respondía 42501 (permission denied) y quedaba escondido detrás de
+   * REGISTER_SERIES_FAILED. Se reemplaza por los mismos 3 inserts que ya
+   * hacen _registerClub/_registerTeam más abajo en este archivo — no pierde
+   * atomicidad real (nunca la hubo a nivel de request HTTP, ya que
+   * PostgREST no expone transacciones multi-statement), pero cada paso es
+   * idempotente (upsert/insert con manejo de 23505), igual que la RPC.
+   */
+  async _registerClubSeriesAtomic({ clubId, seriesId, tournamentId }, db, userId) {
+    const eligibility = await this._loadEligibility({ clubId, seriesId, tournamentId }, db, userId);
+    if (eligibility.accessError) return createSkillResult({ success: false, errorCode: eligibility.accessError, errorMessage: 'No tienes permisos para inscribir esta serie' });
+    if (eligibility.errorCode) return createSkillResult({ success: false, errorCode: eligibility.errorCode, errorMessage: 'Recurso no encontrado' });
+    const blockingReasons = eligibility.reasons.filter((reason) => reason !== 'ALREADY_REGISTERED');
+    if (blockingReasons.length > 0) {
+      return createSkillResult({ success: false, errorCode: blockingReasons[0], errorMessage: 'La serie no cumple las condiciones de inscripción' });
+    }
+
+    const { tournament } = eligibility;
+
+    // 1. Inscribir el club al torneo — idempotente (mismo gate que REGISTER_CLUB).
+    const { data: tournamentClub, error: clubError } = await db
+      .from('lg_tournament_clubs')
+      .upsert(
+        { tournament_id: tournamentId, club_id: clubId, registered_by: userId ?? null },
+        { onConflict: 'tournament_id,club_id', ignoreDuplicates: false },
+      )
+      .select('id')
+      .single();
+    if (clubError) {
+      console.error('[tournaments] _registerClubSeriesAtomic (club) failed:', clubError.message);
+      return createSkillResult({ success: false, errorCode: 'REGISTER_SERIES_FAILED', errorMessage: 'No fue posible inscribir la serie' });
+    }
+
+    // 2. Cobro INSCRIPCION por club, una vez por torneo — igual que
+    // REGISTER_CLUB, un problema del libro no revierte la inscripción.
+    const chargeResult = await createInscriptionCharge({
+      orgId: tournament.org_id,
+      clubId,
+      seriesId: null,
+      tournamentId,
+      seasonId: tournament.season_id,
+      amount: tournament.inscription_fee,
+    }, db);
+    if (chargeResult.error && chargeResult.error.code !== '23505') {
+      console.error('[tournaments] _registerClubSeriesAtomic (charge) failed:', chargeResult.error.message);
+    }
+
+    // 3. Inscribir la serie — idempotente (mismo gate que REGISTER_TEAM).
+    const { data: team, error: teamError } = await db
+      .from('lg_tournament_teams')
+      .upsert(
+        { tournament_id: tournamentId, series_id: seriesId, status: 'ACTIVE' },
+        { onConflict: 'tournament_id,series_id', ignoreDuplicates: false },
+      )
+      .select('id')
+      .single();
+    if (teamError) {
+      console.error('[tournaments] _registerClubSeriesAtomic (team) failed:', teamError.message);
+      return createSkillResult({ success: false, errorCode: 'REGISTER_SERIES_FAILED', errorMessage: 'No fue posible inscribir la serie' });
+    }
+
+    return createSkillResult({
+      success: true,
+      data: { registration: { ok: true, code: 'SERIES_REGISTERED', tournamentClubId: tournamentClub.id, teamId: team.id } },
+    });
+  }
+
+  async _listActiveForClub({ clubId, seriesId }, db, userId) {
+    const accessError = await assertClubAccess(clubId, userId, db);
+    if (accessError) return createSkillResult({ success: false, errorCode: accessError, errorMessage: 'No tienes permisos para ver los torneos de este club' });
+    const { data: club } = await db.from('lg_clubs').select('org_id').eq('id', clubId).maybeSingle();
+    let query = db.from('lg_tournaments')
+      .select('*, season:lg_seasons(id,name,year,active), category:lg_categories(id,name,serie,gender,age_from,age_to)')
+      .eq('org_id', club.org_id).in('status', ['REGISTRATION', 'IN_PROGRESS']).order('created_at', { ascending: false });
+    const { data: tournaments, error } = await query;
+    if (error) {
+      console.error('[tournaments] active tournament list failed:', error.message);
+      return createSkillResult({ success: false, errorCode: 'LIST_ACTIVE_TOURNAMENTS_FAILED', errorMessage: 'No fue posible listar los torneos activos' });
+    }
+
+    const tournamentIds = (tournaments ?? []).map((tournament) => tournament.id);
+    const teamsCount = new Map();
+    const clubsCount = new Map();
+    if (tournamentIds.length > 0) {
+      const [{ data: teamRows, error: teamsError }, { data: clubRows, error: clubsError }] = await Promise.all([
+        db.from('lg_tournament_teams').select('tournament_id').in('tournament_id', tournamentIds),
+        db.from('lg_tournament_clubs').select('tournament_id').in('tournament_id', tournamentIds),
+      ]);
+      if (teamsError || clubsError) {
+        console.error('[tournaments] active tournament counts failed:', teamsError?.message ?? clubsError?.message);
+        return createSkillResult({ success: false, errorCode: 'LIST_ACTIVE_TOURNAMENTS_FAILED', errorMessage: 'No fue posible listar los torneos activos' });
+      }
+      for (const row of teamRows ?? []) teamsCount.set(row.tournament_id, (teamsCount.get(row.tournament_id) ?? 0) + 1);
+      for (const row of clubRows ?? []) clubsCount.set(row.tournament_id, (clubsCount.get(row.tournament_id) ?? 0) + 1);
+    }
+    const withCounts = (tournaments ?? []).map((tournament) => ({
+      ...tournament,
+      teams_count: teamsCount.get(tournament.id) ?? 0,
+      clubs_count: clubsCount.get(tournament.id) ?? 0,
+    }));
+
+    if (!seriesId) return createSkillResult({ success: true, data: { tournaments: withCounts } });
+    const decorated = [];
+    for (const tournament of withCounts) {
+      const result = await this._loadEligibility({ clubId, seriesId, tournamentId: tournament.id }, db, userId);
+      decorated.push({ ...tournament, eligibility: { eligible: result.eligible ?? false, reasons: result.reasons ?? [result.errorCode ?? result.accessError] } });
+    }
+    return createSkillResult({ success: true, data: { tournaments: decorated } });
+  }
+
+  async _getClubTournamentDetail({ clubId, tournamentId }, db, userId) {
+    const accessError = await assertClubAccess(clubId, userId, db);
+    if (accessError) return createSkillResult({ success: false, errorCode: accessError, errorMessage: 'No tienes permisos para ver este torneo' });
+    const [{ data: club }, { data: tournament }] = await Promise.all([
+      db.from('lg_clubs').select('org_id').eq('id', clubId).maybeSingle(),
+      db.from('lg_tournaments').select('*, season:lg_seasons(id,name,year), category:lg_categories(id,name,serie,gender,age_from,age_to)').eq('id', tournamentId).maybeSingle(),
+    ]);
+    if (!tournament) return createSkillResult({ success: false, errorCode: 'TOURNAMENT_NOT_FOUND', errorMessage: 'Torneo no encontrado' });
+    if (!club || club.org_id !== tournament.org_id) return createSkillResult({ success: false, errorCode: 'CLUB_ORG_MISMATCH', errorMessage: 'El torneo pertenece a otra organización' });
+    if (!['REGISTRATION', 'IN_PROGRESS'].includes(tournament.status)) return createSkillResult({ success: false, errorCode: 'TOURNAMENT_NOT_ACTIVE', errorMessage: 'El torneo no está activo' });
+
+    const [{ data: teams, error: teamsError }, { data: charges }] = await Promise.all([
+      db.from('lg_tournament_teams').select('id,status,series:lg_club_series(id,name,club_id,club:lg_clubs(id,name,short_name,logo_url))').eq('tournament_id', tournamentId).order('created_at', { ascending: true }),
+      db.from('lg_ledger_entries').select('id,club_id,amount,paid_amount,due_date').eq('tournament_id', tournamentId).eq('category', 'INSCRIPCION').is('series_id', null),
+    ]);
+    if (teamsError) {
+      console.error('[tournaments] club tournament detail failed:', teamsError.message);
+      return createSkillResult({ success: false, errorCode: 'GET_TOURNAMENT_DETAIL_FAILED', errorMessage: 'No fue posible obtener el detalle del torneo' });
+    }
+    const chargeByClub = new Map((charges ?? []).map((entry) => [entry.club_id, entry]));
+    const participants = (teams ?? []).map((team) => {
+      const entry = chargeByClub.get(team.series?.club_id) ?? null;
+      return { ...team, inscription_status: entry ? computeEntryStatus(entry) : 'SIN_COBRO' };
+    });
+    return createSkillResult({ success: true, data: { tournament, participants } });
   }
 
   async _getTournament({ tournamentId }, db) {

@@ -4,7 +4,7 @@ import App from './App.vue';
 import router from './router';
 import { useTheme } from './composables/useTheme';
 
-// Aplica el tema guardado (o 'dark' por defecto) antes del mount, para
+// Aplica el tema guardado (o la preferencia del sistema) antes del mount, para
 // evitar un flash del tema incorrecto al recargar.
 useTheme();
 

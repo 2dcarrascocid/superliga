@@ -13,6 +13,11 @@
  *   - Ordenar listados por age_from ASC
  *   - Tratar age_from/age_to con `??` nunca con chequeo de truthy — 0 es
  *     un valor válido (categoría sin piso o sin techo de edad)
+ *   - age_restriction (T-20260904): modo de cálculo de elegibilidad por edad
+ *     para TODAS las series de esta categoría — true = edad cumplida
+ *     (edad real) >= age_from, false = por año de nacimiento. Antes vivía
+ *     por serie en lg_club_series (min_age/age_restriction); ahora es
+ *     configuración de categoría, no de club — ver club_series_specialist.js
  *
  * DON'T:
  *   - No filtrar por club_id (la tabla no tiene esa columna)
@@ -145,7 +150,7 @@ export class CategoriesSpecialist extends Skill {
     return createSkillResult({ success: true, data: { categories } });
   }
 
-  async _createCategory({ orgId, clubId, name, color, ageFrom, ageTo, description, sportId, gender, serie }, db) {
+  async _createCategory({ orgId, clubId, name, color, ageFrom, ageTo, ageRestriction, description, sportId, gender, serie }, db) {
     const resolvedOrgId = await this._resolveOrgId({ orgId, clubId }, db);
 
     if (!resolvedOrgId || !name) {
@@ -167,6 +172,7 @@ export class CategoriesSpecialist extends Skill {
         color:       color       ?? '#6366f1',
         age_from:    ageFrom     ?? null,
         age_to:      ageTo       ?? null,
+        age_restriction: ageRestriction ?? false,
         description: description ?? null,
         sport_id:    sportId     ?? null,
         gender:      gender      ?? null,
@@ -186,13 +192,13 @@ export class CategoriesSpecialist extends Skill {
     return createSkillResult({ success: true, data: { category } });
   }
 
-  async _updateCategory({ categoryId, name, color, ageFrom, ageTo, description, sportId, gender, serie }, db) {
+  async _updateCategory({ categoryId, name, color, ageFrom, ageTo, ageRestriction, description, sportId, gender, serie }, db) {
     if (gender !== undefined && gender !== null && !CATEGORY_GENDERS.includes(gender)) {
       return createSkillResult({ success: false, errorCode: 'INVALID_GENDER', errorMessage: `Género inválido: "${gender}"` });
     }
 
     const allowed = {
-      name, color, age_from: ageFrom, age_to: ageTo, description,
+      name, color, age_from: ageFrom, age_to: ageTo, age_restriction: ageRestriction, description,
       sport_id: sportId, gender, serie,
     };
     const patch = Object.fromEntries(

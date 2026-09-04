@@ -99,11 +99,11 @@
                   </span>
                 </td>
                 <td>
-                  <div class="flex gap-sm">
+                  <ActionsMenu>
                     <button class="btn btn-sm btn-secondary" @click.stop="openSeason(season.id)">Ver Torneos</button>
                     <button class="btn btn-sm btn-secondary" @click.stop="startEdit(season)">Editar</button>
                     <button class="btn btn-sm btn-danger" @click.stop="confirmDelete(season)">Eliminar</button>
-                  </div>
+                  </ActionsMenu>
                 </td>
               </tr>
             </tbody>
@@ -121,6 +121,7 @@ import { useSeasonsStore } from '../stores/seasons';
 import { useAuthStore } from '../stores/auth';
 import { useNotifyStore } from '../stores/notify';
 import { getCostCatalog, upsertCostCatalog } from '../services/clubFinance.service.js';
+import ActionsMenu from '../components/ActionsMenu.vue';
 
 const router = useRouter();
 const { items, loading, error, fetchSeasons, createOrUpdateSeason, removeSeason } = useSeasonsStore();

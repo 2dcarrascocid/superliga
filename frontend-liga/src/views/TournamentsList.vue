@@ -209,10 +209,10 @@
                   </span>
                 </td>
                 <td>
-                  <div class="flex gap-sm">
+                  <ActionsMenu>
                     <button class="btn btn-sm btn-secondary" @click.stop="openTournament(tournament.id)">Administrar</button>
                     <button class="btn btn-sm btn-danger" @click.stop="confirmDelete(tournament)">Eliminar</button>
-                  </div>
+                  </ActionsMenu>
                 </td>
               </tr>
             </tbody>
@@ -231,6 +231,7 @@ import { useAuthStore } from '../stores/auth';
 import { useNotifyStore } from '../stores/notify';
 import { getSeasons, createSeason } from '../services/seasons.service.js';
 import { listCategoriesByOrg } from '../services/categories.service.js';
+import ActionsMenu from '../components/ActionsMenu.vue';
 
 const route = useRoute();
 const router = useRouter();

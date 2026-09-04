@@ -20,12 +20,14 @@
 
 import { Skill } from '../contracts/skill_contract.js';
 import { createSkillResult } from '../contracts/task_schema.js';
+import { isOrgAdmin } from './lib/club_access.js';
 
 const CAPABILITIES = [
   'LIST_SEASONS',
   'CREATE_SEASON',
   'UPDATE_SEASON',
   'DELETE_SEASON',
+  'CLOSE_SEASON',
 ];
 
 export class SeasonsSpecialist extends Skill {
@@ -62,7 +64,7 @@ export class SeasonsSpecialist extends Skill {
   }
 
   async execute(task) {
-    const { operation, payload, db } = task.input;
+    const { operation, payload, db, userId } = task.input;
 
     if (!this.capabilities.includes(operation)) {
       return createSkillResult({
@@ -78,6 +80,7 @@ export class SeasonsSpecialist extends Skill {
         case 'CREATE_SEASON': return this._createSeason(payload, db);
         case 'UPDATE_SEASON': return this._updateSeason(payload, db);
         case 'DELETE_SEASON': return this._deleteSeason(payload, db);
+        case 'CLOSE_SEASON': return this._closeSeason(payload, db, userId);
       }
     } catch (err) {
       return createSkillResult({
@@ -176,5 +179,23 @@ export class SeasonsSpecialist extends Skill {
     }
 
     return createSkillResult({ success: true, data: { deleted: true, seasonId } });
+  }
+
+
+  async _closeSeason({ seasonId, orgId }, db, userId) {
+    if (!(await isOrgAdmin(userId, orgId, db))) {
+      return createSkillResult({ success: false, errorCode: 'FORBIDDEN', errorMessage: 'Solo el administrador de la organización puede cerrar la temporada' });
+    }
+
+    const { data, error } = await db.rpc('fn_close_season_atomic', {
+      p_season_id: seasonId,
+      p_org_id: orgId,
+    });
+    if (error) {
+      console.error('[seasons] fn_close_season_atomic failed:', error.message);
+      return createSkillResult({ success: false, errorCode: 'CLOSE_SEASON_FAILED', errorMessage: 'No fue posible cerrar la temporada' });
+    }
+    if (!data?.ok) return createSkillResult({ success: false, errorCode: data?.code ?? 'CLOSE_SEASON_FAILED', errorMessage: 'No fue posible cerrar la temporada' });
+    return createSkillResult({ success: true, data: { result: data } });
   }
 }

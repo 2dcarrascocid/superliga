@@ -7,7 +7,9 @@
  * single) que siempre retorna `this`, y es "thenable": al hacer `await` sobre
  * el builder (en cualquier punto de la cadena) se resuelve con la siguiente
  * respuesta en cola para esa tabla (FIFO), simulando el orden real en que el
- * código bajo test realiza sus llamadas a esa tabla.
+ * código bajo test realiza sus llamadas a esa tabla. `upsert` se trata igual
+ * que `insert` (dispara `onInsert`, ignora `onConflict`/opciones — el mock
+ * no filtra ni deduplica, solo reproduce la respuesta en cola).
  *
  * No es un emulador de SQL — no filtra ni interpreta los `.eq()/.in()`, solo
  * reproduce la forma { data, error, count } que el código consume.
@@ -59,6 +61,11 @@ export function createMockDb(queues, { onInsert, onUpdate, onRpc } = {}) {
         range() { return builder; },
         limit() { return builder; },
         insert(payload) {
+          lastWritePayload = payload;
+          if (onInsert) onInsert(table, payload);
+          return builder;
+        },
+        upsert(payload) {
           lastWritePayload = payload;
           if (onInsert) onInsert(table, payload);
           return builder;

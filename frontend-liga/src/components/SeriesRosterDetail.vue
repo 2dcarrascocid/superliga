@@ -38,7 +38,7 @@
             </svg>
             Sugeridos por edad
           </span>
-          <span v-if="series.min_age" class="text-muted text-sm"> — {{ eligiblePlayers.length }} jugadores cumplen el requisito</span>
+          <span v-if="seriesMinAge" class="text-muted text-sm"> — {{ eligiblePlayers.length }} jugadores cumplen el requisito</span>
           <span v-else class="text-muted text-sm"> — sin restricción de edad</span>
         </div>
         <button
@@ -52,8 +52,8 @@
         </button>
       </div>
 
-      <p v-if="series.min_age" class="text-muted text-sm mb-sm">
-        Edad mínima: <strong>{{ series.min_age }}</strong> ({{ series.age_restriction ? 'edad cumplida' : 'por año de nacimiento' }}).
+      <p v-if="seriesMinAge" class="text-muted text-sm mb-sm">
+        Edad mínima: <strong>{{ seriesMinAge }}</strong> ({{ seriesAgeRestriction ? 'edad cumplida' : 'por año de nacimiento' }}) — definida por la categoría <strong>{{ series.category?.name }}</strong>.
         Solo se listan jugadores del club que cumplen el requisito y no están asignados aún.
       </p>
 
@@ -116,6 +116,12 @@ const bulkAssigning = ref(false);
 const assigningIds = reactive(new Set());
 
 // ── Cálculo de edades ────────────────────────────────────────────────────────
+// La edad mínima y el modo de cálculo ("Cálculo de edad") son configuración
+// de la CATEGORÍA de la serie (lg_categories.age_from/age_restriction), no
+// de la serie ni del club — dos series distintas en la misma categoría
+// comparten siempre la misma regla.
+const seriesMinAge = computed(() => props.series?.category?.age_from || null);
+const seriesAgeRestriction = computed(() => Boolean(props.series?.category?.age_restriction));
 
 // Edad cumplida: años reales, considerando si ya pasó el cumpleaños de este año.
 const exactAge = (birthDate) => {
@@ -131,14 +137,14 @@ const exactAge = (birthDate) => {
 // Edad por año de nacimiento: categoría, sin exigir cumpleaños ya pasado.
 const ageByBirthYear = (birthDate) => new Date().getFullYear() - new Date(birthDate).getFullYear();
 
-// Calcula la edad de un jugador según el modo configurado en la serie seleccionada.
+// Calcula la edad de un jugador según el modo configurado en la categoría de la serie.
 const playerAge = (birthDate) => {
   if (!birthDate) return null;
-  return props.series?.age_restriction ? exactAge(birthDate) : ageByBirthYear(birthDate);
+  return seriesAgeRestriction.value ? exactAge(birthDate) : ageByBirthYear(birthDate);
 };
 
 const meetsMinAge = (birthDate) => {
-  const minAge = props.series?.min_age;
+  const minAge = seriesMinAge.value;
   if (!minAge) return true;
   const age = playerAge(birthDate);
   return age === null ? true : age >= minAge;

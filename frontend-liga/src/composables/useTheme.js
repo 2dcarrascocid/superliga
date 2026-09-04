@@ -5,15 +5,17 @@ import { ref, watch } from 'vue';
 
 const STORAGE_KEY = 'theme';
 
-// El proyecto es "dark-mode first" (ver src/styles/tokens.css): si no hay
-// nada guardado en localStorage, el default es 'dark' (no se usa
-// prefers-color-scheme a propósito).
+// Respeta la elección guardada y, en la primera visita, la preferencia del sistema.
 const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
-const theme = ref(stored === 'light' ? 'light' : 'dark');
+const systemTheme = typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches
+  ? 'dark'
+  : 'light';
+const theme = ref(stored === 'light' || stored === 'dark' ? stored : systemTheme);
 
 function applyTheme(value) {
   if (typeof document === 'undefined') return;
   document.documentElement.setAttribute('data-theme', value);
+  document.documentElement.style.colorScheme = value;
 }
 
 // Aplica el tema guardado apenas se carga este módulo, para que quede

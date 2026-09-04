@@ -169,10 +169,10 @@
                   </span>
                 </td>
                 <td>
-                  <div class="flex gap-sm">
+                  <ActionsMenu>
                     <button class="btn btn-sm btn-secondary" @click="startEdit(venue)">Editar</button>
                     <button class="btn btn-sm btn-danger" @click="confirmDelete(venue)">Eliminar</button>
-                  </div>
+                  </ActionsMenu>
                 </td>
               </tr>
             </tbody>
@@ -241,6 +241,7 @@ import { useVenuesStore } from '../stores/venues';
 import { useAuthStore } from '../stores/auth';
 import { useNotifyStore } from '../stores/notify';
 import territorios from '../data/territorios.json';
+import ActionsMenu from '../components/ActionsMenu.vue';
 
 const { items, loading, error, fetchVenues, createOrUpdateVenue, removeVenue } = useVenuesStore();
 const authStore = useAuthStore();

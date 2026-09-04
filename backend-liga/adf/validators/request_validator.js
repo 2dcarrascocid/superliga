@@ -321,6 +321,10 @@ export const ValidationRules = {
     UPDATE_SEASON: [
       { field: 'seasonId', required: true, type: 'string', format: 'uuid' },
     ],
+    CLOSE_SEASON: [
+      { field: 'seasonId', required: true, type: 'string', format: 'uuid' },
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+    ],
     DELETE_SEASON: [
       { field: 'seasonId', required: true, type: 'string', format: 'uuid' },
     ],
@@ -378,6 +382,24 @@ export const ValidationRules = {
     REGISTER_TEAM: [
       { field: 'tournamentId', required: true, type: 'string', format: 'uuid' },
       { field: 'seriesId', required: true, type: 'string', format: 'uuid' },
+    ],
+    GET_SERIES_TOURNAMENT_ELIGIBILITY: [
+      { field: 'clubId', required: true, type: 'string', format: 'uuid' },
+      { field: 'seriesId', required: true, type: 'string', format: 'uuid' },
+      { field: 'tournamentId', required: true, type: 'string', format: 'uuid' },
+    ],
+    REGISTER_CLUB_SERIES_ATOMIC: [
+      { field: 'clubId', required: true, type: 'string', format: 'uuid' },
+      { field: 'seriesId', required: true, type: 'string', format: 'uuid' },
+      { field: 'tournamentId', required: true, type: 'string', format: 'uuid' },
+    ],
+    LIST_ACTIVE_TOURNAMENTS_FOR_CLUB: [
+      { field: 'clubId', required: true, type: 'string', format: 'uuid' },
+      { field: 'seriesId', required: false, type: 'string', format: 'uuid' },
+    ],
+    GET_CLUB_TOURNAMENT_DETAIL: [
+      { field: 'clubId', required: true, type: 'string', format: 'uuid' },
+      { field: 'tournamentId', required: true, type: 'string', format: 'uuid' },
     ],
     LIST_TOURNAMENT_CLUBS: [
       { field: 'tournamentId', required: true, type: 'string', format: 'uuid' },
@@ -440,14 +462,10 @@ export const ValidationRules = {
       { field: 'clubId', required: true, type: 'string', format: 'uuid' },
       { field: 'name', required: true, type: 'string', minLength: 1, maxLength: 150 },
       { field: 'description', required: false, type: 'string', maxLength: 500 },
-      { field: 'minAge', required: false, type: 'number', min: 1, max: 100 },
-      { field: 'ageRestriction', required: false, type: 'boolean' },
     ],
     UPDATE_SERIES: [
       { field: 'seriesId', required: true, type: 'string', format: 'uuid' },
       { field: 'description', required: false, type: 'string', maxLength: 500 },
-      { field: 'minAge', required: false, type: 'number', min: 1, max: 100 },
-      { field: 'ageRestriction', required: false, type: 'boolean' },
     ],
     DELETE_SERIES: [
       { field: 'seriesId', required: true, type: 'string', format: 'uuid' },

@@ -60,6 +60,15 @@
         </div>
 
         <div class="input-group">
+          <label class="label">Cálculo de edad</label>
+          <select v-model="form.age_restriction" class="input">
+            <option :value="true">Edad cumplida</option>
+            <option :value="false">Año de nacimiento</option>
+          </select>
+          <p class="input-hint">Aplica a todas las series de clubes que usen esta categoría.</p>
+        </div>
+
+        <div class="input-group">
           <label class="label">Descripción</label>
           <textarea v-model="form.description" class="input" rows="2" />
         </div>
@@ -113,10 +122,10 @@
                 <td class="text-center">{{ GENDER_LABELS[cat.gender] || '—' }}</td>
                 <td class="text-center">{{ cat.age_from ?? 0 }} – {{ cat.age_to ?? 0 }}</td>
                 <td>
-                  <div class="flex gap-sm">
+                  <ActionsMenu>
                     <button class="btn btn-sm btn-secondary" @click="startEdit(cat)">Editar</button>
                     <button class="btn btn-sm btn-danger" @click="confirmDelete(cat)">Eliminar</button>
-                  </div>
+                  </ActionsMenu>
                 </td>
               </tr>
             </tbody>
@@ -134,6 +143,7 @@ import { useNotifyStore } from '../stores/notify';
 import {
   listSports, listCategoriesByOrg, createCategoryForOrg, updateCategoryById, deleteCategoryById,
 } from '../services/categories.service.js';
+import ActionsMenu from '../components/ActionsMenu.vue';
 
 const authStore = useAuthStore();
 const { confirm, notifySuccess, notifyError } = useNotifyStore();
@@ -155,6 +165,7 @@ const defaultForm = () => ({
   color: '#6366f1',
   age_from: 0,
   age_to: 0,
+  age_restriction: false,
   description: '',
 });
 
@@ -204,6 +215,7 @@ const startEdit = (cat) => {
   form.color = cat.color || '#6366f1';
   form.age_from = cat.age_from ?? 0;
   form.age_to = cat.age_to ?? 0;
+  form.age_restriction = Boolean(cat.age_restriction);
   form.description = cat.description ?? '';
   viewMode.value = 'form';
 };
@@ -219,6 +231,7 @@ const saveCategory = async () => {
     color: form.color,
     age_from: form.age_from,
     age_to: form.age_to,
+    age_restriction: form.age_restriction,
     description: form.description || null,
   };
   try {

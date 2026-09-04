@@ -135,10 +135,10 @@
                   </span>
                 </td>
                 <td>
-                  <div class="flex gap-sm">
+                  <ActionsMenu>
                     <button class="btn btn-sm btn-secondary" @click="startEdit(referee)">Editar</button>
                     <button class="btn btn-sm btn-danger" @click="confirmDelete(referee)">Eliminar</button>
-                  </div>
+                  </ActionsMenu>
                 </td>
               </tr>
             </tbody>
@@ -206,6 +206,7 @@ import { onMounted, reactive, ref, computed } from 'vue';
 import { useRefereesStore } from '../stores/referees';
 import { useAuthStore } from '../stores/auth';
 import { useNotifyStore } from '../stores/notify';
+import ActionsMenu from '../components/ActionsMenu.vue';
 
 const { items, loading, error, fetchReferees, createOrUpdateReferee, removeReferee } = useRefereesStore();
 const authStore = useAuthStore();

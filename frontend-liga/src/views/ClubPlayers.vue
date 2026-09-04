@@ -125,32 +125,29 @@
               </td>
               <td>
                 <!-- Activos: Ver + Editar + Desactivar -->
-                <div v-if="activeTab === 'activos'" class="flex gap-sm">
+                <ActionsMenu v-if="activeTab === 'activos'">
                   <button
                     class="btn btn-sm btn-secondary"
                     @click="$router.push(`/players/${item.player_id}`)"
-                    title="Ver detalle"
                   >
                     Ver
                   </button>
                   <button
                     class="btn btn-sm btn-secondary"
                     @click="$router.push(`/players/${item.player_id}/edit`)"
-                    title="Editar"
                   >
                     Editar
                   </button>
-                </div>
+                </ActionsMenu>
                 <!-- Inactivos: solo Ver -->
-                <div v-else>
+                <ActionsMenu v-else>
                   <button
                     class="btn btn-sm btn-secondary"
                     @click="$router.push(`/players/${item.player_id}`)"
-                    title="Ver detalle"
                   >
                     Ver
                   </button>
-                </div>
+                </ActionsMenu>
               </td>
             </tr>
           </tbody>
@@ -208,6 +205,7 @@ import { usePlayersStore } from '../stores/players';
 import { useClubsStore } from '../stores/clubs';
 import { listCategories } from '../services/categories.service.js';
 import { formatFolio } from '../utils/folio.js';
+import ActionsMenu from '../components/ActionsMenu.vue';
 
 const route = useRoute();
 const playersStore = usePlayersStore();
