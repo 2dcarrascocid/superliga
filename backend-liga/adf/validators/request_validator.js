@@ -351,6 +351,31 @@ export const ValidationRules = {
     GET_PAYMENT_STATS: [
       { field: 'orgId', required: true, type: 'string', format: 'uuid' },
     ],
+    CREATE_EVENT: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+      { field: 'clubId', required: true, type: 'string', format: 'uuid' },
+      { field: 'name', required: true, type: 'string', minLength: 2, maxLength: 150 },
+      { field: 'eventType', required: false, type: 'string', enum: ['FECHA_PARTIDO', 'COLECTA', 'COMPRA_IMPLEMENTOS', 'OTRO'] },
+      { field: 'direction', required: false, type: 'string', enum: ['INGRESO', 'EGRESO'] },
+    ],
+    LIST_EVENTS: [
+      { field: 'orgId', required: false, type: 'string', format: 'uuid' },
+      { field: 'clubId', required: false, type: 'string', format: 'uuid' },
+    ],
+    GET_EVENT_DETAIL: [
+      { field: 'eventId', required: true, type: 'string', format: 'uuid' },
+    ],
+    SET_EVENT_PLAYERS: [
+      { field: 'eventId', required: true, type: 'string', format: 'uuid' },
+      { field: 'charges', required: true, type: 'array' },
+    ],
+    RECORD_EVENT_PLAYER_PAYMENT: [
+      { field: 'chargeId', required: true, type: 'string', format: 'uuid' },
+      { field: 'amount', required: true, type: 'number' },
+    ],
+    DELETE_EVENT: [
+      { field: 'eventId', required: true, type: 'string', format: 'uuid' },
+    ],
   },
   tournaments: {
     CREATE_TOURNAMENT: [

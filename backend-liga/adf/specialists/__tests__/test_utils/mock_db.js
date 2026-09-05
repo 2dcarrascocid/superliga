@@ -3,8 +3,8 @@
  *
  * `createMockDb(queues)` recibe un objeto { tableName: [respuesta1, respuesta2, ...] }.
  * Cada llamada a `db.from(tableName)` devuelve un builder encadenable (select,
- * eq, neq, in, is, order, range, limit, insert, update, delete, maybeSingle,
- * single) que siempre retorna `this`, y es "thenable": al hacer `await` sobre
+ * eq, neq, in, is, gt, gte, lt, lte, order, range, limit, insert, update,
+ * delete, maybeSingle, single) que siempre retorna `this`, y es "thenable": al hacer `await` sobre
  * el builder (en cualquier punto de la cadena) se resuelve con la siguiente
  * respuesta en cola para esa tabla (FIFO), simulando el orden real en que el
  * código bajo test realiza sus llamadas a esa tabla. `upsert` se trata igual
@@ -57,6 +57,10 @@ export function createMockDb(queues, { onInsert, onUpdate, onRpc } = {}) {
         neq() { return builder; },
         in() { return builder; },
         is() { return builder; },
+        gt() { return builder; },
+        gte() { return builder; },
+        lt() { return builder; },
+        lte() { return builder; },
         order() { return builder; },
         range() { return builder; },
         limit() { return builder; },

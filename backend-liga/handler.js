@@ -800,6 +800,46 @@ const ROUTES = [
     input: { orgId: pp.orgId },
   })),
 
+  // ── Eventos de club (sobre el módulo financiero) ────────────────────────
+
+  route('POST', '/clubs/{clubId}/events', (pp, body) => ({
+    type: 'CREATE_EVENT', domain: 'club_finance',
+    input: {
+      orgId: body.org_id,
+      clubId: pp.clubId,
+      name: body.name,
+      eventType: body.event_type,
+      direction: body.direction,
+      eventDate: body.event_date,
+      description: body.description,
+    },
+  })),
+
+  route('GET', '/clubs/{clubId}/events', (pp, _body, qs) => ({
+    type: 'LIST_EVENTS', domain: 'club_finance',
+    input: { orgId: qs.org_id, clubId: pp.clubId },
+  })),
+
+  route('GET', '/events/{eventId}', (pp) => ({
+    type: 'GET_EVENT_DETAIL', domain: 'club_finance',
+    input: { eventId: pp.eventId },
+  })),
+
+  route('PUT', '/events/{eventId}/players', (pp, body) => ({
+    type: 'SET_EVENT_PLAYERS', domain: 'club_finance',
+    input: { eventId: pp.eventId, charges: body.charges },
+  })),
+
+  route('POST', '/events/{eventId}/charges/{chargeId}/payment', (pp, body) => ({
+    type: 'RECORD_EVENT_PLAYER_PAYMENT', domain: 'club_finance',
+    input: { chargeId: pp.chargeId, amount: body.amount !== undefined ? Number(body.amount) : undefined },
+  })),
+
+  route('DELETE', '/events/{eventId}', (pp) => ({
+    type: 'DELETE_EVENT', domain: 'club_finance',
+    input: { eventId: pp.eventId },
+  })),
+
   // ── Torneos ───────────────────────────────────────────────────────────────
 
   route('GET', '/tournaments', (_pp, _body, qs) => ({

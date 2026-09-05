@@ -10,6 +10,11 @@
  * validación de request (eso vive en quien la llama).
  */
 
+// NOTA: 'EVENTO' es una categoría derivada (ver upsertEventSummaryEntry más
+// abajo) — no se agrega a LEDGER_CATEGORIES a propósito, para que
+// CREATE_LEDGER_ENTRY (alta manual) siga sin poder crear una fila 'EVENTO'
+// suelta sin event_id. La única vía para escribir category='EVENTO' es esta
+// función, desde club_finance_specialist.js.
 export const LEDGER_CATEGORIES = ['INSCRIPCION', 'FECHA', 'MULTA', 'OTRO', 'VALOR'];
 export const LEDGER_DIRECTIONS = ['INGRESO', 'EGRESO'];
 
@@ -161,4 +166,72 @@ export async function clearUnpaidMatchdayCharges(matchdayIds, db) {
     .in('matchday_id', matchdayIds)
     .eq('category', 'FECHA')
     .eq('paid_amount', 0);
+}
+
+/**
+ * Recalcula la suma de `amount`/`paid_amount` de todos los
+ * lg_club_event_charges de un evento y hace upsert de la única fila
+ * resumen (category='EVENTO', event_id=eventId) en lg_ledger_entries.
+ * La usa club_finance_specialist.js después de crear/editar charges o de
+ * registrar un pago de un charge — así GET_PAYMENT_STATS/ClubFinanceView
+ * ven el total del evento sin enterarse del detalle por jugador.
+ *
+ * NOTA: no existe hoy un UNIQUE index sobre lg_ledger_entries.event_id, así
+ * que esta función NO usa `.upsert(..., { onConflict: 'event_id' })` (no
+ * habría constraint que lo respalde) — hace un select explícito por
+ * event_id + category='EVENTO' y decide insert vs update en el código. Si
+ * en el futuro se agrega ese UNIQUE index, se puede simplificar a un upsert
+ * real.
+ *
+ * No lanza si falla — retorna { data, error } como el resto de los helpers
+ * de este archivo; quien la llama decide si es un error bloqueante.
+ */
+export async function upsertEventSummaryEntry({ orgId, clubId, eventId, direction, description, dueDate }, db) {
+  const { data: charges, error: chargesError } = await db
+    .from('lg_club_event_charges')
+    .select('amount, paid_amount')
+    .eq('event_id', eventId);
+  if (chargesError) return { data: null, error: chargesError };
+
+  const totalAmount = (charges ?? []).reduce((sum, c) => sum + (Number(c.amount) || 0), 0);
+  const totalPaid = (charges ?? []).reduce((sum, c) => sum + (Number(c.paid_amount) || 0), 0);
+
+  const { data: existing, error: existingError } = await db
+    .from('lg_ledger_entries')
+    .select('id')
+    .eq('event_id', eventId)
+    .eq('category', 'EVENTO')
+    .maybeSingle();
+  if (existingError) return { data: null, error: existingError };
+
+  if (existing) {
+    return db
+      .from('lg_ledger_entries')
+      .update({
+        amount: totalAmount,
+        paid_amount: totalPaid,
+        paid_at: totalPaid > 0 ? new Date().toISOString() : null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', existing.id)
+      .select()
+      .single();
+  }
+
+  return db
+    .from('lg_ledger_entries')
+    .insert({
+      org_id: orgId,
+      club_id: clubId,
+      event_id: eventId,
+      category: 'EVENTO',
+      direction,
+      amount: totalAmount,
+      paid_amount: totalPaid,
+      paid_at: totalPaid > 0 ? new Date().toISOString() : null,
+      description: description ?? null,
+      due_date: dueDate ?? null,
+    })
+    .select()
+    .single();
 }
