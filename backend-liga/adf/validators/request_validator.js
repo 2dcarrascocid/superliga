@@ -185,6 +185,13 @@ export const ValidationRules = {
       { field: 'token',   required: true, type: 'string', minLength: 10 },
       { field: 'idToken', required: true, type: 'string', minLength: 20 },
     ],
+    ORG_INVITE_INFO: [
+      { field: 'token', required: true, type: 'string', minLength: 10 },
+    ],
+    ACCEPT_ORG_INVITE: [
+      { field: 'token',    required: true, type: 'string', minLength: 10 },
+      { field: 'password', required: true, type: 'string', minLength: 8 },
+    ],
   },
   clubs: {
     CREATE_CLUB: [
@@ -533,6 +540,27 @@ export const ValidationRules = {
     ],
     UPDATE_SCHEDULING_SETTINGS: [
       { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+    ],
+  },
+  org: {
+    GET_ORG_SPORT: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+    ],
+    UPDATE_ORG_SPORT: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+      { field: 'sportId', required: true, type: 'string', format: 'uuid' },
+    ],
+    GET_ORG_ADMINS: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+    ],
+    INVITE_ORG_ADMIN: [
+      { field: 'orgId',    required: true, type: 'string', format: 'uuid' },
+      { field: 'fullName', required: true, type: 'string', minLength: 2, maxLength: 100 },
+      { field: 'email',    required: true, type: 'string', format: 'email' },
+    ],
+    REMOVE_ORG_ADMIN: [
+      { field: 'orgId',       required: true, type: 'string', format: 'uuid' },
+      { field: 'adminUserId', required: true, type: 'string', format: 'uuid' },
     ],
   },
 };

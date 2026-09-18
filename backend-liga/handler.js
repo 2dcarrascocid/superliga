@@ -1097,6 +1097,54 @@ const ROUTES = [
     },
   })),
 
+  // ── Panel de Configuración de Administrador (deporte + admins de org) ────
+  // Nota: no hay ruta GET /sports acá — ya existe más arriba
+  // (LIST_SPORTS, domain 'categories', línea ~428), devuelve el mismo
+  // shape { sports: [...] }. Una segunda ruta '/sports' quedaba muerta
+  // (el router usa "primera coincidencia gana"), así que este panel
+  // reutiliza esa ruta existente en vez de duplicarla.
+
+  route('GET', '/orgs/{orgId}/sport', (pp) => ({
+    type: 'GET_ORG_SPORT', domain: 'org',
+    input: { orgId: pp.orgId },
+  })),
+
+  route('PUT', '/orgs/{orgId}/sport', (pp, body) => ({
+    type: 'UPDATE_ORG_SPORT', domain: 'org',
+    input: { orgId: pp.orgId, sportId: body.sportId },
+  })),
+
+  route('GET', '/orgs/{orgId}/admins', (pp) => ({
+    type: 'GET_ORG_ADMINS', domain: 'org',
+    input: { orgId: pp.orgId },
+  })),
+
+  route('POST', '/orgs/{orgId}/admins', (pp, body) => ({
+    type: 'INVITE_ORG_ADMIN', domain: 'org',
+    input: {
+      orgId:    pp.orgId,
+      fullName: body.fullName,
+      email:    body.email,
+      phone:    body.phone,
+      position: body.position,
+    },
+  })),
+
+  route('DELETE', '/orgs/{orgId}/admins/{adminUserId}', (pp) => ({
+    type: 'REMOVE_ORG_ADMIN', domain: 'org',
+    input: { orgId: pp.orgId, adminUserId: pp.adminUserId },
+  })),
+
+  route('GET', '/auth/org-invite-info', (_pp, _body, qs) => ({
+    type: 'ORG_INVITE_INFO', domain: 'auth',
+    input: { token: qs?.token },
+  })),
+
+  route('POST', '/auth/accept-org-invite', (_pp, body) => ({
+    type: 'ACCEPT_ORG_INVITE', domain: 'auth',
+    input: { token: body.token, password: body.password },
+  })),
+
   // ── Costos de Torneo ──────────────────────────────────────────────────────
 
   route('GET', '/matchdays/{matchdayId}/costs', (pp) => ({
