@@ -8,7 +8,7 @@
             <th>Nombre</th>
             <th>Categoría</th>
             <th>Edad</th>
-            <th>Restricción de año</th>
+            <th title="Restricción de año">Restr. año</th>
             <th class="text-center">Estado</th>
             <th>Acciones</th>
           </tr>
@@ -54,6 +54,55 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Mobile: tarjetas -->
+    <div class="data-cards">
+      <p v-if="items.length === 0" class="text-center py-lg text-muted text-sm">Este club aún no tiene series creadas.</p>
+      <article
+        v-for="series in items"
+        :key="series.id"
+        class="data-card"
+        :class="{ 'row--selected': selectedSeriesId === series.id }"
+      >
+        <div class="data-card__header">
+          <div class="data-card__heading">
+            <div class="data-card__title">{{ series.name }}</div>
+            <div class="data-card__subtitle">{{ series.category?.name ?? 'Sin categoría' }}</div>
+          </div>
+          <span class="status-badge" :class="series.active ? 'status-badge--active' : 'status-badge--inactive'">
+            {{ series.active ? 'Activa' : 'Inactiva' }}
+          </span>
+        </div>
+        <p v-if="series.description" class="text-muted text-sm mb-sm">{{ series.description }}</p>
+        <div class="data-card__body">
+          <div class="data-card__row">
+            <span class="data-card__row-label">Edad mínima</span>
+            <span class="data-card__row-value">{{ series.category?.age_from || '—' }}</span>
+          </div>
+          <div class="data-card__row">
+            <span class="data-card__row-label">Cálculo de edad</span>
+            <span class="data-card__row-value">{{ series.category ? (series.category.age_restriction ? 'Edad cumplida' : 'Por año') : '—' }}</span>
+          </div>
+        </div>
+        <div class="data-card__footer">
+          <ActionsMenu>
+            <button class="btn btn-sm btn-secondary" @click="$emit('select', series)">
+              {{ selectedSeriesId === series.id ? 'Viendo…' : 'Detalle' }}
+            </button>
+            <button class="btn btn-sm btn-secondary" @click="$emit('edit', series)">Editar</button>
+            <button
+              class="btn btn-sm btn-danger"
+              :disabled="!series.can_delete"
+              :title="deleteReason(series)"
+              @click="$emit('delete', series)"
+            >Eliminar</button>
+            <span v-if="!series.can_delete" class="delete-reason">
+              Inscrita en {{ series.registration_count }} torneo(s)
+            </span>
+          </ActionsMenu>
+        </div>
+      </article>
     </div>
   </div>
 </template>

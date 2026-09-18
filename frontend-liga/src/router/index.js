@@ -21,6 +21,8 @@ const PlayerChangeClub = () => import('../views/PlayerChangeClub.vue');
 const PlayersImport    = () => import('../views/PlayersImport.vue');
 const ClubSeries = () => import('../views/ClubSeries.vue');
 const ClubTournamentDetail = () => import('../views/ClubTournamentDetail.vue');
+const ClubSeasonsView = () => import('../views/ClubSeasonsView.vue');
+const ClubFinanceView = () => import('../views/ClubFinanceView.vue');
 const RefereesList = () => import('../views/RefereesList.vue');
 const CategoriesList = () => import('../views/CategoriesList.vue');
 const VenuesList = () => import('../views/VenuesList.vue');
@@ -37,6 +39,8 @@ const TournamentTopScorers = () => import('../views/TournamentTopScorers.vue');
 const TournamentFairplay = () => import('../views/TournamentFairplay.vue');
 const TournamentCosts = () => import('../views/TournamentCosts.vue');
 const MatchControlSheet = () => import('../views/MatchControlSheet.vue');
+const MatchdaySchedulingView = () => import('../views/MatchdaySchedulingView.vue');
+const SchedulingSettingsView = () => import('../views/SchedulingSettingsView.vue');
 const PlayerProfile = () => import('../views/PlayerProfile.vue');
 
 const routes = [
@@ -124,6 +128,48 @@ const routes = [
         component: ClubTournamentDetail,
         meta: { requiresAuth: true, requiresOrg: true },
     },
+    // Temporadas/torneos/estadísticas y finanzas propias del club — mismos
+    // componentes de solo lectura que usa la administración de organización
+    // (ver comentario en la sección "Rol Jugador" más abajo, mismo patrón),
+    // en rutas alternativas sin orgAdminOnly para que un ADMIN_CLUB pueda
+    // consultarlas sin salir del alcance de su propio club.
+    {
+        path: '/clubs/:clubId/seasons',
+        name: 'ClubSeasonsView',
+        component: ClubSeasonsView,
+        meta: { requiresAuth: true, requiresOrg: true },
+    },
+    {
+        path: '/clubs/:clubId/finance',
+        name: 'ClubFinanceView',
+        component: ClubFinanceView,
+        meta: { requiresAuth: true, requiresOrg: true },
+    },
+    {
+        path: '/clubs/:clubId/tournaments/:tournamentId/fixture',
+        alias: ['/clubs/:clubId/tournaments/:tournamentId/matchdays', '/clubs/:clubId/tournaments/:tournamentId/matches'],
+        name: 'ClubTournamentFixture',
+        component: TournamentFixture,
+        meta: { requiresAuth: true, requiresOrg: true },
+    },
+    {
+        path: '/clubs/:clubId/tournaments/:tournamentId/standings',
+        name: 'ClubTournamentStandings',
+        component: TournamentStandings,
+        meta: { requiresAuth: true, requiresOrg: true },
+    },
+    {
+        path: '/clubs/:clubId/tournaments/:tournamentId/top-scorers',
+        name: 'ClubTournamentTopScorers',
+        component: TournamentTopScorers,
+        meta: { requiresAuth: true, requiresOrg: true },
+    },
+    {
+        path: '/clubs/:clubId/tournaments/:tournamentId/fairplay',
+        name: 'ClubTournamentFairplay',
+        component: TournamentFairplay,
+        meta: { requiresAuth: true, requiresOrg: true },
+    },
     {
         path: '/clubs/:clubId/players/new',
         name: 'PlayerCreate',
@@ -182,6 +228,18 @@ const routes = [
         path: '/schedules',
         name: 'SchedulesList',
         component: SchedulesList,
+        meta: { requiresAuth: true, requiresOrg: true, orgAdminOnly: true },
+    },
+    {
+        path: '/match-scheduling',
+        name: 'MatchdaySchedulingView',
+        component: MatchdaySchedulingView,
+        meta: { requiresAuth: true, requiresOrg: true, orgAdminOnly: true },
+    },
+    {
+        path: '/scheduling-settings',
+        name: 'SchedulingSettingsView',
+        component: SchedulingSettingsView,
         meta: { requiresAuth: true, requiresOrg: true, orgAdminOnly: true },
     },
     {

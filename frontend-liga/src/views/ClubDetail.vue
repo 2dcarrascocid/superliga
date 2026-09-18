@@ -76,7 +76,7 @@
                   <th>Foto</th>
                   <th>Nombre</th>
                   <th>Edad</th>
-                  <th>Categoría / Serie</th>
+                  <th title="Categoría / Serie">Cat./Serie</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -119,6 +119,50 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- Mobile: tarjetas -->
+          <div class="data-cards">
+            <article v-for="item in filteredPlayers" :key="item.id" class="data-card">
+              <div class="data-card__header">
+                <div class="avatar-small data-card__avatar">
+                  <img :src="item.player?.photo_url || '/placeholder-player.svg'" alt="Foto" class="avatar-img" />
+                </div>
+                <div class="data-card__heading">
+                  <div class="data-card__title">{{ item.player?.first_name }} {{ item.player?.last_name }}</div>
+                  <div class="data-card__subtitle">Folio {{ formatFolio({ clubFolio: item.club_folio, clubFolioDisplay: item.club_folio_display, birthDate: item.player?.birth_date }) ?? '—' }}</div>
+                </div>
+              </div>
+              <div class="data-card__body">
+                <div class="data-card__row">
+                  <span class="data-card__row-label">Edad</span>
+                  <span class="data-card__row-value">{{ getPlayerAge(item) ?? '—' }}</span>
+                </div>
+                <div class="data-card__row">
+                  <span class="data-card__row-label">Serie</span>
+                  <span class="data-card__row-value">
+                    <span
+                      v-if="getPlayerSeriesBadge(item)"
+                      class="badge"
+                      :style="{ backgroundColor: getPlayerSeriesBadge(item).color, color: '#fff' }"
+                    >
+                      {{ getPlayerSeriesBadge(item).label }}
+                    </span>
+                    <span v-else class="text-muted">Sin serie asignada</span>
+                  </span>
+                </div>
+              </div>
+              <div class="data-card__footer">
+                <ActionsMenu>
+                  <button class="btn btn-sm btn-secondary" @click="$router.push(`/players/${item.player_id}`)">
+                    Ver detalle
+                  </button>
+                  <button class="btn btn-sm btn-secondary" @click="$router.push(`/players/${item.player_id}/edit`)">
+                    Editar
+                  </button>
+                </ActionsMenu>
+              </div>
+            </article>
           </div>
 
           <!-- Pagination -->
@@ -170,7 +214,7 @@
                   <th>Foto</th>
                   <th>Nombre</th>
                   <th>Categoría</th>
-                  <th>Traspasado el</th>
+                  <th title="Traspasado el">Traspaso</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -209,6 +253,47 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- Mobile: tarjetas -->
+          <div class="data-cards">
+            <article v-for="item in inactivePlayers" :key="item.id" class="data-card">
+              <div class="data-card__header">
+                <div class="avatar-small data-card__avatar">
+                  <img :src="item.player?.photo_url || '/placeholder-player.svg'" alt="Foto" class="avatar-img" />
+                </div>
+                <div class="data-card__heading">
+                  <div class="data-card__title">{{ item.player?.first_name }} {{ item.player?.last_name }}</div>
+                  <div class="data-card__subtitle">Folio {{ formatFolio({ clubFolio: item.club_folio, clubFolioDisplay: item.club_folio_display, birthDate: item.player?.birth_date }) ?? '—' }}</div>
+                </div>
+              </div>
+              <div class="data-card__body">
+                <div class="data-card__row">
+                  <span class="data-card__row-label">Categoría</span>
+                  <span class="data-card__row-value">
+                    <span
+                      v-if="getPlayerCategory(item.player?.birth_date)"
+                      class="badge"
+                      :style="{ backgroundColor: getPlayerCategory(item.player?.birth_date).color, color: '#fff' }"
+                    >
+                      {{ getPlayerCategory(item.player?.birth_date).name }}
+                    </span>
+                    <span v-else class="text-muted">—</span>
+                  </span>
+                </div>
+                <div class="data-card__row">
+                  <span class="data-card__row-label">Traspaso</span>
+                  <span class="data-card__row-value">{{ item.valid_to ? formatDate(item.valid_to) : '—' }}</span>
+                </div>
+              </div>
+              <div class="data-card__footer">
+                <ActionsMenu>
+                  <button class="btn btn-sm btn-secondary" @click="$router.push(`/players/${item.player_id}`)">
+                    Ver detalle
+                  </button>
+                </ActionsMenu>
+              </div>
+            </article>
           </div>
         </div>
       </div>
@@ -381,73 +466,128 @@
         <h4 class="mb-md">Enviados</h4>
         <div v-if="trLoading && !outgoingTransfers.length" class="text-center py-md text-muted">Cargando...</div>
         <div v-else-if="!outgoingTransfers.length" class="text-center py-md text-muted">No hay traspasos enviados.</div>
-        <div v-else class="table-container">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Jugador</th>
-                <th>Club destino</th>
-                <th>Estado</th>
-                <th>Fecha</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="t in outgoingTransfers" :key="t.id">
-                <td>{{ t.player?.first_name }} {{ t.player?.last_name }}</td>
-                <td>{{ t.to_club?.name }}</td>
-                <td>
-                  <span class="badge" :class="transferBadgeClass(t.status)">{{ t.status }}</span>
-                </td>
-                <td>{{ formatDate(t.created_at) }}</td>
-                <td>
-                  <ActionsMenu v-if="t.status === 'ENVIADO'">
-                    <button class="btn btn-sm btn-danger" @click="cancelar(t)">
-                      Cancelar
-                    </button>
-                  </ActionsMenu>
-                  <span v-else class="text-muted">—</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <template v-else>
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Jugador</th>
+                  <th>Club destino</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="t in outgoingTransfers" :key="t.id">
+                  <td>{{ t.player?.first_name }} {{ t.player?.last_name }}</td>
+                  <td>{{ t.to_club?.name }}</td>
+                  <td>
+                    <span class="badge" :class="transferBadgeClass(t.status)">{{ t.status }}</span>
+                  </td>
+                  <td>{{ formatDate(t.created_at) }}</td>
+                  <td>
+                    <ActionsMenu v-if="t.status === 'ENVIADO'">
+                      <button class="btn btn-sm btn-danger" @click="cancelar(t)">
+                        Cancelar
+                      </button>
+                    </ActionsMenu>
+                    <span v-else class="text-muted">—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile: tarjetas -->
+          <div class="data-cards">
+            <article v-for="t in outgoingTransfers" :key="t.id" class="data-card">
+              <div class="data-card__header">
+                <div class="data-card__heading">
+                  <div class="data-card__title">{{ t.player?.first_name }} {{ t.player?.last_name }}</div>
+                  <div class="data-card__subtitle">A {{ t.to_club?.name }}</div>
+                </div>
+                <span class="badge" :class="transferBadgeClass(t.status)">{{ t.status }}</span>
+              </div>
+              <div class="data-card__body">
+                <div class="data-card__row">
+                  <span class="data-card__row-label">Fecha</span>
+                  <span class="data-card__row-value">{{ formatDate(t.created_at) }}</span>
+                </div>
+              </div>
+              <div class="data-card__footer" v-if="t.status === 'ENVIADO'">
+                <ActionsMenu>
+                  <button class="btn btn-sm btn-danger" @click="cancelar(t)">
+                    Cancelar
+                  </button>
+                </ActionsMenu>
+              </div>
+            </article>
+          </div>
+        </template>
       </div>
 
       <!-- Traspasos recibidos (entrantes) -->
       <div class="card mb-lg">
         <h4 class="mb-md">Recibidos</h4>
         <div v-if="!incomingTransfers.length" class="text-center py-md text-muted">No hay traspasos recibidos.</div>
-        <div v-else class="table-container">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Jugador</th>
-                <th>Club origen</th>
-                <th>Estado</th>
-                <th>Fecha</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="t in incomingTransfers" :key="t.id">
-                <td>{{ t.player?.first_name }} {{ t.player?.last_name }}</td>
-                <td>{{ t.from_club?.name }}</td>
-                <td>
-                  <span class="badge" :class="transferBadgeClass(t.status)">{{ t.status }}</span>
-                </td>
-                <td>{{ formatDate(t.created_at) }}</td>
-                <td>
-                  <ActionsMenu v-if="t.status === 'ENVIADO'">
-                    <button class="btn btn-sm btn-success" @click="aceptar(t)">Aceptar</button>
-                    <button class="btn btn-sm btn-danger"  @click="rechazar(t)">Rechazar</button>
-                  </ActionsMenu>
-                  <span v-else class="text-muted">—</span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <template v-else>
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Jugador</th>
+                  <th>Club origen</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="t in incomingTransfers" :key="t.id">
+                  <td>{{ t.player?.first_name }} {{ t.player?.last_name }}</td>
+                  <td>{{ t.from_club?.name }}</td>
+                  <td>
+                    <span class="badge" :class="transferBadgeClass(t.status)">{{ t.status }}</span>
+                  </td>
+                  <td>{{ formatDate(t.created_at) }}</td>
+                  <td>
+                    <ActionsMenu v-if="t.status === 'ENVIADO'">
+                      <button class="btn btn-sm btn-success" @click="aceptar(t)">Aceptar</button>
+                      <button class="btn btn-sm btn-danger"  @click="rechazar(t)">Rechazar</button>
+                    </ActionsMenu>
+                    <span v-else class="text-muted">—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile: tarjetas -->
+          <div class="data-cards">
+            <article v-for="t in incomingTransfers" :key="t.id" class="data-card">
+              <div class="data-card__header">
+                <div class="data-card__heading">
+                  <div class="data-card__title">{{ t.player?.first_name }} {{ t.player?.last_name }}</div>
+                  <div class="data-card__subtitle">De {{ t.from_club?.name }}</div>
+                </div>
+                <span class="badge" :class="transferBadgeClass(t.status)">{{ t.status }}</span>
+              </div>
+              <div class="data-card__body">
+                <div class="data-card__row">
+                  <span class="data-card__row-label">Fecha</span>
+                  <span class="data-card__row-value">{{ formatDate(t.created_at) }}</span>
+                </div>
+              </div>
+              <div class="data-card__footer" v-if="t.status === 'ENVIADO'">
+                <ActionsMenu>
+                  <button class="btn btn-sm btn-success" @click="aceptar(t)">Aceptar</button>
+                  <button class="btn btn-sm btn-danger"  @click="rechazar(t)">Rechazar</button>
+                </ActionsMenu>
+              </div>
+            </article>
+          </div>
+        </template>
       </div>
 
     </div>
@@ -534,9 +674,11 @@ const { notifySuccess, notifyError, confirm } = useNotifyStore();
 // redirect de abajo vuelva a mandar para atrás en loop).
 const tabs = [
   { key: 'series',           label: 'Series', path: `/clubs/${route.params.clubId}/series` },
+  { key: 'seasons',          label: 'Temporadas', path: `/clubs/${route.params.clubId}/seasons` },
   { key: 'players',          label: 'Jugadores' },
   { key: 'inactive_players', label: 'Jugadores Inactivos' },
   { key: 'transfers',        label: 'Traspasos' },
+  { key: 'finance',          label: 'Finanzas', path: `/clubs/${route.params.clubId}/finance` },
   { key: 'admins',           label: 'Administradores' },
   { key: 'edit',             label: 'Editar Club' },
 ];

@@ -69,11 +69,11 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Fecha Solicitud</th>
+              <th title="Fecha Solicitud">Fecha</th>
               <th>Jugador</th>
-              <th>Club Origen</th>
-              <th>Club Destino</th>
-              <th>Monto Pase (Fee)</th>
+              <th title="Club Origen">Origen</th>
+              <th title="Club Destino">Destino</th>
+              <th title="Monto Pase (Fee)">Monto</th>
               <th>Estado</th>
               <th class="text-right">Acciones</th>
             </tr>
@@ -127,6 +127,44 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile: tarjetas -->
+      <div v-if="transfers.length > 0" class="data-cards p-md">
+        <article v-for="t in transfers" :key="t.id" class="data-card">
+          <div class="data-card__header">
+            <div class="data-card__avatar">
+              <img :src="t.player?.photo_url || defaultAvatar" alt="Jugador" />
+            </div>
+            <div class="data-card__heading">
+              <div class="data-card__title">{{ getPlayerFullName(t.player) }}</div>
+              <div class="data-card__subtitle">{{ formatDate(t.created_at || t.transfer_date) }}</div>
+            </div>
+            <span :class="['status-pill', getStatusClass(t.status)]">{{ formatStatusLabel(t.status) }}</span>
+          </div>
+          <div class="data-card__body">
+            <div class="data-card__row">
+              <span class="data-card__row-label">Origen</span>
+              <span class="data-card__row-value">{{ t.origin_club?.name || t.from_club?.name || '—' }}</span>
+            </div>
+            <div class="data-card__row">
+              <span class="data-card__row-label">Destino</span>
+              <span class="data-card__row-value">{{ t.destination_club?.name || t.to_club?.name || '—' }}</span>
+            </div>
+            <div class="data-card__row">
+              <span class="data-card__row-label">Monto</span>
+              <span class="data-card__row-value">{{ formatCurrency(t.fee) }}</span>
+            </div>
+          </div>
+          <div class="data-card__footer">
+            <ActionsMenu v-if="isPending(t.status)">
+              <button @click="processStatus(t.id, 'APPROVED')" class="btn-action approve">✓ Aprobar</button>
+              <button @click="processStatus(t.id, 'REJECTED')" class="btn-action reject">✕ Rechazar</button>
+              <button @click="processStatus(t.id, 'CANCELLED')" class="btn-action cancel">🚫 Cancelar</button>
+            </ActionsMenu>
+            <span v-else class="text-muted text-sm">Sin acciones pendientes</span>
+          </div>
+        </article>
       </div>
 
       <!-- Paginación basada en Tokens -->
@@ -609,6 +647,9 @@ onMounted(() => {
 
 .table-responsive {
   overflow-x: auto;
+}
+@media (max-width: 768px) {
+  .table-responsive { display: none; }
 }
 
 .data-table {

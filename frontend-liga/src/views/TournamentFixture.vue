@@ -2,7 +2,7 @@
   <div class="container mt-md">
     <div class="flex justify-between items-center mb-lg">
       <h2>Fixture — {{ tournament?.name || '' }}</h2>
-      <button class="btn btn-secondary" @click="$router.push(`/tournaments/${tournamentId}`)">&larr; Torneo</button>
+      <button class="btn btn-secondary" @click="$router.push(backTarget)">&larr; Torneo</button>
     </div>
 
     <div v-if="error" class="alert alert-error mb-md">{{ error }}</div>
@@ -11,10 +11,26 @@
       Aún no se ha generado el fixture de este torneo.
     </div>
 
-    <div v-for="matchday in matchdays" :key="matchday.id" class="card mb-md">
+    <div v-if="matchdays.length > 0" class="tabs mb-md">
+      <button
+        v-for="(md, idx) in matchdays"
+        :key="md.id"
+        class="tab-btn"
+        :class="{ active: idx === currentIndex }"
+        @click="currentIndex = idx"
+      >
+        {{ md.name || `Fecha ${md.number}` }}
+      </button>
+    </div>
+
+    <div v-if="currentMatchday" class="card mb-md">
       <div class="flex justify-between items-center mb-md">
-        <h3 class="m-0">{{ matchday.name || `Fecha ${matchday.number}` }}</h3>
-        <span class="text-muted text-sm">{{ matchday.date || 'Sin fecha' }}</span>
+        <button class="btn btn-sm btn-secondary" :disabled="currentIndex === 0" @click="currentIndex--">&larr; Anterior</button>
+        <div class="text-center">
+          <h3 class="m-0">{{ currentMatchday.name || `Fecha ${currentMatchday.number}` }}</h3>
+          <span class="text-muted text-sm">{{ formatDate(currentMatchday.date) }}</span>
+        </div>
+        <button class="btn btn-sm btn-secondary" :disabled="currentIndex === matchdays.length - 1" @click="currentIndex++">Siguiente &rarr;</button>
       </div>
 
       <div class="table-container">
@@ -24,14 +40,13 @@
               <th>Local</th>
               <th class="text-center">Resultado</th>
               <th>Visita</th>
-              <th>Grupo</th>
               <th class="text-center">Estado</th>
-              <th>Cancha / Árbitro</th>
+              <th title="Cancha / Árbitro">Cancha/Árb.</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="match in matchesByMatchday(matchday.id)" :key="match.id">
+            <tr v-for="match in matchesByMatchday(currentMatchday.id)" :key="match.id">
               <td>{{ seriesLabel(match.home_series) || (match.status === 'WALKOVER' ? '(bye)' : 'Por definir') }}</td>
               <td class="text-center">
                 <span v-if="match.status === 'FINISHED' || match.status === 'WALKOVER'">
@@ -40,7 +55,6 @@
                 <span v-else class="text-muted">vs</span>
               </td>
               <td>{{ seriesLabel(match.away_series) || (match.status === 'WALKOVER' ? '' : 'Por definir') }}</td>
-              <td>{{ match.group_name || '—' }}</td>
               <td class="text-center">
                 <span class="status-badge" :class="`status-badge--${match.status?.toLowerCase()}`">{{ statusLabel(match.status) }}</span>
               </td>
@@ -63,12 +77,51 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Mobile: tarjetas -->
+      <div class="data-cards">
+        <article v-for="match in matchesByMatchday(currentMatchday.id)" :key="match.id" class="data-card">
+          <div class="data-card__header">
+            <div class="data-card__heading">
+              <div class="data-card__title">
+                {{ seriesLabel(match.home_series) || (match.status === 'WALKOVER' ? '(bye)' : 'Por definir') }}
+                vs
+                {{ seriesLabel(match.away_series) || (match.status === 'WALKOVER' ? '' : 'Por definir') }}
+              </div>
+              <div class="data-card__subtitle">
+                <span v-if="match.status === 'FINISHED' || match.status === 'WALKOVER'">
+                  Resultado: {{ match.home_score ?? '—' }} - {{ match.away_score ?? '—' }}
+                </span>
+                <span v-else>Sin resultado</span>
+              </div>
+            </div>
+            <span class="status-badge" :class="`status-badge--${match.status?.toLowerCase()}`">{{ statusLabel(match.status) }}</span>
+          </div>
+          <div class="data-card__body">
+            <div class="data-card__row">
+              <span class="data-card__row-label">Cancha/Árb.</span>
+              <span class="data-card__row-value">{{ match.venue?.name || 'Sin cancha' }} · {{ match.referee?.full_name || 'Sin árbitro' }}</span>
+            </div>
+          </div>
+          <div class="data-card__footer">
+            <ActionsMenu>
+              <button
+                class="btn btn-sm btn-secondary"
+                :disabled="!match.home_series_id || !match.away_series_id"
+                @click="$router.push(`/matches/${match.id}`)"
+              >
+                Planilla
+              </button>
+            </ActionsMenu>
+          </div>
+        </article>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useMatchesStore } from '../stores/matches';
 import { useTournamentsStore } from '../stores/tournaments';
@@ -76,6 +129,12 @@ import ActionsMenu from '../components/ActionsMenu.vue';
 
 const route = useRoute();
 const tournamentId = route.params.tournamentId;
+
+// Un admin de club accede acá vía /clubs/:clubId/tournaments/:id/fixture
+// (mismo componente, ruta alternativa sin orgAdminOnly) y vuelve al detalle
+// de torneo del club en vez del detalle de administración de la org.
+const clubIdParam = route.params.clubId || null;
+const backTarget = computed(() => clubIdParam ? `/clubs/${clubIdParam}/tournaments/${tournamentId}` : `/tournaments/${tournamentId}`);
 
 const { matchdays, items, loading, error, fetchMatchdays, fetchMatches } = useMatchesStore();
 const { current: tournament, fetchTournamentById } = useTournamentsStore();
@@ -89,6 +148,22 @@ const statusLabel = (v) => STATUS_LABELS[v] || v;
 const seriesLabel = (series) => (series ? `${series.club?.name ?? ''} — ${series.name}` : '');
 
 const matchesByMatchday = (matchdayId) => items.value.filter((m) => m.matchday_id === matchdayId);
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return 'Sin fecha';
+  const d = new Date(`${dateStr}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return 'Sin fecha';
+  const dd = String(d.getDate()).padStart(2, '0');
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  return `${dd}-${mm}-${d.getFullYear()}`;
+};
+
+const currentIndex = ref(0);
+const currentMatchday = computed(() => matchdays.value[currentIndex.value] || null);
+
+watch(matchdays, (list) => {
+  if (currentIndex.value >= list.length) currentIndex.value = 0;
+});
 
 onMounted(async () => {
   await Promise.all([

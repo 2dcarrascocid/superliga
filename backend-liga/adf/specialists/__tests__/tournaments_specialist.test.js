@@ -136,7 +136,7 @@ test('CREATE_TOURNAMENT rechaza sin inscriptionFee (MISSING_FIELDS) — sin lleg
 test('CREATE_TOURNAMENT rechaza inscriptionFee negativo (INVALID_INSCRIPTION_FEE) — sin llegar a tocar la DB', async () => {
   const result = await run('CREATE_TOURNAMENT', {
     orgId: 'org-1', name: 'Apertura', format: 'ROUND_ROBIN', seasonId: 'season-1', categoryId: 'cat-1',
-    inscriptionFee: -100,
+    inscriptionFee: -100, maxTeams: 10,
   }, createMockDb({}));
 
   assert.equal(result.success, false);
@@ -150,7 +150,7 @@ test('CREATE_TOURNAMENT rechaza a un usuario que no es ADMIN de la organización
 
   const result = await run('CREATE_TOURNAMENT', {
     orgId: 'org-1', name: 'Apertura', format: 'ROUND_ROBIN', seasonId: 'season-1', categoryId: 'cat-1',
-    inscriptionFee: 10000,
+    inscriptionFee: 10000, maxTeams: 10,
   }, db, 'random-user');
 
   assert.equal(result.success, false);
@@ -171,11 +171,33 @@ test('CREATE_TOURNAMENT acepta inscriptionFee = 0, valida isOrgAdmin y lo persis
 
   const result = await run('CREATE_TOURNAMENT', {
     orgId: 'org-1', name: 'Apertura', format: 'ROUND_ROBIN', seasonId: 'season-1', categoryId: 'cat-1',
-    inscriptionFee: 0,
+    inscriptionFee: 0, maxTeams: 12,
   }, db, 'admin-user');
 
   assert.equal(result.success, true);
   assert.equal(insertedRow.inscription_fee, 0);
+  assert.equal(insertedRow.max_teams, 12);
+});
+
+test('CREATE_TOURNAMENT rechaza sin maxTeams (MISSING_FIELDS) — sin llegar a tocar la DB', async () => {
+  const result = await run('CREATE_TOURNAMENT', {
+    orgId: 'org-1', name: 'Apertura', format: 'ROUND_ROBIN', seasonId: 'season-1', categoryId: 'cat-1',
+    inscriptionFee: 10000,
+    // maxTeams omitido
+  }, createMockDb({}));
+
+  assert.equal(result.success, false);
+  assert.equal(result.error.code, 'MISSING_FIELDS');
+});
+
+test('CREATE_TOURNAMENT rechaza maxTeams menor a 2 (INVALID_MAX_TEAMS) — sin llegar a tocar la DB', async () => {
+  const result = await run('CREATE_TOURNAMENT', {
+    orgId: 'org-1', name: 'Apertura', format: 'ROUND_ROBIN', seasonId: 'season-1', categoryId: 'cat-1',
+    inscriptionFee: 10000, maxTeams: 1,
+  }, createMockDb({}));
+
+  assert.equal(result.success, false);
+  assert.equal(result.error.code, 'INVALID_MAX_TEAMS');
 });
 
 // ── LIST_TOURNAMENTS: clubs_count agregado sin N+1 ──────────────────────────

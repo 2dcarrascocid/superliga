@@ -5,6 +5,12 @@
     <div v-else-if="error" class="alert alert-error" role="alert">{{ error }}</div>
     <template v-else-if="tournament">
       <TournamentSummaryCard :tournament="tournament" />
+      <PanoramaDashboard
+        kicker="Estadísticas del torneo"
+        title-start="Panorama del"
+        title-accent="torneo"
+        :sub-tabs="statsTabs"
+      />
       <TournamentRegisteredClubsTable :participants="participants" />
     </template>
   </main>
@@ -15,9 +21,21 @@ import { useRoute, useRouter } from 'vue-router';
 import { getClubTournamentDetail } from '../services/tournaments.service';
 import TournamentSummaryCard from '../components/TournamentSummaryCard.vue';
 import TournamentRegisteredClubsTable from '../components/TournamentRegisteredClubsTable.vue';
+import PanoramaDashboard from '../components/PanoramaDashboard.vue';
 
 const route = useRoute(); const router = useRouter();
 const clubId = route.params.clubId; const tournamentId = route.params.tournamentId;
+
+// Menú de solo lectura hacia las mismas vistas de estadísticas que usa la
+// administración de organización (Fixture/Posiciones/Goleadores/Fairplay),
+// en las rutas alternativas /clubs/:clubId/tournaments/:id/... (ver
+// router/index.js) — cada una vuelve acá en vez de al detalle de admin.
+const statsTabs = [
+  { key: 'fixture', label: 'Ver Fixture', path: `/clubs/${clubId}/tournaments/${tournamentId}/fixture` },
+  { key: 'standings', label: 'Tabla de Posiciones', path: `/clubs/${clubId}/tournaments/${tournamentId}/standings` },
+  { key: 'top-scorers', label: 'Goleadores', path: `/clubs/${clubId}/tournaments/${tournamentId}/top-scorers` },
+  { key: 'fairplay', label: 'Fairplay', path: `/clubs/${clubId}/tournaments/${tournamentId}/fairplay` },
+];
 const tournament = ref(null); const participants = ref([]); const loading = ref(true); const error = ref('');
 onMounted(async () => {
   try {

@@ -866,6 +866,7 @@ const ROUTES = [
       format:                body.format,
       status:                body.status,
       inscriptionFee:        body.inscription_fee !== undefined ? Number(body.inscription_fee) : undefined,
+      maxTeams:              body.max_teams !== undefined ? Number(body.max_teams) : undefined,
       startDate:             body.start_date,
       endDate:               body.end_date,
       roundsType:            body.rounds_type,
@@ -995,6 +996,16 @@ const ROUTES = [
     input: { matchId: pp.matchId },
   })),
 
+  route('GET', '/venues/{venueId}/time-slots', (pp, _body, qs) => ({
+    type: 'GET_VENUE_TIME_SLOTS', domain: 'matches',
+    input: {
+      venueId:        pp.venueId,
+      date:           qs.date,
+      excludeMatchId: qs.exclude_match_id,
+      blockCount:     qs.block_count ? parseInt(qs.block_count, 10) : undefined,
+    },
+  })),
+
   route('PATCH', '/matches/{matchId}/logistics', (pp, body) => ({
     type: 'UPDATE_MATCH_LOGISTICS', domain: 'matches',
     input: {
@@ -1043,6 +1054,47 @@ const ROUTES = [
   route('DELETE', '/matches/{matchId}/events/{eventId}', (pp) => ({
     type: 'DELETE_MATCH_EVENT', domain: 'matches',
     input: { matchId: pp.matchId, eventId: pp.eventId },
+  })),
+
+  // ── Programación de Fecha (match_scheduling) ─────────────────────────────
+
+  route('POST', '/match-scheduling/preview', (_pp, body) => ({
+    type: 'PREVIEW_SCHEDULE', domain: 'match_scheduling',
+    input: {
+      seasonId: body.season_id,
+      date:     body.date,
+      venueIds: body.venue_ids,
+    },
+  })),
+
+  route('POST', '/match-scheduling/apply', (_pp, body) => ({
+    type: 'APPLY_SCHEDULE', domain: 'match_scheduling',
+    input: {
+      seasonId:               body.season_id,
+      date:                   body.date,
+      orgId:                  body.org_id,
+      assignments:            body.assignments,
+      failedClubIds:          body.failed_club_ids,
+      partiallyFailedClubIds: body.partially_failed_club_ids,
+    },
+  })),
+
+  // ── Parámetros de Programación (scheduling_settings) ─────────────────────
+
+  route('GET', '/orgs/{orgId}/scheduling-settings', (pp) => ({
+    type: 'GET_SCHEDULING_SETTINGS', domain: 'scheduling_settings',
+    input: { orgId: pp.orgId },
+  })),
+
+  route('PUT', '/orgs/{orgId}/scheduling-settings', (pp, body) => ({
+    type: 'UPDATE_SCHEDULING_SETTINGS', domain: 'scheduling_settings',
+    input: {
+      orgId:                pp.orgId,
+      halfDurationMinutes:  body.half_duration_minutes,
+      halftimeBreakMinutes: body.halftime_break_minutes,
+      turnaroundMinutes:    body.turnaround_minutes,
+      defaultStartTime:     body.default_start_time,
+    },
   })),
 
   // ── Costos de Torneo ──────────────────────────────────────────────────────

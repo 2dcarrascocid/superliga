@@ -32,7 +32,7 @@
         </thead>
         <tbody>
           <tr v-for="doc in documents" :key="doc.id">
-            <td class="doc-name">
+            <td class="doc-name" :title="doc.nombre_original">
               <span class="doc-icon">{{ getFileIcon(doc.mime_type) }}</span>
               {{ doc.nombre_original }}
             </td>
@@ -55,6 +55,31 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- Mobile: tarjetas -->
+    <div v-if="!loading && !listError && documents.length > 0" class="data-cards">
+      <article v-for="doc in documents" :key="doc.id" class="data-card">
+        <div class="data-card__header">
+          <div class="data-card__heading">
+            <div class="data-card__title">{{ getFileIcon(doc.mime_type) }} {{ doc.nombre_original }}</div>
+            <div class="data-card__subtitle">{{ getMimeLabel(doc.mime_type) }} · {{ formatFileSize(doc.size) }} · {{ formatDate(doc.created_at) }}</div>
+          </div>
+        </div>
+        <div class="data-card__footer">
+          <a
+            v-if="doc.url_publica"
+            :href="doc.url_publica"
+            target="_blank"
+            rel="noopener"
+            class="btn btn-secondary btn-xs"
+          >Ver</a>
+          <button
+            class="btn btn-danger btn-xs"
+            @click="confirmDelete(doc)"
+          >Eliminar</button>
+        </div>
+      </article>
     </div>
 
     <!-- Modal: Subir documento -->
@@ -285,6 +310,9 @@ function getFileIcon(mime) {
 
 .docs-table-wrapper {
   overflow-x: auto;
+}
+@media (max-width: 768px) {
+  .docs-table-wrapper { display: none; }
 }
 
 .docs-table {

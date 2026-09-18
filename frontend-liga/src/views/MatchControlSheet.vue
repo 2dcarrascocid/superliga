@@ -22,7 +22,7 @@
         <div class="folio-config-row">
           <div class="input-group">
             <label class="label">Cancha</label>
-            <select v-model="logisticsForm.venue_id" class="input">
+            <select v-model="logisticsForm.venue_id" class="input" @change="loadTimeSlots">
               <option value="">Sin asignar</option>
               <option v-for="v in venues" :key="v.id" :value="v.id">{{ v.name }}</option>
             </select>
@@ -38,15 +38,25 @@
         <div class="folio-config-row mt-md">
           <div class="input-group">
             <label class="label">Fecha</label>
-            <input v-model="logisticsForm.match_date" type="date" class="input" />
+            <input v-model="logisticsForm.match_date" type="date" class="input" @change="loadTimeSlots" />
           </div>
           <div class="input-group">
             <label class="label">Hora</label>
             <input v-model="logisticsForm.match_time" type="time" class="input" />
           </div>
           <div class="input-group">
-            <label class="label">Turno / Bloque</label>
-            <input v-model="logisticsForm.time_slot" class="input" placeholder="Bloque 1" />
+            <label class="label">Bloque horario disponible</label>
+            <select
+              v-model="logisticsForm.time_slot"
+              class="input"
+              :disabled="!logisticsForm.venue_id || !logisticsForm.match_date"
+              @change="onTimeSlotChange"
+            >
+              <option value="">{{ timeSlotsHint }}</option>
+              <option v-for="slot in timeSlots" :key="slot.index" :value="slot.label" :disabled="!slot.available">
+                {{ slot.label }}{{ slot.available ? '' : ' (ocupado)' }}
+              </option>
+            </select>
           </div>
         </div>
         <div class="input-group mt-md">
@@ -166,6 +176,28 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Mobile: tarjetas -->
+      <div class="data-cards mt-md">
+        <p v-if="events.length === 0" class="text-center py-lg text-muted text-sm">Sin eventos registrados.</p>
+        <article v-for="event in events" :key="event.id" class="data-card">
+          <div class="data-card__header">
+            <div class="data-card__heading">
+              <div class="data-card__title">{{ event.minute ?? '—' }}' · {{ eventTypeLabel(event.event_type) }}</div>
+              <div class="data-card__subtitle">{{ seriesLabel(event.series) || '—' }} · {{ event.player ? `${event.player.first_name} ${event.player.last_name}` : 'Sin jugador' }}</div>
+            </div>
+          </div>
+          <div class="data-card__body" v-if="event.notes">
+            <div class="data-card__row">
+              <span class="data-card__row-label">Notas</span>
+              <span class="data-card__row-value">{{ event.notes }}</span>
+            </div>
+          </div>
+          <div class="data-card__footer">
+            <button class="btn btn-sm btn-danger" @click="onRemoveEvent(event)">Eliminar</button>
+          </div>
+        </article>
+      </div>
     </div>
   </div>
 </template>
@@ -176,7 +208,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useMatchesStore } from '../stores/matches';
 import { useAuthStore } from '../stores/auth';
 import { useNotifyStore } from '../stores/notify';
-import { getVenues } from '../services/venues.service';
+import { getVenues, getVenueTimeSlots } from '../services/venues.service';
 import { getReferees } from '../services/referees.service';
 import { getSeriesRoster } from '../services/clubSeries.service';
 
@@ -192,6 +224,8 @@ const venues = ref([]);
 const referees = ref([]);
 const rosterBySeries = ref({});
 const bracketNote = ref(null);
+const timeSlots = ref([]);
+const loadingSlots = ref(false);
 
 const STATUS_LABELS = {
   SCHEDULED: 'Programado', IN_PROGRESS: 'En juego', FINISHED: 'Finalizado',
@@ -215,6 +249,13 @@ const resultForm = reactive({ home_score: null, away_score: null, home_penalty_s
 const eventForm = reactive({ series_id: '', player_id: '', event_type: 'GOAL', minute: null });
 
 const currentRoster = computed(() => rosterBySeries.value[eventForm.series_id] || []);
+
+const timeSlotsHint = computed(() => {
+  if (!logisticsForm.venue_id || !logisticsForm.match_date) return 'Selecciona cancha y fecha';
+  if (loadingSlots.value) return 'Cargando bloques...';
+  if (timeSlots.value.length === 0) return 'Sin bloques configurados';
+  return 'Selecciona un bloque';
+});
 
 const fillFormsFromMatch = () => {
   if (!current.value) return;
@@ -250,6 +291,30 @@ const loadRoster = async (seriesId) => {
 const onEventSeriesChange = () => {
   eventForm.player_id = '';
   loadRoster(eventForm.series_id);
+};
+
+const loadTimeSlots = async () => {
+  if (!logisticsForm.venue_id || !logisticsForm.match_date) {
+    timeSlots.value = [];
+    return;
+  }
+  loadingSlots.value = true;
+  try {
+    const res = await getVenueTimeSlots(logisticsForm.venue_id, {
+      date: logisticsForm.match_date,
+      exclude_match_id: matchId,
+    });
+    timeSlots.value = res.data?.data?.slots ?? [];
+  } catch (e) {
+    timeSlots.value = [];
+  } finally {
+    loadingSlots.value = false;
+  }
+};
+
+const onTimeSlotChange = () => {
+  const slot = timeSlots.value.find((s) => s.label === logisticsForm.time_slot);
+  if (slot) logisticsForm.match_time = slot.time.slice(0, 5);
 };
 
 const onSaveLogistics = async () => {
@@ -315,6 +380,7 @@ onMounted(async () => {
   ]);
   venues.value = venuesRes.data?.data?.venues ?? venuesRes.data?.data ?? [];
   referees.value = refereesRes.data?.data?.referees ?? refereesRes.data?.data ?? [];
+  await loadTimeSlots();
 
   if (current.value?.home_series_id) loadRoster(current.value.home_series_id);
   if (current.value?.away_series_id) loadRoster(current.value.away_series_id);

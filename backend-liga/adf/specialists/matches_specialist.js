@@ -25,12 +25,14 @@
 import { Skill } from '../contracts/skill_contract.js';
 import { createSkillResult } from '../contracts/task_schema.js';
 import { propagateWinner } from './lib/bracket_propagation.js';
+import { buildTimeSlots } from './match_scheduling_specialist.js';
+import { fetchOrgSchedulingSettings } from './lib/scheduling_settings.js';
 
 const CAPABILITIES = [
   'LIST_MATCHDAYS', 'CREATE_MATCHDAY',
   'LIST_MATCHES', 'GET_MATCH', 'UPDATE_MATCH_LOGISTICS', 'UPDATE_MATCH_RESULT',
   'LIST_MATCH_EVENTS', 'ADD_MATCH_EVENT', 'DELETE_MATCH_EVENT',
-  'GET_TOP_SCORERS', 'GET_FAIRPLAY_RANKING',
+  'GET_TOP_SCORERS', 'GET_FAIRPLAY_RANKING', 'GET_VENUE_TIME_SLOTS',
 ];
 
 const MATCH_SELECT = `
@@ -98,6 +100,7 @@ export class MatchesSpecialist extends Skill {
         case 'DELETE_MATCH_EVENT': return this._deleteEvent(payload, db);
         case 'GET_TOP_SCORERS': return this._getTopScorers(payload, db);
         case 'GET_FAIRPLAY_RANKING': return this._getFairplayRanking(payload, db);
+        case 'GET_VENUE_TIME_SLOTS': return this._getVenueTimeSlots(payload, db);
       }
     } catch (err) {
       return createSkillResult({ success: false, errorCode: 'MATCHES_SPECIALIST_ERROR', errorMessage: err.message });
@@ -156,16 +159,81 @@ export class MatchesSpecialist extends Skill {
     const patch = { updated_at: new Date().toISOString() };
     if (venueId !== undefined) patch.venue_id = venueId;
     if (refereeId !== undefined) patch.referee_id = refereeId;
-    if (matchDate !== undefined) patch.match_date = matchDate;
-    if (matchTime !== undefined) patch.match_time = matchTime;
-    if (timeSlot !== undefined) patch.time_slot = timeSlot;
+    if (matchDate !== undefined) patch.match_date = matchDate || null;
+    if (matchTime !== undefined) patch.match_time = matchTime || null;
+    if (timeSlot !== undefined) patch.time_slot = timeSlot || null;
     if (observations !== undefined) patch.observations = observations;
     if (matchdayId !== undefined) patch.matchday_id = matchdayId;
     if (status !== undefined) patch.status = status;
 
+    // Un árbitro no puede quedar asignado a dos partidos la misma fecha y
+    // hora. Se resuelven los valores finales (nuevos o los ya guardados en
+    // el partido) antes de chequear, para no dejar pasar un PATCH parcial
+    // que solo cambia la fecha/hora de un partido que ya tenía árbitro.
+    const finalRefereeId = refereeId !== undefined ? refereeId : undefined;
+    if ((refereeId !== undefined && refereeId) || matchDate !== undefined || matchTime !== undefined) {
+      const { data: current, error: curErr } = await db
+        .from('lg_matches').select('referee_id, match_date, match_time').eq('id', matchId).maybeSingle();
+      if (curErr || !current) {
+        return createSkillResult({ success: false, errorCode: 'MATCH_NOT_FOUND', errorMessage: 'Partido no encontrado' });
+      }
+      const effectiveRefereeId = finalRefereeId !== undefined ? finalRefereeId : current.referee_id;
+      const effectiveDate = patch.match_date !== undefined ? patch.match_date : current.match_date;
+      const effectiveTime = patch.match_time !== undefined ? patch.match_time : current.match_time;
+
+      if (effectiveRefereeId && effectiveDate && effectiveTime) {
+        const { data: conflicts, error: conflictErr } = await db
+          .from('lg_matches')
+          .select('id')
+          .eq('referee_id', effectiveRefereeId)
+          .eq('match_date', effectiveDate)
+          .eq('match_time', effectiveTime)
+          .neq('id', matchId)
+          .limit(1);
+        if (conflictErr) {
+          return createSkillResult({ success: false, errorCode: 'UPDATE_LOGISTICS_FAILED', errorMessage: conflictErr.message });
+        }
+        if (conflicts && conflicts.length > 0) {
+          return createSkillResult({
+            success: false,
+            errorCode: 'REFEREE_CONFLICT',
+            errorMessage: 'El árbitro ya está asignado a otro partido en esa fecha y hora',
+          });
+        }
+      }
+    }
+
     const { data: match, error } = await db.from('lg_matches').update(patch).eq('id', matchId).select(MATCH_SELECT).single();
     if (error) return createSkillResult({ success: false, errorCode: 'UPDATE_LOGISTICS_FAILED', errorMessage: error.message });
     return createSkillResult({ success: true, data: { match } });
+  }
+
+  // Bloques de horario disponibles de una cancha, según los parámetros de
+  // programación de la organización (lg_scheduling_settings: horario de
+  // inicio y duración de partido) — misma lógica que usa "Programación de
+  // Fecha" (buildTimeSlots), reutilizada acá para un único partido.
+  async _getVenueTimeSlots({ venueId, date, excludeMatchId, blockCount }, db) {
+    if (!venueId || !date) {
+      return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'venueId y date son requeridos' });
+    }
+
+    const { data: venue, error: venueErr } = await db.from('lg_venues').select('*').eq('id', venueId).maybeSingle();
+    if (venueErr || !venue) {
+      return createSkillResult({ success: false, errorCode: 'VENUE_NOT_FOUND', errorMessage: 'Cancha no encontrada' });
+    }
+
+    const orgSettings = await fetchOrgSchedulingSettings(db, venue.org_id);
+    const slots = buildTimeSlots(venue, blockCount || 6, orgSettings);
+
+    let occupiedQuery = db.from('lg_matches').select('id, match_time').eq('venue_id', venueId).eq('match_date', date).not('match_time', 'is', null);
+    if (excludeMatchId) occupiedQuery = occupiedQuery.neq('id', excludeMatchId);
+    const { data: occupiedMatches, error: occErr } = await occupiedQuery;
+    if (occErr) return createSkillResult({ success: false, errorCode: 'GET_VENUE_TIME_SLOTS_FAILED', errorMessage: occErr.message });
+
+    const occupiedTimes = new Set((occupiedMatches || []).map((m) => m.match_time));
+    const slotsWithAvailability = slots.map((s) => ({ ...s, available: !occupiedTimes.has(s.time) }));
+
+    return createSkillResult({ success: true, data: { slots: slotsWithAvailability } });
   }
 
   async _updateResult({ matchId, homeScore, awayScore, homePenaltyScore, awayPenaltyScore, status, observations }, db) {

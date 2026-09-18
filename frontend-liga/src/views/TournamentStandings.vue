@@ -47,6 +47,28 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Mobile: tarjetas -->
+      <div class="data-cards p-md">
+        <article v-for="row in group.rows" :key="row.series_id" class="data-card">
+          <div class="data-card__header">
+            <div class="data-card__heading">
+              <div class="data-card__title">#{{ row.position }} {{ row.club_name }} — {{ row.series_name }}</div>
+            </div>
+            <span class="pts-badge">{{ row.points }} PTS</span>
+          </div>
+          <div class="data-card__body">
+            <div class="data-card__row">
+              <span class="data-card__row-label">PJ/PG/PE/PP</span>
+              <span class="data-card__row-value">{{ row.played }}/{{ row.won }}/{{ row.drawn }}/{{ row.lost }}</span>
+            </div>
+            <div class="data-card__row">
+              <span class="data-card__row-label">GF/GC/DG</span>
+              <span class="data-card__row-value">{{ row.goals_for }}/{{ row.goals_against }}/{{ row.goal_diff > 0 ? '+' : '' }}{{ row.goal_diff }}</span>
+            </div>
+          </div>
+        </article>
+      </div>
     </div>
   </div>
 </template>
@@ -66,10 +88,16 @@ const { standings, loading, error, fetchStandings } = useTournamentsStore();
 // Un Jugador puro (sin org ni club admin) no tiene acceso a /tournaments/:id
 // (orgAdminOnly) — accede a esta vista vía /mi-perfil/torneos/:id/posiciones
 // (misma tabla, ruta alternativa, ver router/index.js). Su botón "volver"
-// debe llevarlo de vuelta a su perfil, no al detalle de torneo.
+// debe llevarlo de vuelta a su perfil, no al detalle de torneo. Un admin de
+// club (con o sin org propia) accede vía /clubs/:clubId/tournaments/:id/...
+// (mismo componente, ruta alternativa) y vuelve al detalle de torneo del club.
+const clubIdParam = route.params.clubId || null;
 const isPlayerOnly = computed(() => !!authStore.state.player && !authStore.state.org && !authStore.myClub());
-const backTarget = computed(() => isPlayerOnly.value ? '/mi-perfil' : `/tournaments/${tournamentId}`);
-const backLabel = computed(() => isPlayerOnly.value ? 'Mi perfil' : 'Torneo');
+const backTarget = computed(() => {
+  if (clubIdParam) return `/clubs/${clubIdParam}/tournaments/${tournamentId}`;
+  return isPlayerOnly.value ? '/mi-perfil' : `/tournaments/${tournamentId}`;
+});
+const backLabel = computed(() => (!clubIdParam && isPlayerOnly.value) ? 'Mi perfil' : 'Torneo');
 
 const groupedStandings = computed(() => {
   const groups = {};
@@ -96,4 +124,17 @@ onMounted(() => {
 .p-0 { padding: 0 !important; }
 .py-lg { padding-top: var(--spacing-lg); padding-bottom: var(--spacing-lg); }
 .font-medium { font-weight: 500; }
+
+.pts-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: rgba(0, 230, 118, 0.14);
+  color: var(--primary-solid, #00e676);
+  flex-shrink: 0;
+}
 </style>

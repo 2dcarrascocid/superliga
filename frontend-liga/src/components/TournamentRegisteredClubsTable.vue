@@ -20,6 +20,28 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Mobile: tarjetas -->
+    <div class="data-cards">
+      <p v-if="!participants.length" class="text-center py-lg text-muted text-sm">Aún no hay series inscritas.</p>
+      <article v-for="(participant, index) in participants" :key="participant.id" class="data-card">
+        <div class="data-card__header">
+          <div class="data-card__heading">
+            <div class="data-card__title">N°{{ index + 1 }} · {{ participant.series?.club?.name || '—' }}</div>
+            <div class="data-card__subtitle">{{ participant.series?.name || '—' }}</div>
+          </div>
+          <span class="participant-badge">{{ teamStatus(participant.status) }}</span>
+        </div>
+        <div class="data-card__body">
+          <div class="data-card__row">
+            <span class="data-card__row-label">Inscripción</span>
+            <span class="data-card__row-value">
+              <span class="payment-badge" :class="`payment-badge--${String(participant.inscription_status).toLowerCase()}`">{{ paymentStatus(participant.inscription_status) }}</span>
+            </span>
+          </div>
+        </div>
+      </article>
+    </div>
   </section>
 </template>
 <script setup>

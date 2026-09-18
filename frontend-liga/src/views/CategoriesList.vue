@@ -131,6 +131,37 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Mobile: tarjetas -->
+        <div class="data-cards p-md">
+          <p v-if="loading && items.length === 0" class="text-center py-lg text-muted text-sm">Cargando...</p>
+          <p v-else-if="items.length === 0" class="text-center py-lg text-muted text-sm">Aún no hay categorías creadas.</p>
+          <article v-for="cat in items" :key="cat.id" class="data-card">
+            <div class="data-card__header">
+              <span class="color-dot" :style="{ backgroundColor: cat.color || '#6366f1' }"></span>
+              <div class="data-card__heading">
+                <div class="data-card__title">{{ cat.name }}</div>
+                <div class="data-card__subtitle">{{ cat.sport?.name || 'Sin deporte' }} · {{ cat.serie || 'Sin serie' }}</div>
+              </div>
+            </div>
+            <div class="data-card__body">
+              <div class="data-card__row">
+                <span class="data-card__row-label">Género</span>
+                <span class="data-card__row-value">{{ GENDER_LABELS[cat.gender] || '—' }}</span>
+              </div>
+              <div class="data-card__row">
+                <span class="data-card__row-label">Edad</span>
+                <span class="data-card__row-value">{{ cat.age_from ?? 0 }} – {{ cat.age_to ?? 0 }}</span>
+              </div>
+            </div>
+            <div class="data-card__footer">
+              <ActionsMenu>
+                <button class="btn btn-sm btn-secondary" @click="startEdit(cat)">Editar</button>
+                <button class="btn btn-sm btn-danger" @click="confirmDelete(cat)">Eliminar</button>
+              </ActionsMenu>
+            </div>
+          </article>
+        </div>
       </div>
     </template>
   </div>

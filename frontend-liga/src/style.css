@@ -111,7 +111,7 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.65;
-  font-size: 16px;
+  font-size: 15px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
@@ -472,16 +472,17 @@ select.input { cursor: pointer; }
 }
 
 .table th {
-  padding-block: 0.75rem;
+  padding-block: 0.6rem;
   background: var(--bg-tertiary);
   font-family: var(--font-ui, Inter, "Segoe UI", system-ui, sans-serif);
   font-weight: 700;
-  font-size: 0.8125rem;
+  font-size: 0.6875rem;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  line-height: 1.4;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 .table td {
@@ -655,7 +656,7 @@ select.input { cursor: pointer; }
   --shadow-xl: 0 24px 64px rgba(24, 61, 42, .17);
 }
 
-html { background: var(--bg-primary); scroll-padding-top: 96px; }
+html { background: var(--bg-primary); scroll-padding-top: 96px; font-size: 15px; }
 body { font-family: var(--font-ui); min-width: 320px; min-height: 100dvh; }
 button, input, select, textarea { font: inherit; }
 button, [role="button"], a { touch-action: manipulation; }
@@ -736,4 +737,126 @@ input:focus, select:focus, textarea:focus { border-color: var(--primary-solid); 
     transition-duration: .01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ==================== RESPONSIVE DATA CARDS ====================
+   Reemplazo genérico de una tabla en mobile: la tabla (.table-container)
+   se oculta y en su lugar se muestra un listado de tarjetas (.data-cards),
+   con fuentes más chicas que el resto del sitio para que la información
+   quepa cómoda en una pantalla angosta. Cualquier vista con una tabla debe
+   incluir un bloque `<div class="data-cards">...</div>` hermano de su
+   `.table-container`, con un `.data-card` por fila — ver ClubSeriesTable.vue
+   o TransfersView.vue como referencia de uso.
+   Nota: ClubsList.vue/VenuesList.vue/RefereesList.vue ya resolvían esto con
+   su propio markup (.cards-container-mobile) antes de que existiera este
+   sistema genérico — se dejaron como estaban, no hacía falta migrarlas. */
+@media (min-width: 769px) {
+  .data-cards { display: none; }
+}
+@media (max-width: 768px) {
+  .table-container { display: none; }
+  .data-cards { display: flex; flex-direction: column; gap: 0.75rem; }
+}
+
+.data-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 0.9rem 1rem;
+  box-shadow: var(--shadow-sm);
+  font-size: 0.8125rem;
+}
+.data-card.clickable-row { cursor: pointer; }
+
+/* Sub-filas expandibles dentro de una tarjeta (ej. series dentro de un club) */
+.data-card__subrows {
+  margin-top: 0.6rem;
+  padding-top: 0.6rem;
+  border-top: 1px dashed var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.data-card__subrow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-left: 0.5rem;
+  font-size: 0.72rem;
+}
+
+.data-card__header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.data-card__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  font-size: 1rem;
+  border: 1px solid var(--border-color);
+}
+.data-card__avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.data-card__heading { min-width: 0; flex: 1; }
+.data-card__title {
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+.data-card__subtitle {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.data-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.data-card__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+}
+.data-card__row-label {
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.66rem;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+}
+.data-card__row-value {
+  color: var(--text-primary);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.data-card__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Grillas (Panorama, KPIs) a una sola columna en mobile angosto */
+@media (max-width: 480px) {
+  .data-card__row { flex-wrap: wrap; }
 }

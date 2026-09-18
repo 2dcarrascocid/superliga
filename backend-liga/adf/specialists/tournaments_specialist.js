@@ -114,6 +114,7 @@ const TOURNAMENT_UPDATABLE_FIELDS = {
   type: 'type',
   status: 'status',
   inscriptionFee: 'inscription_fee',
+  maxTeams: 'max_teams',
   startDate: 'start_date',
   endDate: 'end_date',
   roundsType: 'rounds_type',
@@ -186,7 +187,7 @@ export class TournamentsSpecialist extends Skill {
         ],
       },
       checklist: [
-        'CREATE_TOURNAMENT valida orgId/name/format/inscriptionFee (>= 0) y isOrgAdmin(userId, orgId)',
+        'CREATE_TOURNAMENT valida orgId/name/format/inscriptionFee (>= 0)/maxTeams (entero >= 2, obligatorio) y isOrgAdmin(userId, orgId)',
         'UPDATE_TOURNAMENT y DELETE_TOURNAMENT resuelven el org_id del torneo existente y validan isOrgAdmin antes de aplicar el cambio',
         'GENERATE_FIXTURE no duplica fixture ya generado',
         'GENERATE_KNOCKOUT_FROM_GROUPS siembra desde vw_tournament_standings',
@@ -275,18 +276,27 @@ export class TournamentsSpecialist extends Skill {
     const hasMore = offset + effectiveLimit < total;
     const next = hasMore ? encodeNext(offset + effectiveLimit, effectiveLimit, { orgId }) : null;
 
-    // clubs_count por torneo: una sola query sobre lg_tournament_clubs para
+    // clubs_count/teams_count por torneo: una sola query por tabla sobre
     // TODOS los tournament_id de la página actual (evita N+1), agregando los
-    // conteos en memoria con un Map.
+    // conteos en memoria con un Map. teams_count = series/equipos inscritos
+    // (lg_tournament_teams) — es el número que se compara contra max_teams
+    // en el listado ("Inscritos").
     const tournamentIds = (tournaments ?? []).map((t) => t.id);
     let clubsCountByTournamentId = new Map();
+    let teamsCountByTournamentId = new Map();
     if (tournamentIds.length > 0) {
-      const { data: clubRows, error: clubsError } = await db
-        .from('lg_tournament_clubs').select('tournament_id').in('tournament_id', tournamentIds);
-      if (clubsError) {
-        return createSkillResult({ success: false, errorCode: 'LIST_TOURNAMENTS_FAILED', errorMessage: clubsError.message });
+      const [{ data: clubRows, error: clubsError }, { data: teamRows, error: teamsError }] = await Promise.all([
+        db.from('lg_tournament_clubs').select('tournament_id').in('tournament_id', tournamentIds),
+        db.from('lg_tournament_teams').select('tournament_id').in('tournament_id', tournamentIds),
+      ]);
+      if (clubsError || teamsError) {
+        return createSkillResult({ success: false, errorCode: 'LIST_TOURNAMENTS_FAILED', errorMessage: (clubsError ?? teamsError).message });
       }
       clubsCountByTournamentId = (clubRows ?? []).reduce((map, row) => {
+        map.set(row.tournament_id, (map.get(row.tournament_id) ?? 0) + 1);
+        return map;
+      }, new Map());
+      teamsCountByTournamentId = (teamRows ?? []).reduce((map, row) => {
         map.set(row.tournament_id, (map.get(row.tournament_id) ?? 0) + 1);
         return map;
       }, new Map());
@@ -295,6 +305,7 @@ export class TournamentsSpecialist extends Skill {
     const decoratedTournaments = (tournaments ?? []).map((t) => ({
       ...t,
       clubs_count: clubsCountByTournamentId.get(t.id) ?? 0,
+      teams_count: teamsCountByTournamentId.get(t.id) ?? 0,
     }));
 
     return createSkillResult({ success: true, data: { tournaments: decoratedTournaments, nextToken: next, total } });
@@ -462,7 +473,9 @@ export class TournamentsSpecialist extends Skill {
     ]);
     if (!tournament) return createSkillResult({ success: false, errorCode: 'TOURNAMENT_NOT_FOUND', errorMessage: 'Torneo no encontrado' });
     if (!club || club.org_id !== tournament.org_id) return createSkillResult({ success: false, errorCode: 'CLUB_ORG_MISMATCH', errorMessage: 'El torneo pertenece a otra organización' });
-    if (!['REGISTRATION', 'IN_PROGRESS'].includes(tournament.status)) return createSkillResult({ success: false, errorCode: 'TOURNAMENT_NOT_ACTIVE', errorMessage: 'El torneo no está activo' });
+    // FINISHED se permite además de REGISTRATION/IN_PROGRESS: un club debe poder
+    // revisar las estadísticas de sus torneos ya jugados, no solo los activos.
+    if (!['REGISTRATION', 'IN_PROGRESS', 'FINISHED'].includes(tournament.status)) return createSkillResult({ success: false, errorCode: 'TOURNAMENT_NOT_ACTIVE', errorMessage: 'El torneo no está activo' });
 
     const [{ data: teams, error: teamsError }, { data: charges }] = await Promise.all([
       db.from('lg_tournament_teams').select('id,status,series:lg_club_series(id,name,club_id,club:lg_clubs(id,name,short_name,logo_url))').eq('tournament_id', tournamentId).order('created_at', { ascending: true }),
@@ -498,9 +511,9 @@ export class TournamentsSpecialist extends Skill {
   }
 
   async _createTournament(payload, db, userId) {
-    const { orgId, name, format, seasonId, categoryId, inscriptionFee } = payload;
-    if (!orgId || !name || !format || !seasonId || !categoryId || inscriptionFee === undefined || inscriptionFee === null) {
-      return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'org_id, name, format, seasonId, categoryId e inscriptionFee son requeridos' });
+    const { orgId, name, format, seasonId, categoryId, inscriptionFee, maxTeams } = payload;
+    if (!orgId || !name || !format || !seasonId || !categoryId || inscriptionFee === undefined || inscriptionFee === null || maxTeams === undefined || maxTeams === null) {
+      return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'org_id, name, format, seasonId, categoryId, inscriptionFee y maxTeams son requeridos' });
     }
     if (!['ROUND_ROBIN', 'KNOCKOUT', 'GROUPS_KNOCKOUT'].includes(format)) {
       return createSkillResult({ success: false, errorCode: 'INVALID_FORMAT', errorMessage: `Formato inválido: "${format}"` });
@@ -508,6 +521,10 @@ export class TournamentsSpecialist extends Skill {
     const inscriptionFeeNum = Number(inscriptionFee);
     if (!Number.isFinite(inscriptionFeeNum) || inscriptionFeeNum < 0) {
       return createSkillResult({ success: false, errorCode: 'INVALID_INSCRIPTION_FEE', errorMessage: 'inscriptionFee debe ser un número mayor o igual a 0' });
+    }
+    const maxTeamsNum = Number(maxTeams);
+    if (!Number.isInteger(maxTeamsNum) || maxTeamsNum < 2) {
+      return createSkillResult({ success: false, errorCode: 'INVALID_MAX_TEAMS', errorMessage: 'maxTeams debe ser un número entero mayor o igual a 2' });
     }
 
     // Gestión de torneos (crear/editar/borrar) es dominio exclusivo del
@@ -547,6 +564,7 @@ export class TournamentsSpecialist extends Skill {
         format,
         status: payload.status ?? 'DRAFT',
         inscription_fee: inscriptionFeeNum,
+        max_teams: maxTeamsNum,
         start_date: payload.startDate ?? null,
         end_date: payload.endDate ?? null,
         rounds_type: payload.roundsType ?? 'SINGLE',
@@ -597,6 +615,13 @@ export class TournamentsSpecialist extends Skill {
         return createSkillResult({ success: false, errorCode: 'INVALID_INSCRIPTION_FEE', errorMessage: 'inscriptionFee debe ser un número mayor o igual a 0' });
       }
       patch.inscription_fee = feeNum;
+    }
+    if (patch.max_teams !== undefined && patch.max_teams !== null) {
+      const maxTeamsNum = Number(patch.max_teams);
+      if (!Number.isInteger(maxTeamsNum) || maxTeamsNum < 2) {
+        return createSkillResult({ success: false, errorCode: 'INVALID_MAX_TEAMS', errorMessage: 'maxTeams debe ser un número entero mayor o igual a 2' });
+      }
+      patch.max_teams = maxTeamsNum;
     }
     patch.updated_at = new Date().toISOString();
 

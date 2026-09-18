@@ -101,7 +101,7 @@
               <li v-for="booking in bookingsFor(venue.id)" :key="booking.id" class="sched-list__item">
                 <span>
                   {{ booking.hora_inicio.slice(0, 5) }} - {{ booking.hora_fin.slice(0, 5) }}
-                  <span class="text-muted"> · {{ booking.partido_id ? `Partido ${booking.partido_id.slice(0, 8)}` : 'Reserva' }}</span>
+                  <span class="text-muted" :title="booking.partido_id || ''"> · {{ booking.partido_id ? `Partido ${booking.partido_id.slice(0, 8)}` : 'Reserva' }}</span>
                 </span>
                 <button class="btn btn-sm btn-danger" @click="removeReserva(venue.id, booking.id)">Eliminar</button>
               </li>

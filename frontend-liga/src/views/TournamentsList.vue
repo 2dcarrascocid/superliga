@@ -14,9 +14,9 @@
 
     <div v-if="error" class="alert alert-error">{{ error }}</div>
 
-    <!-- Formulario de creación -->
+    <!-- Formulario de creación / edición -->
     <div v-if="viewMode === 'form'" class="mb-lg card">
-      <h3 class="mb-md">Nuevo Torneo</h3>
+      <h3 class="mb-md">{{ editingTournamentId ? 'Editar Torneo' : 'Nuevo Torneo' }}</h3>
       <form @submit.prevent="saveTournament">
         <div class="flex flex-col gap-md">
           <div class="input-group">
@@ -75,12 +75,21 @@
             </p>
           </div>
 
-          <div class="input-group">
-            <label class="label">Costo de inscripción *</label>
-            <input v-model.number="form.inscription_fee" type="number" min="0" step="1" class="input" required />
-            <p class="input-hint">
-              Monto que cada club debe pagar para inscribirse al torneo (se cobra una vez por club, no por serie).
-            </p>
+          <div class="form-row-2">
+            <div class="input-group">
+              <label class="label">Costo de inscripción *</label>
+              <input v-model.number="form.inscription_fee" type="number" min="0" step="1" class="input" required />
+              <p class="input-hint">
+                Monto que cada club debe pagar para inscribirse al torneo (se cobra una vez por club, no por serie).
+              </p>
+            </div>
+            <div class="input-group">
+              <label class="label">Cantidad de equipos-series *</label>
+              <input v-model.number="form.max_teams" type="number" min="2" step="1" class="input" required />
+              <p class="input-hint">
+                Cuántos equipos/series participan del torneo.
+              </p>
+            </div>
           </div>
 
           <div class="form-row-2">
@@ -167,10 +176,21 @@
 
     <!-- Listado -->
     <template v-if="viewMode === 'list'">
+      <PanoramaDashboard
+        class="mb-lg"
+        kicker="Resumen de torneos"
+        title-start="Panorama de"
+        title-accent="torneos"
+        :description="scopedSeason ? `Torneos de la temporada ${scopedSeason.name}.` : 'Estado general de los torneos de la organización.'"
+        :tiles="dashboardTiles"
+        :selected-key="selectedTileKey"
+        @select="selectTile"
+      />
+
       <div class="card p-0">
         <div class="flex justify-between items-center p-md" style="border-bottom: 1px solid var(--border-color);">
-          <h3 class="m-0">{{ scopedSeason ? `Torneos de ${scopedSeason.name}` : 'Todos los torneos' }}</h3>
-          <span class="text-muted text-sm">{{ items.length }} en total</span>
+          <h3 class="m-0">{{ selectedTileLabel }}</h3>
+          <span class="text-muted text-sm">{{ filteredTournaments.length }} en total</span>
         </div>
 
         <div class="table-container">
@@ -183,17 +203,18 @@
                 <th>Categoría</th>
                 <th v-if="!scopedSeasonId">Temporada</th>
                 <th class="text-center">Estado</th>
+                <th class="text-center">Inscritos</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="loading && items.length === 0">
-                <td colspan="7" class="text-center py-lg">Cargando...</td>
+                <td colspan="8" class="text-center py-lg">Cargando...</td>
               </tr>
-              <tr v-else-if="items.length === 0">
-                <td colspan="7" class="text-center py-lg">Aún no hay torneos creados.</td>
+              <tr v-else-if="filteredTournaments.length === 0">
+                <td colspan="8" class="text-center py-lg">{{ items.length === 0 ? 'Aún no hay torneos creados.' : 'No hay torneos en esta selección.' }}</td>
               </tr>
-              <tr v-for="tournament in items" :key="tournament.id" class="clickable-row" @click="openTournament(tournament.id)">
+              <tr v-for="tournament in filteredTournaments" :key="tournament.id" class="clickable-row" @click="openTournament(tournament.id)">
                 <td><span class="font-medium">{{ tournament.name }}</span></td>
                 <td>{{ formatLabel(tournament.format) }}</td>
                 <td>
@@ -208,15 +229,66 @@
                     {{ statusLabel(tournament.status) }}
                   </span>
                 </td>
+                <td class="text-center numeric">{{ tournament.teams_count ?? 0 }} / {{ tournament.max_teams ?? '—' }}</td>
                 <td>
                   <ActionsMenu>
-                    <button class="btn btn-sm btn-secondary" @click.stop="openTournament(tournament.id)">Administrar</button>
+                    <button class="btn btn-sm btn-secondary" @click.stop="openTournament(tournament.id)">Ver detalle</button>
+                    <button class="btn btn-sm btn-secondary" @click.stop="openEditModal(tournament)">Editar</button>
+                    <button
+                      v-if="tournament.status !== 'FINISHED' && tournament.status !== 'CANCELLED'"
+                      class="btn btn-sm btn-secondary"
+                      @click.stop="confirmClose(tournament)"
+                    >Cerrar</button>
                     <button class="btn btn-sm btn-danger" @click.stop="confirmDelete(tournament)">Eliminar</button>
                   </ActionsMenu>
                 </td>
               </tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Mobile: tarjetas -->
+        <div class="data-cards p-md">
+          <p v-if="loading && items.length === 0" class="text-center py-lg text-muted text-sm">Cargando...</p>
+          <p v-else-if="filteredTournaments.length === 0" class="text-center py-lg text-muted text-sm">{{ items.length === 0 ? 'Aún no hay torneos creados.' : 'No hay torneos en esta selección.' }}</p>
+          <article v-for="tournament in filteredTournaments" :key="tournament.id" class="data-card clickable-row" @click="openTournament(tournament.id)">
+            <div class="data-card__header">
+              <div class="data-card__heading">
+                <div class="data-card__title">{{ tournament.name }}</div>
+                <div class="data-card__subtitle">
+                  {{ formatLabel(tournament.format) }} · {{ tournament.category?.name || 'Sin categoría' }}
+                  <template v-if="!scopedSeasonId"> · {{ tournament.season?.name || 'Sin temporada' }}</template>
+                </div>
+              </div>
+              <span class="status-badge" :class="`status-badge--${tournament.status?.toLowerCase()}`">
+                {{ statusLabel(tournament.status) }}
+              </span>
+            </div>
+            <div class="data-card__body">
+              <div class="data-card__row">
+                <span class="data-card__row-label">Tipo</span>
+                <span class="data-card__row-value">
+                  <span class="type-badge" :class="`type-badge--${tournament.type?.toLowerCase()}`">{{ typeLabel(tournament.type) }}</span>
+                </span>
+              </div>
+              <div class="data-card__row">
+                <span class="data-card__row-label">Inscritos</span>
+                <span class="data-card__row-value numeric">{{ tournament.teams_count ?? 0 }} / {{ tournament.max_teams ?? '—' }}</span>
+              </div>
+            </div>
+            <div class="data-card__footer" @click.stop>
+              <ActionsMenu>
+                <button class="btn btn-sm btn-secondary" @click.stop="openTournament(tournament.id)">Ver detalle</button>
+                <button class="btn btn-sm btn-secondary" @click.stop="openEditModal(tournament)">Editar</button>
+                <button
+                  v-if="tournament.status !== 'FINISHED' && tournament.status !== 'CANCELLED'"
+                  class="btn btn-sm btn-secondary"
+                  @click.stop="confirmClose(tournament)"
+                >Cerrar</button>
+                <button class="btn btn-sm btn-danger" @click.stop="confirmDelete(tournament)">Eliminar</button>
+              </ActionsMenu>
+            </div>
+          </article>
         </div>
       </div>
     </template>
@@ -232,6 +304,7 @@ import { useNotifyStore } from '../stores/notify';
 import { getSeasons, createSeason } from '../services/seasons.service.js';
 import { listCategoriesByOrg } from '../services/categories.service.js';
 import ActionsMenu from '../components/ActionsMenu.vue';
+import PanoramaDashboard from '../components/PanoramaDashboard.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -245,6 +318,7 @@ const scopedSeasonId = computed(() => route.params.seasonId || null);
 const scopedSeason = computed(() => seasons.value.find(s => s.id === scopedSeasonId.value) || null);
 
 const viewMode = ref('list');
+const editingTournamentId = ref(null);
 
 const FORMAT_LABELS = {
   ROUND_ROBIN: 'Todos contra Todos',
@@ -322,6 +396,7 @@ const defaultForm = () => ({
   season_id: scopedSeasonId.value,
   category_id: null,
   inscription_fee: 0,
+  max_teams: null,
   start_date: '',
   end_date: '',
   rounds_type: 'SINGLE',
@@ -347,6 +422,7 @@ const loadTournaments = async () => {
 
 const toggleViewMode = () => {
   if (viewMode.value === 'list') {
+    editingTournamentId.value = null;
     Object.assign(form, defaultForm());
     viewMode.value = 'form';
   } else {
@@ -355,9 +431,37 @@ const toggleViewMode = () => {
 };
 
 const cancelForm = () => {
+  editingTournamentId.value = null;
   Object.assign(form, defaultForm());
   showNewSeasonForm.value = false;
   viewMode.value = 'list';
+};
+
+const openEditModal = (tournament) => {
+  editingTournamentId.value = tournament.id;
+  Object.assign(form, {
+    name: tournament.name,
+    format: tournament.format,
+    type: tournament.type,
+    season_id: tournament.season_id,
+    category_id: tournament.category_id,
+    inscription_fee: tournament.inscription_fee,
+    max_teams: tournament.max_teams,
+    start_date: tournament.start_date ?? '',
+    end_date: tournament.end_date ?? '',
+    rounds_type: tournament.rounds_type ?? 'SINGLE',
+    points_win: tournament.points_win ?? 3,
+    points_draw: tournament.points_draw ?? 1,
+    points_loss: tournament.points_loss ?? 0,
+    group_count: tournament.group_count ?? 2,
+    teams_advance_per_group: tournament.teams_advance_per_group ?? 2,
+    two_legged_knockout: tournament.two_legged_knockout ?? false,
+    has_third_place_match: tournament.has_third_place_match ?? false,
+    has_consolation: tournament.has_consolation ?? false,
+    consolation_name: tournament.consolation_name ?? 'Liguilla',
+    notes: tournament.notes ?? '',
+  });
+  viewMode.value = 'form';
 };
 
 const saveTournament = async () => {
@@ -373,11 +477,16 @@ const saveTournament = async () => {
     error.value = 'El costo de inscripción es requerido y no puede ser negativo';
     return;
   }
-  const payload = { ...form, org_id: authStore.state.org?.id };
+  if (form.max_teams === null || form.max_teams === '' || Number(form.max_teams) < 2) {
+    error.value = 'La cantidad de equipos-series es requerida y debe ser al menos 2';
+    return;
+  }
+  const payload = { ...form, org_id: authStore.state.org?.id, ...(editingTournamentId.value ? { id: editingTournamentId.value } : {}) };
   try {
     const tournament = await createOrUpdateTournament(payload);
-    viewMode.value = 'list';
-    router.push(`/tournaments/${tournament.id}`);
+    const wasEditing = Boolean(editingTournamentId.value);
+    cancelForm();
+    if (!wasEditing) router.push(`/tournaments/${tournament.id}`);
   } catch (e) {
     // Error manejado en el store
   }
@@ -399,7 +508,53 @@ const confirmDelete = async (tournament) => {
   }
 };
 
+// "Cerrar" torneo = darlo por finalizado (status FINISHED): deja de admitir
+// inscripciones y de estar activo en la vista de club (ver
+// club-series-tournament-lifecycle.md, torneos activos = REGISTRATION | IN_PROGRESS).
+const confirmClose = async (tournament) => {
+  const ok = await confirm({
+    title: '¿Cerrar torneo?',
+    message: `¿Dar por finalizado el torneo "${tournament.name}"? Dejará de admitir inscripciones y de aparecer como activo para los clubes.`,
+    confirmText: 'Cerrar torneo',
+    isDestructive: true,
+  });
+  if (!ok) return;
+  try {
+    await createOrUpdateTournament({ id: tournament.id, status: 'FINISHED' });
+    notifySuccess('Torneo cerrado (finalizado) exitosamente');
+  } catch (e) {
+    notifyError(e.response?.data?.error?.message || 'Error al cerrar el torneo');
+  }
+};
+
 const openTournament = (tournamentId) => router.push(`/tournaments/${tournamentId}`);
+
+// ── Panorama de torneos ───────────────────────────────────────────────────
+const icons = {
+  layers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>',
+  clipboard: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6a1 1 0 0 1 1 1v2H8V3a1 1 0 0 1 1-1Z"/><path d="M8 4H6a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="15" y2="16"/></svg>',
+  play: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>',
+  trophy: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h3a2 2 0 0 1-2 4h-1M7 5H4a2 2 0 0 0 2 4h1"/></svg>',
+};
+
+const TOURNAMENT_TILE_STATUS = { registration: 'REGISTRATION', in_progress: 'IN_PROGRESS', finished: 'FINISHED' };
+
+const dashboardTiles = computed(() => [
+  { key: 'all', label: 'Total torneos', value: items.value.length, meta: scopedSeason.value ? scopedSeason.value.name : 'todas las temporadas', color: 'blue', icon: icons.layers },
+  { key: 'registration', label: 'En inscripción', value: items.value.filter(t => t.status === 'REGISTRATION').length, meta: 'admiten series', color: 'blue', icon: icons.clipboard },
+  { key: 'in_progress', label: 'En curso', value: items.value.filter(t => t.status === 'IN_PROGRESS').length, meta: 'con fixture jugándose', color: 'green', icon: icons.play },
+  { key: 'finished', label: 'Finalizados', value: items.value.filter(t => t.status === 'FINISHED').length, meta: 'temporadas anteriores', color: 'gold', icon: icons.trophy },
+]);
+
+const selectedTileKey = ref('all');
+const selectedTileLabel = computed(() => dashboardTiles.value.find((t) => t.key === selectedTileKey.value)?.label ?? '');
+const selectTile = (key) => { selectedTileKey.value = key; };
+
+const filteredTournaments = computed(() => {
+  const status = TOURNAMENT_TILE_STATUS[selectedTileKey.value];
+  if (!status) return items.value;
+  return items.value.filter((t) => t.status === status);
+});
 
 onMounted(() => {
   loadTournaments();
@@ -432,6 +587,7 @@ watch(() => route.params.seasonId, () => {
 
 .clickable-row { cursor: pointer; }
 .clickable-row:hover { background: var(--surface-hover, rgba(255,255,255,0.03)); }
+.numeric { font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.875rem; }
 

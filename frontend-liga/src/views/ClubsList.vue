@@ -97,38 +97,16 @@
 
     <template v-if="viewMode === 'list'">
       <!-- Dashboard: tarjetas-submenú -->
-      <section class="pd-dash mb-lg">
-        <div class="pd-dash__glow pd-dash__glow--green" aria-hidden="true"></div>
-        <div class="pd-dash__glow pd-dash__glow--blue" aria-hidden="true"></div>
-
-        <div class="pd-dash__head">
-          <span class="pd-dash__kicker">Resumen de la liga</span>
-          <h3 class="pd-dash__title">
-            Panorama de <span class="pd-dash__title-accent">clubes</span>
-          </h3>
-          <p class="pd-dash__desc">Estado general de los equipos de la organización, actualizado en vivo.</p>
-        </div>
-
-        <div class="pd-dash__grid">
-          <article
-            v-for="tile in dashboardTiles"
-            :key="tile.key"
-            class="pd-tile"
-            :class="[`pd-tile--${tile.color}`, { 'pd-tile--selected': selectedTileKey === tile.key }]"
-            role="button"
-            tabindex="0"
-            @click="selectTile(tile.key)"
-            @keyup.enter="selectTile(tile.key)"
-          >
-            <div class="pd-tile__icon" v-html="tile.icon"></div>
-            <div class="pd-tile__body">
-              <span class="pd-tile__label">{{ tile.label }}</span>
-              <strong class="pd-tile__value">{{ tile.value }}</strong>
-              <span class="pd-tile__trend">{{ tile.meta }}</span>
-            </div>
-          </article>
-        </div>
-      </section>
+      <PanoramaDashboard
+        class="mb-lg"
+        kicker="Resumen de la liga"
+        title-start="Panorama de"
+        title-accent="clubes"
+        description="Estado general de los equipos de la organización, actualizado en vivo."
+        :tiles="dashboardTiles"
+        :selected-key="selectedTileKey"
+        @select="selectTile"
+      />
 
       <!-- Tabla, según la tarjeta seleccionada -->
       <div class="card p-0">
@@ -146,9 +124,9 @@
                 <tr>
                   <th>Logo</th>
                   <th>Nombre</th>
-                  <th>Nombre Corto</th>
+                  <th title="Nombre Corto">N. Corto</th>
                   <th>Colores</th>
-                  <th class="text-center">Jugadores Activos</th>
+                  <th class="text-center" title="Jugadores Activos">Jug. activos</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -297,6 +275,7 @@ import { useAuthStore } from '../stores/auth';
 import { useNotifyStore } from '../stores/notify';
 import { uploadImage } from '../services/cloudinary.service';
 import ActionsMenu from '../components/ActionsMenu.vue';
+import PanoramaDashboard from '../components/PanoramaDashboard.vue';
 
 const router = useRouter();
 const { items, loading, error, fetchClubs, createOrUpdateClub } = useClubsStore();
@@ -746,144 +725,4 @@ onMounted(() => {
 }
 }
 
-/* ── Dashboard (estilo landing) ── */
-.pd-dash {
-  position: relative;
-  overflow: hidden;
-  background: var(--surface-card, #14151d);
-  border: 1px solid var(--border-subtle, #23252f);
-  border-radius: var(--border-radius-lg, 16px);
-  padding: 2rem 1.5rem;
-}
-
-.pd-dash__glow {
-  position: absolute;
-  width: 360px;
-  height: 360px;
-  border-radius: 50%;
-  filter: blur(110px);
-  opacity: 0.2;
-  pointer-events: none;
-  z-index: 0;
-}
-.pd-dash__glow--green { top: -140px; left: -100px; background: var(--color-green-600, #00e676); }
-.pd-dash__glow--blue  { bottom: -160px; right: -100px; background: var(--color-blue-500, #4fc3f7); }
-
-.pd-dash__head {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-  max-width: 520px;
-  margin: 0 auto 1.75rem;
-}
-
-.pd-dash__kicker {
-  display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--color-blue-500, #4fc3f7);
-  margin-bottom: 0.5rem;
-}
-
-.pd-dash__title {
-  font-size: clamp(1.4rem, 3vw, 1.9rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin: 0 0 0.5rem;
-}
-
-.pd-dash__title-accent {
-  background: linear-gradient(135deg, var(--color-green-600, #00e676), var(--color-blue-500, #4fc3f7));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.pd-dash__desc {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-
-.pd-dash__grid {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.pd-tile {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.9rem;
-  background: var(--bg-tertiary, rgba(255,255,255,0.03));
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--border-radius-md, 12px);
-  padding: 1.1rem;
-  cursor: pointer;
-  transition: transform var(--transition-fast, 0.15s ease), border-color var(--transition-fast, 0.15s ease);
-}
-
-.pd-tile:hover {
-  transform: translateY(-3px);
-  border-color: var(--pd-accent, var(--color-green-600));
-}
-
-.pd-tile--selected {
-  border-color: var(--pd-accent, var(--color-green-600));
-  box-shadow: 0 0 0 1px var(--pd-accent, var(--color-green-600));
-}
-
-.pd-tile--green { --pd-accent: var(--color-green-600, #00e676); }
-.pd-tile--blue  { --pd-accent: var(--color-blue-500, #4fc3f7); }
-.pd-tile--gold  { --pd-accent: var(--color-gold, #ffd54f); }
-.pd-tile--red   { --pd-accent: var(--color-danger, #ef5350); }
-
-.pd-tile__icon {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: color-mix(in srgb, var(--pd-accent) 16%, transparent);
-  color: var(--pd-accent);
-}
-
-.pd-tile__icon :deep(svg) {
-  width: 20px;
-  height: 20px;
-}
-
-.pd-tile__body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  min-width: 0;
-}
-
-.pd-tile__label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-}
-
-.pd-tile__value {
-  font-size: 1.6rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-  line-height: 1.2;
-}
-
-.pd-tile__trend {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--text-muted);
-}
 </style>

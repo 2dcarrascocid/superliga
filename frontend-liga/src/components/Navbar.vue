@@ -119,21 +119,50 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24L3 3v6.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
                 Categorías
               </router-link>
+              <router-link to="/match-scheduling" class="nav-dropdown__item" @click="closeAllMenus" role="menuitem">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Programación de Fecha
+              </router-link>
+              <router-link to="/scheduling-settings" class="nav-dropdown__item" @click="closeAllMenus" role="menuitem">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 14.5 14.5"/><path d="M9 2h6"/><path d="M19 5l-1.5-1.5"/></svg>
+                Duración de Partidos
+              </router-link>
             </div>
           </div>
         </template>
 
-        <!-- Administrador de club puro: solo ve su club -->
-        <router-link
-          v-else-if="myClub"
-          :to="`/clubs/${myClub.id}`"
-          class="nav-link"
-          @click="closeMobileMenu"
-          aria-label="Ir a mi club"
-        >
-          <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-          {{ myClub.name }}
-        </router-link>
+        <!-- Administrador de club puro: solo ve su club, sus temporadas/torneos y sus finanzas -->
+        <template v-else-if="myClub">
+          <router-link
+            :to="`/clubs/${myClub.id}`"
+            class="nav-link"
+            @click="closeMobileMenu"
+            aria-label="Ir a mi club"
+          >
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            {{ myClub.name }}
+          </router-link>
+
+          <router-link
+            :to="`/clubs/${myClub.id}/seasons`"
+            class="nav-link"
+            @click="closeMobileMenu"
+            aria-label="Ir a temporadas"
+          >
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H3a4 4 0 0 0 4 4"/><path d="M17 6h4a4 4 0 0 1-4 4"/></svg>
+            Temporadas
+          </router-link>
+
+          <router-link
+            :to="`/clubs/${myClub.id}/finance`"
+            class="nav-link"
+            @click="closeMobileMenu"
+            aria-label="Ir a finanzas"
+          >
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Finanzas
+          </router-link>
+        </template>
 
         <!-- Jugador puro (vinculado vía lg_player_users, sin org ni club admin) -->
         <router-link
@@ -206,7 +235,7 @@ const playersMenuOpen = ref(false);
 const myClub = computed(() => authStore.myClub());
 
 const isParamsRouteActive = computed(() =>
-  route.path.startsWith('/referees') || route.path.startsWith('/venues') || route.path.startsWith('/schedules') || route.path.startsWith('/categories')
+  route.path.startsWith('/referees') || route.path.startsWith('/venues') || route.path.startsWith('/schedules') || route.path.startsWith('/categories') || route.path.startsWith('/match-scheduling') || route.path.startsWith('/scheduling-settings')
 );
 
 const isSeasonsRouteActive = computed(() =>

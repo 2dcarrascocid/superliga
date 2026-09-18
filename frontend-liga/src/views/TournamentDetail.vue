@@ -7,128 +7,24 @@
 
     <div v-if="error" class="alert alert-error mb-md">{{ error }}</div>
 
-    <div v-if="current" class="card mb-md">
-      <div class="flex justify-between items-center flex-wrap gap-md">
-        <div>
-          <span class="status-badge" :class="`status-badge--${current.status?.toLowerCase()}`">{{ statusLabel(current.status) }}</span>
-          <span class="type-badge" :class="`type-badge--${current.type?.toLowerCase()}`">{{ typeLabel(current.type) }}</span>
-          <p class="text-muted text-sm mt-sm mb-0">
-            {{ formatLabel(current.format) }} · {{ current.season?.name || 'Sin temporada' }} ·
-            {{ current.category?.name || 'Sin categoría' }} ·
-            {{ current.teams_count }} equipo(s) inscrito(s)
-          </p>
-        </div>
-        <div class="flex gap-sm flex-wrap">
-          <button class="btn btn-sm btn-secondary" @click="$router.push(`/tournaments/${tournamentId}/fixture`)">Ver Fixture</button>
-          <button class="btn btn-sm btn-secondary" @click="$router.push(`/tournaments/${tournamentId}/standings`)">Tabla de Posiciones</button>
-          <button class="btn btn-sm btn-secondary" @click="$router.push(`/tournaments/${tournamentId}/top-scorers`)">Goleadores</button>
-          <button class="btn btn-sm btn-secondary" @click="$router.push(`/tournaments/${tournamentId}/fairplay`)">Fairplay</button>
-        </div>
+    <PanoramaDashboard
+      v-if="current"
+      class="mb-lg"
+      kicker="Resumen del torneo"
+      title-start="Panorama del"
+      title-accent="torneo"
+      :description="tournamentDescription"
+      :sub-tabs="menuTabs"
+      :active-sub-tab="activeTab"
+      @sub-tab-change="selectTab"
+    />
+
+    <!-- Tab: Equipos inscritos -->
+    <div v-if="activeTab === 'teams'" class="card">
+      <div class="flex justify-between items-center mb-md">
+        <h3 class="m-0">Equipos Inscritos</h3>
+        <span class="text-muted text-sm">{{ teams.length }}{{ current?.max_teams ? ` / ${current.max_teams} cupos` : '' }}</span>
       </div>
-
-      <!-- Cambio de estado del torneo — sin esto el torneo puede quedar
-           atascado en DRAFT para siempre, sin aparecer en "Torneos activos"
-           de ningún club (ese listado filtra por status=REGISTRATION). -->
-      <div v-if="authStore.isOrgAdmin()" class="status-change-row">
-        <div class="input-group" style="max-width: 220px;">
-          <label class="label text-sm">Cambiar estado del torneo</label>
-          <select v-model="statusForm" class="input">
-            <option v-for="s in STATUS_OPTIONS" :key="s" :value="s">{{ statusLabel(s) }}</option>
-          </select>
-        </div>
-        <button
-          class="btn btn-sm btn-primary"
-          style="align-self: flex-end;"
-          :disabled="statusSaving || statusForm === current.status"
-          @click="onSaveStatus"
-        >
-          {{ statusSaving ? 'Guardando...' : 'Guardar estado' }}
-        </button>
-        <span v-if="statusError" class="text-sm" style="color:#ef5350;">{{ statusError }}</span>
-      </div>
-    </div>
-
-    <!-- Acciones de sorteo / fixture -->
-    <div class="card mb-md">
-      <h3 class="mb-md">Sorteo y Fixture</h3>
-      <div class="flex gap-sm flex-wrap items-center">
-        <button class="btn btn-primary" :disabled="loading || teams.length < 2" @click="onGenerateFixture(false)">
-          Generar Sorteo / Fixture
-        </button>
-        <button class="btn btn-secondary" :disabled="loading" @click="onGenerateFixture(true)">
-          Regenerar (force)
-        </button>
-        <button
-          v-if="current?.format === 'GROUPS_KNOCKOUT'"
-          class="btn btn-secondary"
-          :disabled="loading"
-          @click="onGenerateKnockout"
-        >
-          Generar Playoffs desde Grupos
-        </button>
-        <button
-          v-if="current?.has_consolation"
-          class="btn btn-secondary"
-          :disabled="loading"
-          @click="onGenerateConsolation"
-        >
-          Generar {{ current.consolation_name || 'Liguilla' }}
-        </button>
-      </div>
-      <p class="text-muted text-sm mt-sm mb-0">
-        Se requieren al menos 2 equipos inscritos. El sorteo arma automáticamente las jornadas y partidos según el formato del torneo.
-      </p>
-    </div>
-
-    <!-- Clubes inscritos -->
-    <div class="card mb-md">
-      <h3 class="mb-md">Clubes Inscritos</h3>
-      <p class="text-muted text-sm mt-0 mb-md">
-        La inscripción del club (y su cobro correspondiente) se genera automáticamente al inscribir la primera
-        serie/equipo desde la sección "Equipos Inscritos" de abajo — no hace falta inscribir el club por separado.
-      </p>
-
-      <div class="table-container mt-md">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Club</th>
-              <th class="text-center">Estado de inscripción</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="clubs.length === 0">
-              <td colspan="3" class="text-center py-lg">Aún no hay clubes inscritos.</td>
-            </tr>
-            <tr v-for="tc in clubs" :key="tc.id">
-              <td class="font-medium">{{ tc.club?.name }}</td>
-              <td class="text-center">
-                <span class="status-badge" :class="`status-badge--${tc.inscription_status?.toLowerCase()}`">
-                  {{ inscriptionStatusLabel(tc.inscription_status) }}
-                </span>
-              </td>
-              <td>
-                <ActionsMenu>
-                  <button
-                    v-if="authStore.isOrgAdmin() && tc.inscription_charge && tc.inscription_status !== 'PAGADO'"
-                    class="btn btn-sm btn-secondary"
-                    @click="onRegisterPayment(tc)"
-                  >
-                    Registrar pago
-                  </button>
-                  <button class="btn btn-sm btn-danger" @click="onRemoveClub(tc)">Quitar</button>
-                </ActionsMenu>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Equipos inscritos -->
-    <div class="card">
-      <h3 class="mb-md">Equipos Inscritos</h3>
 
       <form v-if="registrationOpen" class="team-register-row" @submit.prevent="onRegisterTeam">
         <div class="input-group flex-1 series-search">
@@ -175,20 +71,18 @@
           <thead>
             <tr>
               <th>Club — Serie</th>
-              <th>Grupo</th>
-              <th>Seed</th>
               <th class="text-center">Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="teams.length === 0">
-              <td colspan="5" class="text-center py-lg">Aún no hay equipos inscritos.</td>
+              <td colspan="3" class="text-center py-lg">Aún no hay equipos inscritos.</td>
             </tr>
             <tr v-for="team in teams" :key="team.id">
-              <td class="font-medium">{{ team.series?.club?.name }} — {{ team.series?.name }}</td>
-              <td>{{ team.group_name || '—' }}</td>
-              <td>{{ team.seed ?? '—' }}</td>
+              <td class="font-medium" :title="`${team.series?.club?.name} — ${team.series?.name}`">
+                {{ truncate(team.series?.club?.name, 12) }} — {{ truncate(team.series?.name, 3) }}
+              </td>
               <td class="text-center">
                 <span class="status-badge" :class="`status-badge--team-${team.status?.toLowerCase()}`">{{ teamStatusLabel(team.status) }}</span>
               </td>
@@ -202,6 +96,87 @@
           </tbody>
         </table>
       </div>
+
+      <!-- Mobile: tarjetas -->
+      <div class="data-cards mt-md">
+        <p v-if="teams.length === 0" class="text-center py-lg text-muted text-sm">Aún no hay equipos inscritos.</p>
+        <article v-for="team in teams" :key="team.id" class="data-card">
+          <div class="data-card__header">
+            <div class="data-card__heading">
+              <div class="data-card__title">{{ team.series?.club?.name }}</div>
+              <div class="data-card__subtitle">{{ team.series?.name }}</div>
+            </div>
+            <span class="status-badge" :class="`status-badge--team-${team.status?.toLowerCase()}`">{{ teamStatusLabel(team.status) }}</span>
+          </div>
+          <div class="data-card__footer" v-if="registrationOpen">
+            <ActionsMenu>
+              <button class="btn btn-sm btn-danger" @click="onRemoveTeam(team)">Quitar</button>
+            </ActionsMenu>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- Tab: Sorteo y Fixture -->
+    <div v-if="activeTab === 'fixture-tools'" class="card">
+      <div class="flex justify-between items-center mb-md">
+        <h3 class="m-0">Sorteo y Fixture</h3>
+        <span class="status-badge" :class="fixtureGenerated ? 'status-badge--team-active' : 'status-badge--team-withdrawn'">
+          {{ fixtureGenerated ? 'Generado' : 'Pendiente' }}
+        </span>
+      </div>
+      <div class="flex gap-sm flex-wrap items-center">
+        <button class="btn btn-primary" :disabled="loading || teams.length < 2" @click="onGenerateFixture(false)">
+          Generar Sorteo / Fixture
+        </button>
+        <button class="btn btn-secondary" :disabled="loading" @click="onGenerateFixture(true)">
+          Regenerar (force)
+        </button>
+        <button
+          v-if="current?.format === 'GROUPS_KNOCKOUT'"
+          class="btn btn-secondary"
+          :disabled="loading"
+          @click="onGenerateKnockout"
+        >
+          Generar Playoffs desde Grupos
+        </button>
+        <button
+          v-if="current?.has_consolation"
+          class="btn btn-secondary"
+          :disabled="loading"
+          @click="onGenerateConsolation"
+        >
+          Generar {{ current.consolation_name || 'Liguilla' }}
+        </button>
+      </div>
+      <p class="text-muted text-sm mt-sm mb-0">
+        Se requieren al menos 2 equipos inscritos. El sorteo arma automáticamente las jornadas y partidos según el formato del torneo.
+      </p>
+    </div>
+
+    <!-- Tab: Estado del torneo (solo admin de organización) -->
+    <div v-if="activeTab === 'status'" class="card">
+      <h3 class="mb-md">Estado del Torneo</h3>
+      <!-- Sin esto el torneo puede quedar atascado en DRAFT para siempre,
+           sin aparecer en "Torneos activos" de ningún club (ese listado
+           filtra por status=REGISTRATION). -->
+      <div class="status-change-row">
+        <div class="input-group" style="max-width: 220px;">
+          <label class="label text-sm">Cambiar estado del torneo</label>
+          <select v-model="statusForm" class="input">
+            <option v-for="s in STATUS_OPTIONS" :key="s" :value="s">{{ statusLabel(s) }}</option>
+          </select>
+        </div>
+        <button
+          class="btn btn-sm btn-primary"
+          style="align-self: flex-end;"
+          :disabled="statusSaving || statusForm === current?.status"
+          @click="onSaveStatus"
+        >
+          {{ statusSaving ? 'Guardando...' : 'Guardar estado' }}
+        </button>
+        <span v-if="statusError" class="text-sm" style="color:#ef5350;">{{ statusError }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -213,24 +188,56 @@ import { useTournamentsStore } from '../stores/tournaments';
 import { useAuthStore } from '../stores/auth';
 import { useNotifyStore } from '../stores/notify';
 import { useClubSeriesStore } from '../stores/clubSeries';
-import { recordPayment } from '../services/clubFinance.service.js';
 import { updateTournament } from '../services/tournaments.service.js';
 import ActionsMenu from '../components/ActionsMenu.vue';
+import PanoramaDashboard from '../components/PanoramaDashboard.vue';
 
 const route = useRoute();
 const tournamentId = route.params.tournamentId;
 
 const {
-  current, teams, clubs, loading, error,
-  fetchTournamentById, fetchTeams, addTeam, removeTeam,
-  fetchTournamentClubs, addClub, removeClub,
+  current, teams, loading, error,
+  fetchTournamentById, fetchTeams, addTeam, removeTeam, addClub,
   runGenerateFixture, runGenerateKnockoutFromGroups, runGenerateConsolation,
 } = useTournamentsStore();
 const authStore = useAuthStore();
-const { notifySuccess, notifyError, confirm, prompt } = useNotifyStore();
+const { notifySuccess, notifyError, confirm } = useNotifyStore();
 const { searchResults: seriesResults, searchAllSeries } = useClubSeriesStore();
 
 const seriesQuery = ref('');
+
+// ── Panorama / sub menú del torneo ────────────────────────────────────────
+// Esto es un MENÚ (como el submenú de /players: Jugadores / Jugadores
+// Inactivos / Traspasos), no un panel de indicadores — por eso usa el pill
+// tab bar de PanoramaDashboard (subTabs), no la grilla de tarjetas KPI
+// (tiles). "Ver Fixture"/"Tabla de Posiciones"/"Goleadores"/"Fairplay"
+// navegan a su propia ruta completa (con `path`, PanoramaDashboard los
+// renderiza como <router-link>); "Equipos Inscritos"/"Sorteo y
+// Fixture"/"Estado del Torneo" son paneles locales de esta misma vista.
+const activeTab = ref('teams');
+const tournamentDescription = computed(() => {
+  if (!current.value) return '';
+  return `${current.value.name} · ${typeLabel(current.value.type)} · ${formatLabel(current.value.format)} · ${current.value.season?.name || 'Sin temporada'} · ${current.value.category?.name || 'Sin categoría'}`;
+});
+
+const menuTabs = computed(() => [
+  { key: 'teams', label: 'Equipos Inscritos' },
+  { key: 'fixture-view', label: 'Ver Fixture', path: `/tournaments/${tournamentId}/fixture` },
+  { key: 'standings', label: 'Tabla de Posiciones', path: `/tournaments/${tournamentId}/standings` },
+  { key: 'top-scorers', label: 'Goleadores', path: `/tournaments/${tournamentId}/top-scorers` },
+  { key: 'fairplay', label: 'Fairplay', path: `/tournaments/${tournamentId}/fairplay` },
+  { key: 'fixture-tools', label: 'Sorteo y Fixture' },
+  ...(authStore.isOrgAdmin() ? [{ key: 'status', label: 'Estado del Torneo' }] : []),
+]);
+
+const selectTab = (key) => { activeTab.value = key; };
+
+// Recorta nombres largos en la tabla de Equipos Inscritos para que la fila
+// quede compacta — el título completo queda disponible en el tooltip (:title).
+const truncate = (text, max) => {
+  if (!text) return '';
+  return text.length > max ? `${text.slice(0, max)}…` : text;
+};
 
 const FORMAT_LABELS = {
   ROUND_ROBIN: 'Todos contra Todos',
@@ -246,15 +253,11 @@ const TEAM_STATUS_LABELS = {
 const TYPE_LABELS = {
   OFICIAL: 'Oficial', AMISTOSO: 'Amistoso',
 };
-const INSCRIPTION_STATUS_LABELS = {
-  PENDIENTE: 'Pendiente', PARCIAL: 'Parcial', PAGADO: 'Pagado', VENCIDO: 'Vencido', SIN_COBRO: 'Sin cobro',
-};
 
 const formatLabel = (v) => FORMAT_LABELS[v] || v;
 const statusLabel = (v) => STATUS_LABELS[v] || v;
 const teamStatusLabel = (v) => TEAM_STATUS_LABELS[v] || v;
 const typeLabel = (v) => TYPE_LABELS[v] || v;
-const inscriptionStatusLabel = (v) => INSCRIPTION_STATUS_LABELS[v] || v;
 
 // ── Cambio de estado del torneo (solo admin de organización) ────────────
 // El backend valida `status` contra el CHECK de la tabla
@@ -298,6 +301,7 @@ const tournamentCategoryId = computed(() => current.value?.category_id ?? curren
 // el torneo no está en período de inscripción — reflejamos esa regla en la UI
 // para no ofrecer acciones que van a fallar del lado del servidor.
 const registrationOpen = computed(() => current.value?.status === 'REGISTRATION');
+const fixtureGenerated = computed(() => current.value?.status === 'IN_PROGRESS' || current.value?.status === 'FINISHED');
 
 // Filtra el dropdown de series por la categoría del torneo, si es posible
 // derivarla (evita CATEGORY_MISMATCH). Ya no filtra por club pre-inscrito: la
@@ -315,7 +319,6 @@ const loadAll = async () => {
   await Promise.all([
     fetchTournamentById(tournamentId),
     fetchTeams(tournamentId),
-    fetchTournamentClubs(tournamentId),
   ]);
 };
 
@@ -328,49 +331,6 @@ const selectSeries = (series) => {
   teamForm.club_id = series.club_id ?? series.club?.id ?? null;
   seriesQuery.value = `${series.club?.name} — ${series.name}`;
   seriesResults.value = [];
-};
-
-const onRemoveClub = async (tc) => {
-  const ok = await confirm({
-    title: '¿Quitar club del torneo?',
-    message: `¿Quitar a "${tc.club?.name}" de este torneo? (Debe no tener series/equipos inscritos)`,
-    confirmText: 'Quitar Club',
-    isDestructive: true,
-  });
-  if (!ok) return;
-  try {
-    await removeClub(tournamentId, tc.club_id);
-    notifySuccess('Club quitado del torneo');
-  } catch (e) {
-    notifyError(e.response?.data?.error?.message || 'Error al quitar el club');
-  }
-};
-
-const onRegisterPayment = async (tc) => {
-  const charge = tc.inscription_charge;
-  if (!charge) return;
-  const pending = Number(charge.amount) - Number(charge.paid_amount || 0);
-  const input = await prompt({
-    title: 'Registrar Abono',
-    message: `Monto a abonar por la inscripción de "${tc.club?.name}" (pendiente: $${Math.round(pending).toLocaleString('es-CL')})`,
-    defaultValue: pending > 0 ? pending : '',
-    inputType: 'number',
-    placeholder: 'Ingresa el monto a abonar',
-    confirmText: 'Registrar Pago',
-  });
-  if (input === null || input === '') return;
-  const amount = Number(input);
-  if (!amount || amount <= 0) {
-    notifyError('Monto inválido');
-    return;
-  }
-  try {
-    await recordPayment(charge.id, { amount });
-    notifySuccess('Pago registrado exitosamente');
-    await fetchTournamentClubs(tournamentId);
-  } catch (e) {
-    notifyError(e.response?.data?.error?.message || 'Error al registrar el pago');
-  }
 };
 
 // La regla de negocio dice que un club solo debe quedar "Inscrito" cuando
@@ -406,9 +366,7 @@ const onRegisterTeam = async () => {
     teamForm.group_name = '';
     teamForm.seed = null;
     seriesQuery.value = '';
-    // Refresca ambas tablas: la del club recién auto-inscrito debe aparecer
-    // en "Clubes Inscritos" sin tener que recargar la página.
-    await Promise.all([fetchTeams(tournamentId), fetchTournamentClubs(tournamentId)]);
+    await fetchTeams(tournamentId);
   } catch (e) {
     notifyError(e.response?.data?.error?.message || 'Error al inscribir el equipo');
   } finally {
@@ -520,29 +478,8 @@ onMounted(() => {
   padding: 0.2rem 0.6rem; border-radius: var(--radius-full);
   font-size: 0.75rem; font-weight: 700;
 }
-.status-badge--draft        { background: rgba(255, 255, 255, 0.08); color: var(--text-muted); }
-.status-badge--registration { background: rgba(79, 195, 247, 0.16); color: #4fc3f7; }
-.status-badge--in_progress  { background: rgba(0, 230, 118, 0.14); color: var(--primary-solid, #00e676); }
-.status-badge--finished     { background: rgba(255, 213, 79, 0.16); color: #ffd54f; }
-.status-badge--cancelled    { background: rgba(239, 83, 80, 0.14); color: #ef5350; }
-
 .status-badge--team-active     { background: rgba(0, 230, 118, 0.14); color: var(--primary-solid, #00e676); }
 .status-badge--team-eliminated { background: rgba(239, 83, 80, 0.14); color: #ef5350; }
 .status-badge--team-withdrawn  { background: rgba(255, 255, 255, 0.08); color: var(--text-muted); }
 .status-badge--team-champion   { background: rgba(255, 213, 79, 0.16); color: #ffd54f; }
-
-/* Estados de inscripción de club (mismo criterio visual que LedgerView.vue) */
-.status-badge--pendiente { background: rgba(79, 195, 247, 0.16); color: #4fc3f7; }
-.status-badge--parcial   { background: rgba(255, 213, 79, 0.16); color: #ffd54f; }
-.status-badge--pagado    { background: rgba(0, 230, 118, 0.14); color: var(--primary-solid, #00e676); }
-.status-badge--vencido   { background: rgba(239, 83, 80, 0.14); color: #ef5350; }
-.status-badge--sin_cobro { background: rgba(255, 255, 255, 0.08); color: var(--text-muted); }
-
-.type-badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  padding: 0.2rem 0.6rem; border-radius: var(--radius-full);
-  font-size: 0.75rem; font-weight: 700; margin-left: 8px;
-}
-.type-badge--oficial  { background: rgba(0, 230, 118, 0.14); color: var(--primary-solid, #00e676); }
-.type-badge--amistoso { background: rgba(79, 195, 247, 0.16); color: #4fc3f7; }
 </style>

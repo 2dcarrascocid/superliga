@@ -97,7 +97,7 @@
               <th>Foto</th>
               <th>Nombre</th>
               <th>Categoría</th>
-              <th v-if="activeTab === 'inactivos'">Traspasado el</th>
+              <th v-if="activeTab === 'inactivos'" title="Traspasado el">Traspaso</th>
               <th>Acciones</th>
             </tr>
           </thead>
@@ -152,6 +152,58 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Mobile: tarjetas -->
+      <div class="data-cards p-md">
+        <article v-for="item in filteredItems" :key="item.id" class="data-card">
+          <div class="data-card__header">
+            <div class="data-card__avatar">
+              <img :src="item.player?.photo_url || '/placeholder-player.svg'" alt="Foto" />
+            </div>
+            <div class="data-card__heading">
+              <div class="data-card__title">{{ item.player?.first_name }} {{ item.player?.last_name }}</div>
+              <div class="data-card__subtitle">
+                Folio {{ formatFolio({ clubFolio: item.club_folio, clubFolioDisplay: item.club_folio_display, birthDate: item.player?.birth_date }) ?? '—' }}
+                <template v-if="activeTab === 'inactivos'"> · Traspaso: {{ item.valid_to ? new Date(item.valid_to).toLocaleDateString('es-CL') : '—' }}</template>
+              </div>
+            </div>
+            <span
+              v-if="getPlayerCategory(item.player?.birth_date)"
+              class="badge"
+              :style="{ backgroundColor: getPlayerCategory(item.player?.birth_date).color, color: '#fff' }"
+            >
+              {{ getPlayerCategory(item.player?.birth_date).name }}
+            </span>
+            <span v-else class="text-muted text-sm">—</span>
+          </div>
+          <div class="data-card__footer">
+            <!-- Activos: Ver + Editar -->
+            <ActionsMenu v-if="activeTab === 'activos'">
+              <button
+                class="btn btn-sm btn-secondary"
+                @click="$router.push(`/players/${item.player_id}`)"
+              >
+                Ver
+              </button>
+              <button
+                class="btn btn-sm btn-secondary"
+                @click="$router.push(`/players/${item.player_id}/edit`)"
+              >
+                Editar
+              </button>
+            </ActionsMenu>
+            <!-- Inactivos: solo Ver -->
+            <ActionsMenu v-else>
+              <button
+                class="btn btn-sm btn-secondary"
+                @click="$router.push(`/players/${item.player_id}`)"
+              >
+                Ver
+              </button>
+            </ActionsMenu>
+          </div>
+        </article>
       </div>
 
        <!-- Pagination -->

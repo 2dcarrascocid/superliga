@@ -4,55 +4,18 @@
       <h2>Jugadores</h2>
     </div>
 
-    <section class="pd-dash">
-      <div class="pd-dash__glow pd-dash__glow--green" aria-hidden="true"></div>
-      <div class="pd-dash__glow pd-dash__glow--blue" aria-hidden="true"></div>
-
-      <div class="pd-tabs" role="tablist">
-        <button
-          v-for="tab in tabs"
-          :key="tab.key"
-          type="button"
-          role="tab"
-          class="pd-tabs__item"
-          :class="{ 'pd-tabs__item--active': activeTab === tab.key }"
-          :aria-selected="activeTab === tab.key"
-          @click="activeTab = tab.key"
-        >
-          {{ tab.label }}
-        </button>
-      </div>
-
-      <div class="pd-dash__head">
-        <span class="pd-dash__kicker">{{ currentMeta.kicker }}</span>
-        <h3 class="pd-dash__title">
-          {{ currentMeta.titlePrefix }} <span class="pd-dash__title-accent">{{ currentMeta.titleAccent }}</span>
-        </h3>
-        <p class="pd-dash__desc">{{ currentMeta.desc }}</p>
-      </div>
-
-      <div class="pd-dash__grid">
-        <article
-          v-for="tile in dashboardTiles"
-          :key="tile.key"
-          class="pd-tile"
-          :class="[`pd-tile--${tile.color}`, { 'pd-tile--selected': selectedTileKey === tile.key }]"
-          role="button"
-          tabindex="0"
-          @click="selectTile(tile.key)"
-          @keyup.enter="selectTile(tile.key)"
-        >
-          <div class="pd-tile__icon" v-html="tile.icon"></div>
-          <div class="pd-tile__body">
-            <span class="pd-tile__label">{{ tile.label }}</span>
-            <strong class="pd-tile__value">{{ tile.value }}</strong>
-            <span class="pd-tile__trend" :class="tile.trend >= 0 ? 'pd-tile__trend--up' : 'pd-tile__trend--down'">
-              {{ tile.trend >= 0 ? '▲' : '▼' }} {{ Math.abs(tile.trend) }}% · {{ tile.meta }}
-            </span>
-          </div>
-        </article>
-      </div>
-    </section>
+    <PanoramaDashboard
+      :kicker="currentMeta.kicker"
+      :title-start="currentMeta.titlePrefix"
+      :title-accent="currentMeta.titleAccent"
+      :description="currentMeta.desc"
+      :sub-tabs="tabs"
+      :active-sub-tab="activeTab"
+      @sub-tab-change="activeTab = $event"
+      :tiles="dashboardTiles"
+      :selected-key="selectedTileKey"
+      @select="selectTile"
+    />
 
     <!-- Tabla paginada, según el tile seleccionado -->
     <section class="card mt-lg p-0 overflow-hidden">
@@ -110,6 +73,32 @@
           </table>
         </div>
 
+        <!-- Mobile: tarjetas -->
+        <div class="data-cards p-md">
+          <article
+            v-for="player in items"
+            :key="player.id"
+            class="data-card table-row-clickable"
+            @click="goToDetail(player.id)"
+          >
+            <div class="data-card__header">
+              <div class="data-card__avatar">
+                <img :src="player.photo_url || '/placeholder-player.svg'" alt="Foto" />
+              </div>
+              <div class="data-card__heading">
+                <div class="data-card__title">{{ player.first_name }} {{ player.last_name }}</div>
+                <div class="data-card__subtitle">
+                  Folio {{ formatFolio({ clubFolio: player.club_folio, clubFolioDisplay: player.club_folio_display, birthDate: player.birth_date }) ?? '—' }}
+                  · {{ player.club_name || 'Sin club' }}
+                </div>
+              </div>
+              <span class="badge" :class="statusClass(player.status)">
+                {{ statusLabel(player.status) }}
+              </span>
+            </div>
+          </article>
+        </div>
+
         <div class="flex justify-between items-center p-md" style="border-top: 1px solid var(--border-color);" v-if="items.length > 0">
           <span class="text-muted text-sm">Página {{ pageIndex + 1 }}</span>
           <div class="flex gap-sm">
@@ -136,6 +125,7 @@ import { useRouter } from 'vue-router';
 import { usePlayersStore } from '../stores/players';
 import { useAuthStore } from '../stores/auth';
 import { formatFolio } from '../utils/folio.js';
+import PanoramaDashboard from '../components/PanoramaDashboard.vue';
 
 const router = useRouter();
 const { items, loading, error, meta, fetchActivePlayersByOrg, fetchInactivePlayersByOrg } = usePlayersStore();
@@ -286,182 +276,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ── Dashboard (estilo landing) ── */
-.pd-dash {
-  position: relative;
-  overflow: hidden;
-  background: var(--surface-card, #14151d);
-  border: 1px solid var(--border-subtle, #23252f);
-  border-radius: var(--border-radius-lg, 16px);
-  padding: 2rem 1.5rem;
-}
-
-.pd-dash__glow {
-  position: absolute;
-  width: 360px;
-  height: 360px;
-  border-radius: 50%;
-  filter: blur(110px);
-  opacity: 0.2;
-  pointer-events: none;
-  z-index: 0;
-}
-.pd-dash__glow--green { top: -140px; left: -100px; background: var(--color-green-600, #00e676); }
-.pd-dash__glow--blue  { bottom: -160px; right: -100px; background: var(--color-blue-500, #4fc3f7); }
-
-.pd-tabs {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 1.75rem;
-}
-
-.pd-tabs__item {
-  padding: 0.5rem 1.1rem;
-  border-radius: var(--border-radius-full, 9999px);
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-tertiary, rgba(255,255,255,0.03));
-  color: var(--text-muted);
-  font-weight: 700;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all var(--transition-fast, 0.15s ease);
-}
-
-.pd-tabs__item:hover {
-  color: var(--text-primary);
-  border-color: var(--color-blue-500, #4fc3f7);
-}
-
-.pd-tabs__item--active {
-  color: #04120a;
-  border-color: transparent;
-  background: linear-gradient(135deg, var(--color-green-600, #00e676), var(--color-blue-500, #4fc3f7));
-}
-
-.pd-dash__head {
-  position: relative;
-  z-index: 1;
-  text-align: center;
-  max-width: 520px;
-  margin: 0 auto 1.75rem;
-}
-
-.pd-dash__kicker {
-  display: inline-block;
-  font-size: 0.72rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--color-blue-500, #4fc3f7);
-  margin-bottom: 0.5rem;
-}
-
-.pd-dash__title {
-  font-size: clamp(1.4rem, 3vw, 1.9rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin: 0 0 0.5rem;
-}
-
-.pd-dash__title-accent {
-  background: linear-gradient(135deg, var(--color-green-600, #00e676), var(--color-blue-500, #4fc3f7));
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.pd-dash__desc {
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-
-.pd-dash__grid {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.pd-tile {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.9rem;
-  background: var(--bg-tertiary, rgba(255,255,255,0.03));
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--border-radius-md, 12px);
-  padding: 1.1rem;
-  transition: transform var(--transition-fast, 0.15s ease), border-color var(--transition-fast, 0.15s ease);
-}
-
-.pd-tile:hover {
-  transform: translateY(-3px);
-  border-color: var(--pd-accent, var(--color-green-600));
-}
-
-.pd-tile--green { --pd-accent: var(--color-green-600, #00e676); }
-.pd-tile--blue  { --pd-accent: var(--color-blue-500, #4fc3f7); }
-.pd-tile--gold  { --pd-accent: var(--color-gold, #ffd54f); }
-.pd-tile--red   { --pd-accent: var(--color-danger, #ef5350); }
-
-.pd-tile { cursor: pointer; }
-.pd-tile--selected {
-  border-color: var(--pd-accent, var(--color-green-600));
-  box-shadow: 0 0 0 1px var(--pd-accent, var(--color-green-600));
-}
-
-.pd-tile__icon {
-  flex-shrink: 0;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: color-mix(in srgb, var(--pd-accent) 16%, transparent);
-  color: var(--pd-accent);
-}
-
-.pd-tile__icon :deep(svg) {
-  width: 20px;
-  height: 20px;
-}
-
-.pd-tile__body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  min-width: 0;
-}
-
-.pd-tile__label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-}
-
-.pd-tile__value {
-  font-size: 1.6rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: var(--text-primary);
-  line-height: 1.2;
-}
-
-.pd-tile__trend {
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.pd-tile__trend--up   { color: var(--color-green-500, #33ec8e); }
-.pd-tile__trend--down { color: var(--color-danger, #ef5350); }
-
 .table-row-clickable { cursor: pointer; }
 .table-row-clickable:hover { background: var(--bg-tertiary, rgba(255,255,255,0.03)); }
 

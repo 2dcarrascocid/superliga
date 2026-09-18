@@ -386,6 +386,7 @@ export const ValidationRules = {
       { field: 'categoryId', required: true, type: 'string', format: 'uuid' },
       { field: 'type', required: false, type: 'string', enum: ['AMISTOSO', 'OFICIAL'] },
       { field: 'inscriptionFee', required: true, type: 'number', min: 0 },
+      { field: 'maxTeams', required: true, type: 'number', min: 2 },
     ],
     UPDATE_TOURNAMENT: [
       { field: 'tournamentId', required: true, type: 'string', format: 'uuid' },
@@ -394,6 +395,7 @@ export const ValidationRules = {
       // nombre del campo acá debe matchear esa forma (inscription_fee, no
       // inscriptionFee) para que la regla efectivamente aplique.
       { field: 'inscription_fee', required: false, type: 'number', min: 0 },
+      { field: 'max_teams', required: false, type: 'number', min: 2 },
     ],
     DELETE_TOURNAMENT: [
       { field: 'tournamentId', required: true, type: 'string', format: 'uuid' },
@@ -468,6 +470,10 @@ export const ValidationRules = {
     GET_FAIRPLAY_RANKING: [
       { field: 'tournamentId', required: true, type: 'string', format: 'uuid' },
     ],
+    GET_VENUE_TIME_SLOTS: [
+      { field: 'venueId', required: true, type: 'string', format: 'uuid' },
+      { field: 'date', required: true, type: 'string' },
+    ],
   },
   tournament_costs: {
     CREATE_MATCHDAY_COST: [
@@ -508,6 +514,25 @@ export const ValidationRules = {
     ],
     GET_SERIES_ROSTER: [
       { field: 'seriesId', required: true, type: 'string', format: 'uuid' },
+    ],
+  },
+  match_scheduling: {
+    PREVIEW_SCHEDULE: [
+      { field: 'seasonId', required: true, type: 'string', format: 'uuid' },
+      { field: 'date', required: true, type: 'string', format: 'date' },
+    ],
+    APPLY_SCHEDULE: [
+      { field: 'seasonId', required: true, type: 'string', format: 'uuid' },
+      { field: 'date', required: true, type: 'string', format: 'date' },
+      { field: 'assignments', required: true, type: 'array' },
+    ],
+  },
+  scheduling_settings: {
+    GET_SCHEDULING_SETTINGS: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+    ],
+    UPDATE_SCHEDULING_SETTINGS: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
     ],
   },
 };

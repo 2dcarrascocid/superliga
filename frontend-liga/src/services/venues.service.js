@@ -9,3 +9,5 @@ export const getVenueById = (venueId) => apiClient.get(`/venues/${venueId}`);
 export const updateVenue = (venueId, data) => apiClient.patch(`/venues/${venueId}`, data);
 
 export const deleteVenue = (venueId) => apiClient.delete(`/venues/${venueId}`);
+
+export const getVenueTimeSlots = (venueId, params) => apiClient.get(`/venues/${venueId}/time-slots`, { params });

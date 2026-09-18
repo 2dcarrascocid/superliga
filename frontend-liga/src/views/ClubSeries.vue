@@ -31,7 +31,7 @@ import ActiveTournamentsTable from '../components/ActiveTournamentsTable.vue';
 const route = useRoute(); const router = useRouter(); const clubId = route.params.clubId;
 const { items, error, fetchClubSeries, createOrUpdateSeries, removeSeries } = useClubSeriesStore();
 const { confirm, notifySuccess, notifyError } = useNotifyStore();
-const clubTabs = [{ key: 'series', label: 'Series' }, { key: 'players', label: 'Jugadores' }, { key: 'inactive_players', label: 'Jugadores Inactivos' }, { key: 'transfers', label: 'Traspasos' }, { key: 'admins', label: 'Administradores' }, { key: 'edit', label: 'Editar Club' }];
+const clubTabs = [{ key: 'series', label: 'Series' }, { key: 'seasons', label: 'Temporadas', path: `/clubs/${clubId}/seasons` }, { key: 'players', label: 'Jugadores' }, { key: 'inactive_players', label: 'Jugadores Inactivos' }, { key: 'transfers', label: 'Traspasos' }, { key: 'finance', label: 'Finanzas', path: `/clubs/${clubId}/finance` }, { key: 'admins', label: 'Administradores' }, { key: 'edit', label: 'Editar Club' }];
 const club = ref(null); const clubRoster = ref([]); const selectedSeries = ref(null); const categories = ref([]);
 const seriesModalOpen = ref(false); const editingSeries = ref(null); const seriesSaving = ref(false);
 const availableTournaments = ref([]); const tournamentsLoading = ref(false); const tournamentsError = ref('');

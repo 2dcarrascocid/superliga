@@ -129,8 +129,9 @@ defineExpose({ close });
 }
 
 .actions-menu__trigger {
-  width: 34px;
-  height: 34px;
+  /* Mínimo 44×44px (targets interactivos, standards/frontend-sports-ui.md) */
+  width: 44px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -159,8 +160,8 @@ defineExpose({ close });
 }
 
 .actions-menu__icon {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   transition: transform 0.2s ease;
 }
 .actions-menu__trigger--open .actions-menu__icon { transform: rotate(90deg); }

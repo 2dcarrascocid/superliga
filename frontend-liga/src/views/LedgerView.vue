@@ -6,15 +6,19 @@
 
     <div v-if="error" class="alert alert-error mb-md">{{ error }}</div>
 
-    <!-- Tabs -->
-    <div class="ledger-tabs mb-md">
-      <button class="ledger-tab" :class="{ 'ledger-tab-active': activeTab === 'movements' }" @click="activeTab = 'movements'">
-        Movimientos
-      </button>
-      <button class="ledger-tab" :class="{ 'ledger-tab-active': activeTab === 'stats' }" @click="switchToStats">
-        Estadísticas
-      </button>
-    </div>
+    <PanoramaDashboard
+      class="mb-lg"
+      kicker="Resumen financiero"
+      title-start="Panorama"
+      title-accent="financiero"
+      description="Estado de pago de los clubes de la liga."
+      :sub-tabs="ledgerTabs"
+      :active-sub-tab="activeTab"
+      @sub-tab-change="activeTab = $event"
+      :tiles="financeTiles"
+      :selected-key="selectedFinanceTile"
+      @select="selectFinanceTile"
+    />
 
     <LoadingState :loading="pageLoading" message="Cargando finanzas...">
 
@@ -144,37 +148,50 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Mobile: tarjetas -->
+        <div class="data-cards p-md">
+          <p v-if="entriesLoading && entries.length === 0" class="text-center py-lg text-muted text-sm">Cargando...</p>
+          <p v-else-if="entries.length === 0" class="text-center py-lg text-muted text-sm">No hay movimientos para este filtro.</p>
+          <article v-for="entry in entries" :key="entry.id" class="data-card">
+            <div class="data-card__header">
+              <div class="data-card__heading">
+                <div class="data-card__title">{{ entry.club?.name || '—' }}</div>
+                <div class="data-card__subtitle">{{ entry.series?.name || 'Sin serie' }} · {{ CATEGORY_LABELS[entry.category] || entry.category }}</div>
+              </div>
+              <span class="status-badge" :class="`status-badge--${entry.status?.toLowerCase()}`">
+                {{ STATUS_LABELS[entry.status] || entry.status }}
+              </span>
+            </div>
+            <div class="data-card__body">
+              <div class="data-card__row">
+                <span class="data-card__row-label">Dirección</span>
+                <span class="data-card__row-value">{{ entry.direction === 'INGRESO' ? 'Ingreso' : 'Egreso' }}</span>
+              </div>
+              <div class="data-card__row">
+                <span class="data-card__row-label">Monto / Pagado</span>
+                <span class="data-card__row-value">${{ formatMoney(entry.amount) }} / ${{ formatMoney(entry.paid_amount) }}</span>
+              </div>
+              <div class="data-card__row">
+                <span class="data-card__row-label">Vence</span>
+                <span class="data-card__row-value">{{ entry.due_date || '—' }}</span>
+              </div>
+            </div>
+            <div class="data-card__footer" v-if="entry.status !== 'PAGADO'">
+              <ActionsMenu>
+                <button class="btn btn-sm btn-secondary" @click="openPaymentPrompt(entry)">Registrar pago</button>
+              </ActionsMenu>
+            </div>
+          </article>
+        </div>
       </div>
     </div>
 
     <!-- TAB: Estadísticas -->
     <div v-if="activeTab === 'stats'">
-      <div class="kpi-grid mb-lg">
-        <div class="card kpi-card">
-          <span class="kpi-label">Clubes al día</span>
-          <span class="kpi-value kpi-success">{{ stats?.clubs_al_dia ?? 0 }}</span>
-        </div>
-        <div class="card kpi-card">
-          <span class="kpi-label">Clubes pendientes</span>
-          <span class="kpi-value kpi-warning">{{ stats?.clubs_pendientes ?? 0 }}</span>
-        </div>
-        <div class="card kpi-card">
-          <span class="kpi-label">Clubes morosos</span>
-          <span class="kpi-value kpi-danger">{{ stats?.clubs_morosos ?? 0 }}</span>
-        </div>
-        <div class="card kpi-card">
-          <span class="kpi-label">Total cobrado</span>
-          <span class="kpi-value">${{ formatMoney(stats?.total_charged) }}</span>
-        </div>
-        <div class="card kpi-card">
-          <span class="kpi-label">Total pendiente</span>
-          <span class="kpi-value">${{ formatMoney(stats?.total_pending) }}</span>
-        </div>
-      </div>
-
       <div class="card p-0">
         <div class="flex justify-between items-center p-md" style="border-bottom: 1px solid var(--border-color);">
-          <h3 class="m-0">Estado de pago por club</h3>
+          <h3 class="m-0">Estado de pago por club — {{ selectedFinanceTileLabel }}</h3>
         </div>
         <div class="table-container">
           <table class="table">
@@ -189,10 +206,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-if="!stats || (stats.by_club ?? []).length === 0">
-                <td colspan="6" class="text-center py-lg">Sin datos todavía.</td>
+              <tr v-if="!stats || filteredByClub.length === 0">
+                <td colspan="6" class="text-center py-lg">Sin datos para esta selección.</td>
               </tr>
-              <template v-for="club in stats?.by_club ?? []" :key="club.club_id">
+              <template v-for="club in filteredByClub" :key="club.club_id">
                 <tr class="clickable-row" @click="toggleClubExpand(club.club_id)">
                   <td><span class="font-medium">{{ club.club_name }}</span></td>
                   <td class="text-right">${{ formatMoney(club.total_charged) }}</td>
@@ -223,6 +240,46 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Mobile: tarjetas -->
+        <div class="data-cards p-md">
+          <p v-if="!stats || filteredByClub.length === 0" class="text-center py-lg text-muted text-sm">Sin datos para esta selección.</p>
+          <article v-for="club in filteredByClub" :key="club.club_id" class="data-card clickable-row" @click="toggleClubExpand(club.club_id)">
+            <div class="data-card__header">
+              <div class="data-card__heading">
+                <div class="data-card__title">{{ club.club_name }}</div>
+                <div class="data-card__subtitle">{{ expandedClubs.has(club.club_id) ? 'Ocultar series ▲' : 'Ver series ▼' }}</div>
+              </div>
+              <span class="status-badge" :class="`status-badge--club-${club.status?.toLowerCase()}`">
+                {{ CLUB_STATUS_LABELS[club.status] || club.status }}
+              </span>
+            </div>
+            <div class="data-card__body">
+              <div class="data-card__row">
+                <span class="data-card__row-label">Cobrado / Pagado</span>
+                <span class="data-card__row-value">${{ formatMoney(club.total_charged) }} / ${{ formatMoney(club.total_paid) }}</span>
+              </div>
+              <div class="data-card__row">
+                <span class="data-card__row-label">Pendiente / Vencido</span>
+                <span class="data-card__row-value">${{ formatMoney(club.total_pending) }} / ${{ formatMoney(club.overdue_amount) }}</span>
+              </div>
+            </div>
+            <div v-if="expandedClubs.has(club.club_id) && club.series?.length" class="data-card__subrows" @click.stop>
+              <div v-for="series in club.series" :key="series.series_id" class="data-card__subrow">
+                <div class="data-card__row">
+                  <span class="data-card__row-label">↳ {{ series.series_name || 'Sin serie' }}</span>
+                  <span class="status-badge status-badge--sm" :class="`status-badge--club-${series.status?.toLowerCase()}`">
+                    {{ CLUB_STATUS_LABELS[series.status] || series.status }}
+                  </span>
+                </div>
+                <div class="data-card__row">
+                  <span class="data-card__row-label">Pend. / Venc.</span>
+                  <span class="data-card__row-value">${{ formatMoney(series.total_pending) }} / ${{ formatMoney(series.overdue_amount) }}</span>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
       </div>
     </div>
 
@@ -231,7 +288,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useNotifyStore } from '../stores/notify';
 import { getClubs } from '../services/clubs.service.js';
@@ -239,10 +296,15 @@ import { getClubSeries } from '../services/clubSeries.service.js';
 import { getLedgerEntries, createLedgerEntry, recordPayment, getPaymentStats } from '../services/clubFinance.service.js';
 import LoadingState from '../components/LoadingState.vue';
 import ActionsMenu from '../components/ActionsMenu.vue';
+import PanoramaDashboard from '../components/PanoramaDashboard.vue';
 
 const authStore = useAuthStore();
 const { notifySuccess, notifyError, prompt } = useNotifyStore();
 
+const ledgerTabs = [
+  { key: 'movements', label: 'Movimientos' },
+  { key: 'stats', label: 'Estadísticas' },
+];
 const activeTab = ref('movements');
 const pageLoading = ref(true);
 const error = ref(null);
@@ -386,10 +448,35 @@ const loadStats = async () => {
   }
 };
 
-const switchToStats = () => {
-  activeTab.value = 'stats';
-  if (!stats.value) loadStats();
+// ── Panorama financiero ───────────────────────────────────────────────────
+const icons = {
+  checkCircle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  alertTriangle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+  dollar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
 };
+
+const financeTiles = computed(() => [
+  { key: 'al_dia', label: 'Clubes al día', value: stats.value?.clubs_al_dia ?? 0, meta: 'al día con sus pagos', color: 'green', icon: icons.checkCircle },
+  { key: 'pendiente', label: 'Clubes pendientes', value: stats.value?.clubs_pendientes ?? 0, meta: 'con saldo pendiente', color: 'gold', icon: icons.clock },
+  { key: 'moroso', label: 'Clubes morosos', value: stats.value?.clubs_morosos ?? 0, meta: 'con pagos vencidos', color: 'red', icon: icons.alertTriangle },
+  { key: 'total', label: 'Por cobrar en total', value: `$${formatMoney(stats.value?.total_pending)}`, meta: `de $${formatMoney(stats.value?.total_charged)} cobrado`, color: 'blue', icon: icons.dollar },
+]);
+
+const selectedFinanceTile = ref('total');
+const selectedFinanceTileLabel = computed(() => financeTiles.value.find((t) => t.key === selectedFinanceTile.value)?.label ?? '');
+const selectFinanceTile = (key) => {
+  selectedFinanceTile.value = key;
+  activeTab.value = 'stats'; // el filtro solo se ve en la tabla "Estado de pago por club"
+};
+
+const FINANCE_TILE_STATUS = { al_dia: 'AL_DIA', pendiente: 'PENDIENTE', moroso: 'MOROSO' };
+const filteredByClub = computed(() => {
+  const byClub = stats.value?.by_club ?? [];
+  const status = FINANCE_TILE_STATUS[selectedFinanceTile.value];
+  if (!status) return byClub;
+  return byClub.filter((c) => c.status === status);
+});
 
 const toggleClubExpand = (clubId) => {
   if (expandedClubs.value.has(clubId)) expandedClubs.value.delete(clubId);
@@ -399,7 +486,7 @@ const toggleClubExpand = (clubId) => {
 onMounted(async () => {
   pageLoading.value = true;
   try {
-    await Promise.allSettled([loadClubs(), loadEntries()]);
+    await Promise.allSettled([loadClubs(), loadEntries(), loadStats()]);
   } finally {
     pageLoading.value = false;
   }
@@ -407,27 +494,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.ledger-tabs {
-  display: flex;
-  gap: 2px;
-  border-bottom: 2px solid var(--border-color);
-}
-.ledger-tab {
-  padding: 0.6rem 1.1rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--text-muted);
-  font-weight: 600;
-  font-size: 0.9rem;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-}
-.ledger-tab-active {
-  color: var(--primary-solid, #00e676);
-  border-bottom-color: var(--primary-solid, #00e676);
-}
-
 .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 10px; }
 
 .new-entry-form {
@@ -467,32 +533,4 @@ onMounted(async () => {
 .status-badge--club-al_dia    { background: rgba(0, 230, 118, 0.14); color: var(--primary-solid, #00e676); }
 .status-badge--club-pendiente { background: rgba(255, 213, 79, 0.16); color: #ffd54f; }
 .status-badge--club-moroso    { background: rgba(239, 83, 80, 0.14); color: #ef5350; }
-
-/* ── KPIs (mismo patrón que ClubDetail.vue) ── */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
-}
-.kpi-card {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 14px 16px;
-}
-.kpi-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--text-muted);
-}
-.kpi-value {
-  font-size: 1.75rem;
-  font-weight: 700;
-  line-height: 1.1;
-}
-.kpi-success { color: var(--primary-solid, #00e676); }
-.kpi-warning { color: #eab308; }
-.kpi-danger  { color: var(--color-danger, #ef4444); }
 </style>

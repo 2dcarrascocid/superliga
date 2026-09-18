@@ -66,6 +66,8 @@ export { TournamentCostsSpecialist } from './specialists/tournament_costs_specia
 export { ClubSeriesSpecialist } from './specialists/club_series_specialist.js';
 export { SeasonsSpecialist } from './specialists/seasons_specialist.js';
 export { ClubFinanceSpecialist } from './specialists/club_finance_specialist.js';
+export { MatchSchedulingSpecialist } from './specialists/match_scheduling_specialist.js';
+export { SchedulingSettingsSpecialist } from './specialists/scheduling_settings_specialist.js';
 
 // Orchestrator
 export { AgentOrchestrator } from './orchestrator/agent_orchestrator.js';
@@ -103,6 +105,8 @@ import { TournamentCostsSpecialist as _TournamentCostsSpecialist } from './speci
 import { ClubSeriesSpecialist as _ClubSeriesSpecialist } from './specialists/club_series_specialist.js';
 import { SeasonsSpecialist as _SeasonsSpecialist } from './specialists/seasons_specialist.js';
 import { ClubFinanceSpecialist as _ClubFinanceSpecialist } from './specialists/club_finance_specialist.js';
+import { MatchSchedulingSpecialist as _MatchSchedulingSpecialist } from './specialists/match_scheduling_specialist.js';
+import { SchedulingSettingsSpecialist as _SchedulingSettingsSpecialist } from './specialists/scheduling_settings_specialist.js';
 import { supabaseAdmin } from '../services/db.js';
 
 const _validators = {
@@ -128,6 +132,8 @@ const _specialists = {
   club_series:       new _ClubSeriesSpecialist(),
   seasons:           new _SeasonsSpecialist(),
   club_finance:      new _ClubFinanceSpecialist(),
+  match_scheduling:  new _MatchSchedulingSpecialist(),
+  scheduling_settings: new _SchedulingSettingsSpecialist(),
 };
 
 const _orchestrator = new _AgentOrchestrator({
