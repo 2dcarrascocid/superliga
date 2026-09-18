@@ -186,6 +186,36 @@ export async function clearUnpaidMatchdayCharges(matchdayIds, db) {
  * No lanza si falla — retorna { data, error } como el resto de los helpers
  * de este archivo; quien la llama decide si es un error bloqueante.
  */
+/**
+ * Club_ids distintos con al menos una serie inscrita (lg_tournament_teams)
+ * en algún torneo de la temporada `seasonId`. La usa
+ * club_finance_specialist.js::_createOrgEvent para saber a qué clubes
+ * generarles un cargo al crear un evento de organización.
+ *
+ * En dos pasos (torneos de la temporada -> equipos inscritos en esos
+ * torneos) en vez de un filtro sobre el recurso embebido `tournament`,
+ * mismo estilo que createMatchdayCharges/_generateMatchdayCharges de este
+ * archivo/tournaments_specialist.js.
+ */
+export async function getSeasonParticipantClubIds(seasonId, db) {
+  const { data: tournaments } = await db
+    .from('lg_tournaments').select('id').eq('season_id', seasonId);
+
+  const tournamentIds = (tournaments ?? []).map((t) => t.id);
+  if (tournamentIds.length === 0) return [];
+
+  const { data: teams } = await db
+    .from('lg_tournament_teams')
+    .select('series_id, series:lg_club_series(club_id)')
+    .in('tournament_id', tournamentIds);
+
+  const clubIds = new Set();
+  for (const t of teams ?? []) {
+    if (t.series?.club_id) clubIds.add(t.series.club_id);
+  }
+  return Array.from(clubIds);
+}
+
 export async function upsertEventSummaryEntry({ orgId, clubId, eventId, direction, description, dueDate }, db) {
   const { data: charges, error: chargesError } = await db
     .from('lg_club_event_charges')

@@ -383,6 +383,34 @@ export const ValidationRules = {
     DELETE_EVENT: [
       { field: 'eventId', required: true, type: 'string', format: 'uuid' },
     ],
+    CREATE_ORG_EVENT: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+      { field: 'seasonId', required: true, type: 'string', format: 'uuid' },
+      { field: 'name', required: true, type: 'string', minLength: 2, maxLength: 150 },
+      { field: 'eventType', required: false, type: 'string', enum: ['SOCIAL', 'DEPORTIVO', 'ESPECIAL', 'OTRO'] },
+      { field: 'direction', required: false, type: 'string', enum: ['INGRESO', 'EGRESO'] },
+      { field: 'cost', required: true, type: 'number', min: 0 },
+    ],
+    LIST_ORG_EVENTS: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+      { field: 'seasonId', required: false, type: 'string', format: 'uuid' },
+    ],
+    GET_ORG_EVENT_DETAIL: [
+      { field: 'eventId', required: true, type: 'string', format: 'uuid' },
+    ],
+    SET_CLUB_EXEMPT: [
+      { field: 'eventId', required: true, type: 'string', format: 'uuid' },
+      { field: 'clubId', required: true, type: 'string', format: 'uuid' },
+      { field: 'isExempt', required: true, type: 'boolean' },
+    ],
+    RECORD_ORG_EVENT_CLUB_PAYMENT: [
+      { field: 'chargeId', required: true, type: 'string', format: 'uuid' },
+      { field: 'amount', required: true, type: 'number' },
+      { field: 'paymentMethod', required: false, type: 'string', enum: ['TRANSFERENCIA', 'EFECTIVO', 'TARJETA'] },
+    ],
+    CLOSE_ORG_EVENT: [
+      { field: 'eventId', required: true, type: 'string', format: 'uuid' },
+    ],
   },
   tournaments: {
     CREATE_TOURNAMENT: [

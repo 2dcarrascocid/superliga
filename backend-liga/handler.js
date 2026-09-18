@@ -840,6 +840,48 @@ const ROUTES = [
     input: { eventId: pp.eventId },
   })),
 
+  // ── Eventos de organización (cargo obligatorio por club, no por jugador) ──
+
+  route('POST', '/org-events', (_pp, body) => ({
+    type: 'CREATE_ORG_EVENT', domain: 'club_finance',
+    input: {
+      orgId: body.org_id,
+      seasonId: body.season_id,
+      name: body.name,
+      description: body.description,
+      eventType: body.event_type,
+      cost: body.cost !== undefined ? Number(body.cost) : undefined,
+      direction: body.direction,
+      startDate: body.start_date,
+      endDate: body.end_date,
+    },
+  })),
+
+  route('GET', '/org-events', (_pp, _body, qs) => ({
+    type: 'LIST_ORG_EVENTS', domain: 'club_finance',
+    input: { orgId: qs.org_id, seasonId: qs.season_id },
+  })),
+
+  route('GET', '/org-events/{eventId}', (pp) => ({
+    type: 'GET_ORG_EVENT_DETAIL', domain: 'club_finance',
+    input: { eventId: pp.eventId },
+  })),
+
+  route('PUT', '/org-events/{eventId}/charges/{clubId}/exempt', (pp, body) => ({
+    type: 'SET_CLUB_EXEMPT', domain: 'club_finance',
+    input: { eventId: pp.eventId, clubId: pp.clubId, isExempt: body.is_exempt, exemptReason: body.exempt_reason },
+  })),
+
+  route('POST', '/org-events/{eventId}/charges/{chargeId}/payment', (pp, body) => ({
+    type: 'RECORD_ORG_EVENT_CLUB_PAYMENT', domain: 'club_finance',
+    input: { chargeId: pp.chargeId, amount: body.amount !== undefined ? Number(body.amount) : undefined, paymentMethod: body.payment_method },
+  })),
+
+  route('POST', '/org-events/{eventId}/close', (pp) => ({
+    type: 'CLOSE_ORG_EVENT', domain: 'club_finance',
+    input: { eventId: pp.eventId },
+  })),
+
   // ── Torneos ───────────────────────────────────────────────────────────────
 
   route('GET', '/tournaments', (_pp, _body, qs) => ({

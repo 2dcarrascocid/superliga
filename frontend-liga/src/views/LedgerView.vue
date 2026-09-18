@@ -283,7 +283,65 @@
       </div>
     </div>
 
+    <!-- TAB: Eventos de organización -->
+    <div v-if="activeTab === 'org_events'">
+      <div class="flex justify-between items-center mb-md flex-wrap gap-md">
+        <h3 class="m-0">Eventos de organización</h3>
+        <button class="btn btn-primary" @click="showNewOrgEventForm = true">+ Nuevo evento</button>
+      </div>
+
+      <p v-if="!orgEventsLoading && orgEvents.length === 0" class="text-center py-lg text-muted text-sm">
+        Aún no hay eventos de organización creados.
+      </p>
+      <p v-else-if="orgEventsLoading && orgEvents.length === 0" class="text-center py-lg text-muted text-sm">Cargando...</p>
+
+      <div class="org-events-grid">
+        <article v-for="ev in orgEvents" :key="ev.id" class="card org-event-card">
+          <div class="org-event-card__header clickable-row" @click="toggleOrgEvent(ev)">
+            <div>
+              <div class="org-event-card__title">{{ ev.name }}</div>
+              <div class="text-muted text-sm">{{ ORG_EVENT_TYPE_LABELS[ev.event_type] || ev.event_type }} · {{ ev.start_date || '—' }}{{ ev.end_date ? ` a ${ev.end_date}` : '' }}</div>
+            </div>
+            <span class="status-badge" :class="`status-badge--org-${ev.status?.toLowerCase()}`">
+              {{ ORG_EVENT_STATUS_LABELS[ev.status] || ev.status }}
+            </span>
+          </div>
+          <div class="org-event-card__body">
+            <div class="data-card__row">
+              <span class="data-card__row-label">Costo por club</span>
+              <span class="data-card__row-value">${{ formatMoney(ev.cost) }}</span>
+            </div>
+            <div class="data-card__row">
+              <span class="data-card__row-label">Total / Pagado</span>
+              <span class="data-card__row-value">${{ formatMoney(ev.total_amount) }} / ${{ formatMoney(ev.total_paid) }}</span>
+            </div>
+            <div class="data-card__row">
+              <span class="data-card__row-label">Participantes</span>
+              <span class="data-card__row-value">{{ ev.clubs_count }} club(es){{ ev.exempt_count ? ` · ${ev.exempt_count} exento(s)` : '' }}</span>
+            </div>
+          </div>
+          <div class="org-event-card__footer">
+            <button class="btn btn-sm btn-secondary" @click="toggleOrgEvent(ev)">
+              {{ expandedOrgEventId === ev.id ? 'Ocultar detalle' : 'Ver detalle' }}
+            </button>
+            <button v-if="ev.status !== 'CERRADO'" class="btn btn-sm btn-secondary" @click="confirmCloseOrgEvent(ev)">Cerrar evento</button>
+          </div>
+          <div v-if="expandedOrgEventId === ev.id" class="org-event-card__detail" @click.stop>
+            <OrgEventDetailPanel :event-id="ev.id" @changed="loadOrgEvents" />
+          </div>
+        </article>
+      </div>
+    </div>
+
     </LoadingState>
+
+    <OrgEventFormModal
+      :open="showNewOrgEventForm"
+      :saving="creatingOrgEvent"
+      :seasons="seasons"
+      @close="showNewOrgEventForm = false"
+      @submit="submitNewOrgEvent"
+    />
   </div>
 </template>
 
@@ -293,17 +351,21 @@ import { useAuthStore } from '../stores/auth';
 import { useNotifyStore } from '../stores/notify';
 import { getClubs } from '../services/clubs.service.js';
 import { getClubSeries } from '../services/clubSeries.service.js';
-import { getLedgerEntries, createLedgerEntry, recordPayment, getPaymentStats } from '../services/clubFinance.service.js';
+import { getLedgerEntries, createLedgerEntry, recordPayment, getPaymentStats, listOrgEvents, createOrgEvent, closeOrgEvent } from '../services/clubFinance.service.js';
+import { getSeasons } from '../services/seasons.service.js';
 import LoadingState from '../components/LoadingState.vue';
 import ActionsMenu from '../components/ActionsMenu.vue';
 import PanoramaDashboard from '../components/PanoramaDashboard.vue';
+import OrgEventFormModal from '../components/OrgEventFormModal.vue';
+import OrgEventDetailPanel from '../components/OrgEventDetailPanel.vue';
 
 const authStore = useAuthStore();
-const { notifySuccess, notifyError, prompt } = useNotifyStore();
+const { notifySuccess, notifyError, prompt, confirm } = useNotifyStore();
 
 const ledgerTabs = [
   { key: 'movements', label: 'Movimientos' },
   { key: 'stats', label: 'Estadísticas' },
+  { key: 'org_events', label: 'Eventos' },
 ];
 const activeTab = ref('movements');
 const pageLoading = ref(true);
@@ -319,6 +381,10 @@ const STATUS_LABELS = {
 const CLUB_STATUS_LABELS = {
   AL_DIA: 'Al día', PENDIENTE: 'Pendiente', MOROSO: 'Moroso',
 };
+const ORG_EVENT_TYPE_LABELS = {
+  SOCIAL: 'Social', DEPORTIVO: 'Deportivo', ESPECIAL: 'Especial', OTRO: 'Otro',
+};
+const ORG_EVENT_STATUS_LABELS = { ABIERTO: 'Abierto', CERRADO: 'Cerrado' };
 
 const formatMoney = (v) => Math.round(Number(v) || 0).toLocaleString('es-CL');
 
@@ -483,10 +549,74 @@ const toggleClubExpand = (clubId) => {
   else expandedClubs.value.add(clubId);
 };
 
+// ── Eventos de organización (cargo obligatorio por club a nivel temporada) ─
+const seasons = ref([]);
+const orgEvents = ref([]);
+const orgEventsLoading = ref(false);
+const showNewOrgEventForm = ref(false);
+const creatingOrgEvent = ref(false);
+const expandedOrgEventId = ref(null);
+
+const loadSeasons = async () => {
+  try {
+    const res = await getSeasons({ org_id: authStore.state.org?.id });
+    seasons.value = res.data?.data?.seasons ?? res.data?.seasons ?? [];
+  } catch (e) {
+    console.error('[LedgerView] getSeasons error:', e);
+  }
+};
+
+const loadOrgEvents = async () => {
+  orgEventsLoading.value = true;
+  try {
+    const res = await listOrgEvents({ org_id: authStore.state.org?.id });
+    orgEvents.value = res.data?.data?.orgEvents ?? [];
+  } catch (e) {
+    error.value = e.response?.data?.error?.message || 'Error al cargar los eventos de organización';
+  } finally {
+    orgEventsLoading.value = false;
+  }
+};
+
+const toggleOrgEvent = (ev) => {
+  expandedOrgEventId.value = expandedOrgEventId.value === ev.id ? null : ev.id;
+};
+
+const submitNewOrgEvent = async (payload) => {
+  creatingOrgEvent.value = true;
+  try {
+    await createOrgEvent({ org_id: authStore.state.org?.id, ...payload });
+    showNewOrgEventForm.value = false;
+    notifySuccess('Evento creado correctamente');
+    await loadOrgEvents();
+  } catch (e) {
+    notifyError(e.response?.data?.error?.message || 'Error al crear el evento');
+  } finally {
+    creatingOrgEvent.value = false;
+  }
+};
+
+const confirmCloseOrgEvent = async (ev) => {
+  const ok = await confirm({
+    title: 'Cerrar evento',
+    message: `¿Cerrar el evento "${ev.name}"? Los cargos no exentos se traspasarán al libro de ingresos/egresos y no se podrán registrar más pagos ni exenciones. Esta acción no se puede deshacer.`,
+    isDestructive: true,
+    confirmText: 'Cerrar evento',
+  });
+  if (!ok) return;
+  try {
+    await closeOrgEvent(ev.id);
+    notifySuccess('Evento cerrado correctamente');
+    await loadOrgEvents();
+  } catch (e) {
+    notifyError(e.response?.data?.error?.message || 'Error al cerrar el evento');
+  }
+};
+
 onMounted(async () => {
   pageLoading.value = true;
   try {
-    await Promise.allSettled([loadClubs(), loadEntries(), loadStats()]);
+    await Promise.allSettled([loadClubs(), loadEntries(), loadStats(), loadSeasons(), loadOrgEvents()]);
   } finally {
     pageLoading.value = false;
   }
@@ -533,4 +663,24 @@ onMounted(async () => {
 .status-badge--club-al_dia    { background: rgba(0, 230, 118, 0.14); color: var(--primary-solid, #00e676); }
 .status-badge--club-pendiente { background: rgba(255, 213, 79, 0.16); color: #ffd54f; }
 .status-badge--club-moroso    { background: rgba(239, 83, 80, 0.14); color: #ef5350; }
+
+.status-badge--org-abierto { background: rgba(79, 195, 247, 0.16); color: #4fc3f7; }
+.status-badge--org-cerrado { background: rgba(158, 158, 158, 0.18); color: #9e9e9e; }
+
+.org-events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--spacing-md, 1rem);
+}
+.org-event-card { display: flex; flex-direction: column; gap: 0.75rem; padding: var(--spacing-md, 1rem); }
+.org-event-card__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; }
+.org-event-card__title { font-weight: 700; font-size: 1rem; }
+.org-event-card__body { display: flex; flex-direction: column; gap: 0.4rem; }
+.org-event-card__footer { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.org-event-card__detail {
+  margin: 0 -1rem -1rem;
+  padding: 0;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-hover, rgba(255,255,255,0.02));
+}
 </style>

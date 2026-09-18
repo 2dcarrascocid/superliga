@@ -21,3 +21,12 @@ export const getEventDetail = (eventId) => apiClient.get(`/events/${eventId}`);
 export const setEventPlayers = (eventId, data) => apiClient.put(`/events/${eventId}/players`, data);
 export const recordEventPlayerPayment = (eventId, chargeId, data) => apiClient.post(`/events/${eventId}/charges/${chargeId}/payment`, data);
 export const deleteClubEvent = (eventId) => apiClient.delete(`/events/${eventId}`);
+
+// Eventos de organización — cargo obligatorio POR CLUB (no por jugador) a
+// todos los clubes participantes de una temporada.
+export const createOrgEvent = (data) => apiClient.post('/org-events', data);
+export const listOrgEvents = (params) => apiClient.get('/org-events', { params });
+export const getOrgEventDetail = (eventId) => apiClient.get(`/org-events/${eventId}`);
+export const setClubExempt = (eventId, clubId, data) => apiClient.put(`/org-events/${eventId}/charges/${clubId}/exempt`, data);
+export const recordOrgEventClubPayment = (eventId, chargeId, data) => apiClient.post(`/org-events/${eventId}/charges/${chargeId}/payment`, data);
+export const closeOrgEvent = (eventId) => apiClient.post(`/org-events/${eventId}/close`);

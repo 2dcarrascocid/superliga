@@ -40,9 +40,11 @@
 import { Skill } from '../contracts/skill_contract.js';
 import { createSkillResult } from '../contracts/task_schema.js';
 import { assertClubAccess, isOrgAdmin } from './lib/club_access.js';
-import { LEDGER_CATEGORIES, LEDGER_DIRECTIONS, decorateLedgerEntry, computeEntryStatus, upsertEventSummaryEntry } from './lib/ledger.js';
+import { LEDGER_CATEGORIES, LEDGER_DIRECTIONS, decorateLedgerEntry, computeEntryStatus, upsertEventSummaryEntry, getSeasonParticipantClubIds } from './lib/ledger.js';
 
 const EVENT_TYPES = ['FECHA_PARTIDO', 'COLECTA', 'COMPRA_IMPLEMENTOS', 'OTRO'];
+const ORG_EVENT_TYPES = ['SOCIAL', 'DEPORTIVO', 'ESPECIAL', 'OTRO'];
+const PAYMENT_METHODS = ['TRANSFERENCIA', 'EFECTIVO', 'TARJETA'];
 
 const CAPABILITIES = [
   'LIST_COST_CATALOG', 'UPSERT_COST_CATALOG',
@@ -50,6 +52,8 @@ const CAPABILITIES = [
   'GET_CLUB_PAYMENT_STATUS', 'GET_PAYMENT_STATS',
   'CREATE_EVENT', 'LIST_EVENTS', 'GET_EVENT_DETAIL', 'SET_EVENT_PLAYERS',
   'RECORD_EVENT_PLAYER_PAYMENT', 'DELETE_EVENT',
+  'CREATE_ORG_EVENT', 'LIST_ORG_EVENTS', 'GET_ORG_EVENT_DETAIL',
+  'SET_CLUB_EXEMPT', 'RECORD_ORG_EVENT_CLUB_PAYMENT', 'CLOSE_ORG_EVENT',
 ];
 
 export class ClubFinanceSpecialist extends Skill {
@@ -75,6 +79,8 @@ export class ClubFinanceSpecialist extends Skill {
         { name: 'events', type: 'array' },
         { name: 'charges', type: 'array' },
         { name: 'charge', type: 'object' },
+        { name: 'orgEvent', type: 'object' },
+        { name: 'orgEvents', type: 'array' },
       ],
       rules: {
         do: [
@@ -83,10 +89,14 @@ export class ClubFinanceSpecialist extends Skill {
           'Reutilizar upsertEventSummaryEntry (lib/ledger.js) para mantener la fila resumen del evento en lg_ledger_entries después de crear/editar charges o registrar un pago — nunca escribirla a mano',
           'CREATE_EVENT/SET_EVENT_PLAYERS/RECORD_EVENT_PLAYER_PAYMENT/DELETE_EVENT verifican isOrgAdmin (mismo criterio que CREATE_LEDGER_ENTRY/RECORD_PAYMENT)',
           'DELETE_EVENT rechaza si algún charge del evento ya tiene paid_amount > 0',
+          'CREATE_ORG_EVENT/LIST_ORG_EVENTS/GET_ORG_EVENT_DETAIL/SET_CLUB_EXEMPT/RECORD_ORG_EVENT_CLUB_PAYMENT/CLOSE_ORG_EVENT verifican isOrgAdmin — un evento de organización es 100% admin, sin autoservicio de club',
+          'SET_CLUB_EXEMPT/RECORD_ORG_EVENT_CLUB_PAYMENT rechazan si el evento de organización ya está CERRADO',
+          'CLOSE_ORG_EVENT es un traspaso de un solo sentido: inserta en lg_ledger_entries (category=EVENTO_ORG) un movimiento por cada charge no exento, y bloquea al evento contra más cambios',
         ],
         dont: [
           'No gestionar gastos del organizador ni inscripciones/fixture',
-          'No agregar "EVENTO" a LEDGER_CATEGORIES (CREATE_LEDGER_ENTRY) — es una categoría derivada, solo la escribe upsertEventSummaryEntry',
+          'No agregar "EVENTO" ni "EVENTO_ORG" a LEDGER_CATEGORIES (CREATE_LEDGER_ENTRY) — son categorías derivadas, solo las escriben upsertEventSummaryEntry y _closeOrgEvent respectivamente',
+          'No permitir reabrir un evento de organización ya CERRADO (no hay REOPEN_ORG_EVENT a propósito)',
         ],
       },
       checklist: [
@@ -96,6 +106,9 @@ export class ClubFinanceSpecialist extends Skill {
         'CREATE_EVENT/SET_EVENT_PLAYERS/RECORD_EVENT_PLAYER_PAYMENT/DELETE_EVENT verifican isOrgAdmin',
         'LIST_EVENTS/GET_EVENT_DETAIL verifican assertClubAccess',
         'SET_EVENT_PLAYERS y RECORD_EVENT_PLAYER_PAYMENT siempre recalculan la fila resumen vía upsertEventSummaryEntry',
+        'CREATE_ORG_EVENT genera un lg_org_event_charges por cada club participante de la temporada (getSeasonParticipantClubIds)',
+        'SET_CLUB_EXEMPT/RECORD_ORG_EVENT_CLUB_PAYMENT rechazan sobre un evento CERRADO',
+        'CLOSE_ORG_EVENT es idempotente contra doble cierre (rechaza si status ya es CERRADO) y excluye los charges exentos del traspaso',
       ],
     };
   }
@@ -126,6 +139,12 @@ export class ClubFinanceSpecialist extends Skill {
         case 'SET_EVENT_PLAYERS':            return this._setEventPlayers(payload, db, userId);
         case 'RECORD_EVENT_PLAYER_PAYMENT':  return this._recordEventPlayerPayment(payload, db, userId);
         case 'DELETE_EVENT':                 return this._deleteEvent(payload, db, userId);
+        case 'CREATE_ORG_EVENT':             return this._createOrgEvent(payload, db, userId);
+        case 'LIST_ORG_EVENTS':              return this._listOrgEvents(payload, db, userId);
+        case 'GET_ORG_EVENT_DETAIL':         return this._getOrgEventDetail(payload, db, userId);
+        case 'SET_CLUB_EXEMPT':              return this._setClubExempt(payload, db, userId);
+        case 'RECORD_ORG_EVENT_CLUB_PAYMENT': return this._recordOrgEventClubPayment(payload, db, userId);
+        case 'CLOSE_ORG_EVENT':              return this._closeOrgEvent(payload, db, userId);
       }
     } catch (err) {
       return createSkillResult({
@@ -663,5 +682,278 @@ export class ClubFinanceSpecialist extends Skill {
       return createSkillResult({ success: false, errorCode: 'DELETE_EVENT_FAILED', errorMessage: error.message });
     }
     return createSkillResult({ success: true, data: { deleted: true, eventId } });
+  }
+
+  // ── Eventos de organización (cargo obligatorio por club, no por jugador) ──
+
+  /** Estado de un charge de evento de organización: EXENTO gana sobre el resto. */
+  _computeOrgChargeStatus(charge, dueDate) {
+    if (charge.is_exempt) return 'EXENTO';
+    return computeEntryStatus({ amount: charge.amount, paid_amount: charge.paid_amount, due_date: dueDate });
+  }
+
+  async _createOrgEvent({ orgId, seasonId, name, description, eventType, cost, direction = 'INGRESO', startDate, endDate }, db, userId) {
+    if (!orgId || !seasonId || !name || cost === undefined || cost === null) {
+      return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'orgId, seasonId, name y cost son requeridos' });
+    }
+    if (eventType && !ORG_EVENT_TYPES.includes(eventType)) {
+      return createSkillResult({ success: false, errorCode: 'INVALID_EVENT_TYPE', errorMessage: `Tipo de evento inválido: "${eventType}"` });
+    }
+    if (!LEDGER_DIRECTIONS.includes(direction)) {
+      return createSkillResult({ success: false, errorCode: 'INVALID_DIRECTION', errorMessage: `Dirección inválida: "${direction}"` });
+    }
+    if (!(await isOrgAdmin(userId, orgId, db))) {
+      return createSkillResult({ success: false, errorCode: 'FORBIDDEN', errorMessage: 'Solo el administrador de la organización puede crear eventos' });
+    }
+
+    const { data: event, error } = await db
+      .from('lg_org_events')
+      .insert({
+        org_id: orgId,
+        season_id: seasonId,
+        name,
+        description: description ?? null,
+        event_type: eventType ?? 'OTRO',
+        cost,
+        direction,
+        start_date: startDate ?? null,
+        end_date: endDate ?? null,
+        created_by: userId ?? null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      return createSkillResult({ success: false, errorCode: 'CREATE_ORG_EVENT_FAILED', errorMessage: error.message });
+    }
+
+    const clubIds = await getSeasonParticipantClubIds(seasonId, db);
+    if (clubIds.length > 0) {
+      const { error: chargesError } = await db
+        .from('lg_org_event_charges')
+        .insert(clubIds.map((clubId) => ({ org_event_id: event.id, club_id: clubId, amount: cost })));
+      if (chargesError) {
+        return createSkillResult({ success: false, errorCode: 'CREATE_ORG_EVENT_FAILED', errorMessage: chargesError.message });
+      }
+    }
+
+    return createSkillResult({ success: true, data: { orgEvent: { ...event, clubs_count: clubIds.length } } });
+  }
+
+  async _listOrgEvents({ orgId, seasonId }, db, userId) {
+    if (!orgId) {
+      return createSkillResult({ success: false, errorCode: 'MISSING_ORG', errorMessage: 'orgId es requerido' });
+    }
+    if (!(await isOrgAdmin(userId, orgId, db))) {
+      return createSkillResult({ success: false, errorCode: 'FORBIDDEN', errorMessage: 'Solo el administrador de la organización puede ver los eventos de organización' });
+    }
+
+    let query = db.from('lg_org_events').select('*').eq('org_id', orgId).order('created_at', { ascending: false });
+    if (seasonId) query = query.eq('season_id', seasonId);
+
+    const { data: events, error } = await query;
+    if (error) {
+      return createSkillResult({ success: false, errorCode: 'LIST_ORG_EVENTS_FAILED', errorMessage: error.message });
+    }
+
+    const eventIds = (events ?? []).map((e) => e.id);
+    let charges = [];
+    if (eventIds.length > 0) {
+      const { data: chargeRows, error: chargesError } = await db
+        .from('lg_org_event_charges')
+        .select('org_event_id, amount, paid_amount, is_exempt')
+        .in('org_event_id', eventIds);
+      if (chargesError) {
+        return createSkillResult({ success: false, errorCode: 'LIST_ORG_EVENTS_FAILED', errorMessage: chargesError.message });
+      }
+      charges = chargeRows ?? [];
+    }
+
+    const totalsByEvent = new Map();
+    for (const c of charges) {
+      const acc = totalsByEvent.get(c.org_event_id) ?? { total_amount: 0, total_paid: 0, clubs_count: 0, exempt_count: 0 };
+      if (!c.is_exempt) {
+        acc.total_amount += Number(c.amount) || 0;
+        acc.total_paid += Number(c.paid_amount) || 0;
+      } else {
+        acc.exempt_count += 1;
+      }
+      acc.clubs_count += 1;
+      totalsByEvent.set(c.org_event_id, acc);
+    }
+
+    const decoratedEvents = (events ?? []).map((e) => ({
+      ...e,
+      ...(totalsByEvent.get(e.id) ?? { total_amount: 0, total_paid: 0, clubs_count: 0, exempt_count: 0 }),
+    }));
+
+    return createSkillResult({ success: true, data: { orgEvents: decoratedEvents } });
+  }
+
+  async _getOrgEventDetail({ eventId }, db, userId) {
+    if (!eventId) {
+      return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'eventId es requerido' });
+    }
+
+    const { data: event } = await db.from('lg_org_events').select('*').eq('id', eventId).maybeSingle();
+    if (!event) {
+      return createSkillResult({ success: false, errorCode: 'EVENT_NOT_FOUND', errorMessage: 'Evento no encontrado' });
+    }
+    if (!(await isOrgAdmin(userId, event.org_id, db))) {
+      return createSkillResult({ success: false, errorCode: 'FORBIDDEN', errorMessage: 'Solo el administrador de la organización puede ver este evento' });
+    }
+
+    const { data: charges, error } = await db
+      .from('lg_org_event_charges')
+      .select('*, club:lg_clubs(id,name,short_name)')
+      .eq('org_event_id', eventId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      return createSkillResult({ success: false, errorCode: 'GET_ORG_EVENT_DETAIL_FAILED', errorMessage: error.message });
+    }
+
+    const decoratedCharges = (charges ?? []).map((c) => ({ ...c, status: this._computeOrgChargeStatus(c, event.end_date) }));
+    return createSkillResult({ success: true, data: { orgEvent: event, charges: decoratedCharges } });
+  }
+
+  async _setClubExempt({ eventId, clubId, isExempt, exemptReason }, db, userId) {
+    if (!eventId || !clubId || isExempt === undefined || isExempt === null) {
+      return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'eventId, clubId e isExempt son requeridos' });
+    }
+
+    const { data: event } = await db.from('lg_org_events').select('*').eq('id', eventId).maybeSingle();
+    if (!event) {
+      return createSkillResult({ success: false, errorCode: 'EVENT_NOT_FOUND', errorMessage: 'Evento no encontrado' });
+    }
+    if (!(await isOrgAdmin(userId, event.org_id, db))) {
+      return createSkillResult({ success: false, errorCode: 'FORBIDDEN', errorMessage: 'Solo el administrador de la organización puede marcar clubes exentos' });
+    }
+    if (event.status === 'CERRADO') {
+      return createSkillResult({ success: false, errorCode: 'EVENT_CLOSED', errorMessage: 'El evento ya está cerrado, no se puede modificar' });
+    }
+
+    const { data: charge, error } = await db
+      .from('lg_org_event_charges')
+      .update({ is_exempt: isExempt, exempt_reason: isExempt ? (exemptReason ?? null) : null, updated_at: new Date().toISOString() })
+      .eq('org_event_id', eventId)
+      .eq('club_id', clubId)
+      .select('*, club:lg_clubs(id,name,short_name)')
+      .single();
+
+    if (error) {
+      return createSkillResult({ success: false, errorCode: 'SET_CLUB_EXEMPT_FAILED', errorMessage: error.message });
+    }
+    return createSkillResult({ success: true, data: { charge: { ...charge, status: this._computeOrgChargeStatus(charge, event.end_date) } } });
+  }
+
+  async _recordOrgEventClubPayment({ chargeId, amount, paymentMethod }, db, userId) {
+    if (!chargeId || !amount || amount <= 0) {
+      return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'chargeId y amount (> 0) son requeridos' });
+    }
+    if (paymentMethod && !PAYMENT_METHODS.includes(paymentMethod)) {
+      return createSkillResult({ success: false, errorCode: 'INVALID_PAYMENT_METHOD', errorMessage: `Medio de pago inválido: "${paymentMethod}"` });
+    }
+
+    const { data: charge } = await db
+      .from('lg_org_event_charges')
+      .select('*, event:lg_org_events(*)')
+      .eq('id', chargeId)
+      .maybeSingle();
+    if (!charge) {
+      return createSkillResult({ success: false, errorCode: 'CHARGE_NOT_FOUND', errorMessage: 'Cobro no encontrado' });
+    }
+    const event = charge.event;
+    if (!event) {
+      return createSkillResult({ success: false, errorCode: 'EVENT_NOT_FOUND', errorMessage: 'Evento del cobro no encontrado' });
+    }
+    if (!(await isOrgAdmin(userId, event.org_id, db))) {
+      return createSkillResult({ success: false, errorCode: 'FORBIDDEN', errorMessage: 'Solo el administrador de la organización puede registrar pagos' });
+    }
+    if (event.status === 'CERRADO') {
+      return createSkillResult({ success: false, errorCode: 'EVENT_CLOSED', errorMessage: 'El evento ya está cerrado, no se puede modificar' });
+    }
+    if (charge.is_exempt) {
+      return createSkillResult({ success: false, errorCode: 'CHARGE_IS_EXEMPT', errorMessage: 'El club está exento de este evento, no se puede registrar un pago' });
+    }
+
+    const newPaidAmount = Number(charge.paid_amount || 0) + Number(amount);
+
+    const { data: updatedCharge, error } = await db
+      .from('lg_org_event_charges')
+      .update({
+        paid_amount: newPaidAmount,
+        payment_method: paymentMethod ?? charge.payment_method,
+        paid_at: new Date().toISOString(),
+        recorded_by: userId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', chargeId)
+      .select('*, club:lg_clubs(id,name,short_name)')
+      .single();
+
+    if (error) {
+      return createSkillResult({ success: false, errorCode: 'RECORD_ORG_EVENT_CLUB_PAYMENT_FAILED', errorMessage: error.message });
+    }
+    return createSkillResult({ success: true, data: { charge: { ...updatedCharge, status: this._computeOrgChargeStatus(updatedCharge, event.end_date) } } });
+  }
+
+  async _closeOrgEvent({ eventId }, db, userId) {
+    if (!eventId) {
+      return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'eventId es requerido' });
+    }
+
+    const { data: event } = await db.from('lg_org_events').select('*').eq('id', eventId).maybeSingle();
+    if (!event) {
+      return createSkillResult({ success: false, errorCode: 'EVENT_NOT_FOUND', errorMessage: 'Evento no encontrado' });
+    }
+    if (!(await isOrgAdmin(userId, event.org_id, db))) {
+      return createSkillResult({ success: false, errorCode: 'FORBIDDEN', errorMessage: 'Solo el administrador de la organización puede cerrar eventos' });
+    }
+    if (event.status === 'CERRADO') {
+      return createSkillResult({ success: false, errorCode: 'EVENT_ALREADY_CLOSED', errorMessage: 'El evento ya está cerrado' });
+    }
+
+    const { data: charges, error: chargesError } = await db
+      .from('lg_org_event_charges')
+      .select('*')
+      .eq('org_event_id', eventId);
+    if (chargesError) {
+      return createSkillResult({ success: false, errorCode: 'CLOSE_ORG_EVENT_FAILED', errorMessage: chargesError.message });
+    }
+
+    const rows = (charges ?? [])
+      .filter((c) => !c.is_exempt)
+      .map((c) => ({
+        org_id: event.org_id,
+        club_id: c.club_id,
+        org_event_id: eventId,
+        category: 'EVENTO_ORG',
+        direction: event.direction,
+        amount: c.amount,
+        paid_amount: c.paid_amount,
+        paid_at: c.paid_at,
+        description: event.name,
+        due_date: event.end_date,
+      }));
+
+    if (rows.length > 0) {
+      const { error: insertError } = await db.from('lg_ledger_entries').insert(rows);
+      if (insertError) {
+        return createSkillResult({ success: false, errorCode: 'CLOSE_ORG_EVENT_FAILED', errorMessage: insertError.message });
+      }
+    }
+
+    const { data: closedEvent, error: closeError } = await db
+      .from('lg_org_events')
+      .update({ status: 'CERRADO', closed_at: new Date().toISOString(), closed_by: userId ?? null, updated_at: new Date().toISOString() })
+      .eq('id', eventId)
+      .select()
+      .single();
+    if (closeError) {
+      return createSkillResult({ success: false, errorCode: 'CLOSE_ORG_EVENT_FAILED', errorMessage: closeError.message });
+    }
+
+    return createSkillResult({ success: true, data: { orgEvent: closedEvent } });
   }
 }
