@@ -235,6 +235,92 @@ export const sendClubAdminInviteEmail = async (toEmail, clubName, inviteLink, is
   });
 };
 
+export const sendOrgAdminInviteEmail = async (toEmail, orgName, inviteLink, isNewUser) => {
+  const subject = isNewUser
+    ? `Invitación para administrar la liga ${orgName} — Liga App`
+    : `Acceso asignado: administrador de la liga ${orgName} — Liga App`;
+
+  const headline = isNewUser
+    ? `Fuiste invitado a ser administrador de la liga <strong>${orgName}</strong>`
+    : `Tu cuenta tiene acceso de administrador a la liga <strong>${orgName}</strong>`;
+
+  const bodyText = isNewUser
+    ? `Haz clic en el botón para crear tu contraseña y comenzar a administrar la liga.`
+    : `Ya puedes iniciar sesión con tu cuenta existente. Haz clic en el botón para confirmar tu acceso.`;
+
+  const btnText = isNewUser ? 'Crear contraseña y acceder' : 'Confirmar acceso a la liga';
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head>
+<body style="margin:0;padding:0;background:#E8F0F5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#E8F0F5;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+
+        <tr><td align="center" style="padding-bottom:28px;">
+          <table cellpadding="0" cellspacing="0"><tr>
+            <td style="background:linear-gradient(135deg,#0891B2,#22D3EE);border-radius:50%;width:48px;height:48px;text-align:center;vertical-align:middle;">
+              <span style="color:#fff;font-size:22px;font-weight:700;line-height:48px;">L</span>
+            </td>
+            <td style="padding-left:12px;font-size:22px;font-weight:700;color:#0891B2;vertical-align:middle;">Liga App</td>
+          </tr></table>
+        </td></tr>
+
+        <tr><td style="background:#E8F0F5;border-radius:24px;padding:40px 40px 36px;box-shadow:-8px -8px 20px rgba(255,255,255,0.85),8px 8px 20px rgba(184,197,208,0.7);">
+          <table width="100%" cellpadding="0" cellspacing="0">
+
+            <tr><td align="center" style="padding-bottom:24px;">
+              <div style="background:rgba(8,145,178,0.12);border-radius:20px;width:72px;height:72px;display:inline-flex;align-items:center;justify-content:center;font-size:36px;line-height:72px;">
+                🏆
+              </div>
+            </td></tr>
+
+            <tr><td align="center" style="padding-bottom:12px;">
+              <h1 style="margin:0;font-size:24px;font-weight:700;color:#164E63;">${headline}</h1>
+            </td></tr>
+
+            <tr><td align="center" style="padding-bottom:28px;">
+              <p style="margin:0;font-size:15px;color:#475569;line-height:1.7;max-width:420px;">${bodyText}</p>
+            </td></tr>
+
+            <tr><td align="center" style="padding-bottom:28px;">
+              <a href="${inviteLink}"
+                 style="display:inline-block;background:linear-gradient(135deg,#0891B2,#22D3EE);color:#fff;font-size:16px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:50px;box-shadow:0 4px 18px rgba(8,145,178,0.35);">
+                ${btnText}
+              </a>
+            </td></tr>
+
+            <tr><td align="center">
+              <table cellpadding="0" cellspacing="0" style="background:rgba(245,158,11,0.1);border-radius:12px;border:1px solid rgba(245,158,11,0.25);">
+                <tr><td style="padding:12px 20px;font-size:13px;color:#92400E;">
+                  ⏱️ &nbsp;Esta invitación expirará en <strong>7 días</strong>.
+                </td></tr>
+              </table>
+            </td></tr>
+
+          </table>
+        </td></tr>
+
+        <tr><td align="center" style="padding-top:24px;">
+          <p style="margin:0;font-size:12px;color:#94A3B8;">© ${new Date().getFullYear()} Liga App · Fairplay Chile</p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM || '"Liga App" <no-reply@ligaapp.com>',
+    to: toEmail,
+    subject,
+    html,
+  });
+};
+
 export const sendPlayerInviteEmail = async (toEmail, playerName, clubName, inviteLink) => {
   const subject = `Invitación a tu perfil de jugador en ${clubName} — Liga App`;
   const headline = `${playerName ? playerName + ', fuiste' : 'Fuiste'} invitado a tu perfil de jugador en <strong>${clubName}</strong>`;

@@ -656,6 +656,38 @@ select.input { cursor: pointer; }
   --shadow-xl: 0 24px 64px rgba(24, 61, 42, .17);
 }
 
+/* ── Acento por deporte de la liga (data-sport, seteado en runtime por
+   useTheme().applySport() según lg_orgs.sport_id) ──
+   Fútbol no necesita bloque: :root (arriba) ya es verde por defecto.
+   Se redefine --sport-green/--sport-green-strong (no --primary-solid
+   directamente) porque --primary-solid/--primary-dark/--primary-gradient/
+   --accent-green ya están definidos como var(--sport-green...) en el
+   bloque ":root SPORTS UI 2026" de arriba y heredan el cambio en cascada,
+   igual que ya hace [data-theme="light"] con estas mismas variables. */
+[data-sport="basquetbol"] {
+  --sport-green:        #fb923c;
+  --sport-green-strong: #ea580c;
+  --primary-light:      #fdba74;
+  --focus-ring:          #fdba74;
+}
+[data-sport="basquetbol"][data-theme="light"] {
+  --sport-green:        #c2410c;
+  --sport-green-strong: #9a3412;
+  --focus-ring:          #c2410c;
+}
+
+[data-sport="voleibol"] {
+  --sport-green:        #a78bfa;
+  --sport-green-strong: #8b5cf6;
+  --primary-light:      #c4b5fd;
+  --focus-ring:          #c4b5fd;
+}
+[data-sport="voleibol"][data-theme="light"] {
+  --sport-green:        #6d28d9;
+  --sport-green-strong: #5b21b6;
+  --focus-ring:          #6d28d9;
+}
+
 html { background: var(--bg-primary); scroll-padding-top: 96px; font-size: 15px; }
 body { font-family: var(--font-ui); min-width: 320px; min-height: 100dvh; }
 button, input, select, textarea { font: inherit; }

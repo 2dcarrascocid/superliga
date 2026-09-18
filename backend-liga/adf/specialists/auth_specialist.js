@@ -80,7 +80,7 @@ export class AuthSpecialist extends Skill {
   constructor() {
     super('auth_specialist', '1.0.0');
     this.domain = 'auth';
-    this.capabilities = ['LOGIN_LOCAL', 'LOGIN_GOOGLE', 'LOGIN_FACEBOOK', 'BOOTSTRAP', 'FORGOT_PASSWORD', 'RESET_PASSWORD', 'INVITE_INFO', 'ACCEPT_CLUB_INVITE', 'ACCEPT_PLAYER_INVITE'];
+    this.capabilities = ['LOGIN_LOCAL', 'LOGIN_GOOGLE', 'LOGIN_FACEBOOK', 'BOOTSTRAP', 'FORGOT_PASSWORD', 'RESET_PASSWORD', 'INVITE_INFO', 'ACCEPT_CLUB_INVITE', 'ACCEPT_PLAYER_INVITE', 'ORG_INVITE_INFO', 'ACCEPT_ORG_INVITE'];
 
     this.contract = {
       input: [
@@ -137,6 +137,8 @@ export class AuthSpecialist extends Skill {
         case 'INVITE_INFO':          return this._inviteInfo(payload, supabase);
         case 'ACCEPT_CLUB_INVITE':   return this._acceptClubInvite(payload, supabase);
         case 'ACCEPT_PLAYER_INVITE': return this._acceptPlayerInvite(payload, supabase);
+        case 'ORG_INVITE_INFO':      return this._orgInviteInfo(payload, supabase);
+        case 'ACCEPT_ORG_INVITE':    return this._acceptOrgInvite(payload, supabase);
       }
     } catch (err) {
       return createSkillResult({
@@ -408,6 +410,129 @@ export class AuthSpecialist extends Skill {
 
     await supabase
       .from('lg_club_invites')
+      .update({ accepted_at: now, user_id: newUserId })
+      .eq('id', invite.id);
+
+    return createSkillResult({ success: true, data: { is_new: true } });
+  }
+
+  // Panel de configuración de administrador → invitación de administrador de
+  // organización. Clon de _inviteInfo/_acceptClubInvite apuntando a
+  // lg_org_admin_invites/lg_orgs/lg_org_users en vez de lg_club_invites/
+  // lg_clubs/lg_club_users.
+  async _orgInviteInfo({ token }, supabase) {
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+
+    const { data: invite } = await supabase
+      .from('lg_org_admin_invites')
+      .select('email, org_id, user_id, expires_at, accepted_at')
+      .eq('token_hash', tokenHash)
+      .maybeSingle();
+
+    if (!invite) {
+      return createSkillResult({ success: false, errorCode: 'INVALID_INVITE', errorMessage: 'Invitación inválida o expirada.' });
+    }
+    if (invite.accepted_at) {
+      return createSkillResult({ success: false, errorCode: 'ALREADY_ACCEPTED', errorMessage: 'Esta invitación ya fue utilizada.' });
+    }
+    if (new Date(invite.expires_at) < new Date()) {
+      return createSkillResult({ success: false, errorCode: 'INVITE_EXPIRED', errorMessage: 'Esta invitación ha expirado.' });
+    }
+
+    const { data: org } = await supabase.from('lg_orgs').select('name').eq('id', invite.org_id).maybeSingle();
+
+    // Mask email: show first 2 chars + domain
+    const [local, domain] = invite.email.split('@');
+    const maskedEmail = local.slice(0, 2) + '***@' + domain;
+
+    return createSkillResult({
+      success: true,
+      data: {
+        is_new:       !invite.user_id,
+        org_name:     org?.name || 'la liga',
+        email_masked: maskedEmail,
+      },
+    });
+  }
+
+  async _acceptOrgInvite({ token, password }, supabase) {
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const now       = new Date().toISOString();
+
+    const { data: invite } = await supabase
+      .from('lg_org_admin_invites')
+      .select('id, email, org_id, full_name, phone, position, user_id, expires_at, accepted_at')
+      .eq('token_hash', tokenHash)
+      .maybeSingle();
+
+    if (!invite || invite.accepted_at || new Date(invite.expires_at) < new Date()) {
+      return createSkillResult({ success: false, errorCode: 'INVALID_INVITE', errorMessage: 'Invitación inválida o expirada.' });
+    }
+
+    // Re-chequeo del límite de 5 administradores por si hubo invitaciones
+    // concurrentes aceptadas entre la invitación y esta aceptación — no marca
+    // el invite como aceptado, permitiendo reintentar o dejarlo expirar.
+    const { count: activeAdminCount } = await supabase
+      .from('lg_org_users')
+      .select('*', { count: 'exact', head: true })
+      .eq('org_id', invite.org_id).eq('role', 'ADMIN');
+
+    if ((activeAdminCount || 0) >= 5) {
+      return createSkillResult({
+        success: false,
+        errorCode: 'ADMIN_LIMIT_REACHED',
+        errorMessage: 'Ya se alcanzó el límite de 5 administradores.',
+      });
+    }
+
+    if (invite.user_id) {
+      // Usuario existente — el rol ya fue asignado por fn_invite_org_admin, solo marcar aceptado
+      await supabase.from('lg_org_admin_invites').update({ accepted_at: now }).eq('id', invite.id);
+      return createSkillResult({ success: true, data: { is_new: false } });
+    }
+
+    // Usuario nuevo — crear cuenta vía Supabase signUp (API pública, sin service_role)
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      email:    invite.email,
+      password,
+    });
+
+    if (signUpError || !signUpData?.user) {
+      return createSkillResult({
+        success: false,
+        errorCode: 'SIGNUP_FAILED',
+        errorMessage: signUpError?.message || 'Error al crear la cuenta.',
+      });
+    }
+
+    const newUserId = signUpData.user.id;
+
+    // El email ya fue validado por el ADMIN de la organización al invitar a
+    // esta persona puntual — se confirma para que pueda hacer login de inmediato
+    // sin depender del flujo de confirmación por correo de Supabase.
+    const { error: confirmErr } = await supabase.rpc('fn_confirm_user_email', { p_user_id: newUserId });
+    if (confirmErr) {
+      console.error('fn_confirm_user_email error:', confirmErr.message);
+    }
+
+    const { error: roleErr } = await supabase
+      .from('lg_org_users')
+      .upsert(
+        { org_id: invite.org_id, user_id: newUserId, role: 'ADMIN', full_name: invite.full_name, phone: invite.phone, position: invite.position },
+        { onConflict: 'org_id,user_id,role' }
+      );
+
+    if (roleErr) {
+      console.error('lg_org_users upsert error in _acceptOrgInvite:', roleErr.message);
+      return createSkillResult({
+        success: false,
+        errorCode: 'ROLE_ASSIGN_FAILED',
+        errorMessage: 'No se pudo asignar el rol de administrador de la organización.',
+      });
+    }
+
+    await supabase
+      .from('lg_org_admin_invites')
       .update({ accepted_at: now, user_id: newUserId })
       .eq('id', invite.id);
 

@@ -166,3 +166,39 @@
   --border-default: #d0d4e8;
   --border-strong:  #9aa0bb;
 }
+
+/* ── Acento por deporte de la liga (data-sport, seteado en runtime por
+   useTheme().applySport() según lg_orgs.sport_id) ──
+   Fútbol no necesita bloque: :root ya es verde por defecto.
+   Se redefine --color-green-* (no solo --text-accent/--border-accent)
+   porque botones primarios, badges y estados activos en components.css/
+   layout.css/base.css leen esas variables directamente. */
+[data-sport="basquetbol"] {
+  --color-green-600: #fb923c;
+  --color-green-500: #fdba74;
+  --color-green-400: #fed7aa;
+  --color-green-950:  #2a1204;
+  --color-green-900:  #431e05;
+  --text-accent:      #fb923c;
+  --border-accent:    #ea580c;
+  --shadow-glow-green: 0 0 24px rgba(251, 146, 60, .25);
+}
+[data-sport="basquetbol"][data-theme="light"] {
+  --text-accent:   #c2410c;
+  --border-accent: #c2410c;
+}
+
+[data-sport="voleibol"] {
+  --color-green-600: #a78bfa;
+  --color-green-500: #c4b5fd;
+  --color-green-400: #ddd6fe;
+  --color-green-950:  #1e1b3a;
+  --color-green-900:  #2e2a5c;
+  --text-accent:      #a78bfa;
+  --border-accent:    #8b5cf6;
+  --shadow-glow-green: 0 0 24px rgba(167, 139, 250, .25);
+}
+[data-sport="voleibol"][data-theme="light"] {
+  --text-accent:   #6d28d9;
+  --border-accent: #6d28d9;
+}

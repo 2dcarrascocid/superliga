@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import AcceptInvite from '../views/AcceptInvite.vue';
+import AcceptOrgInvite from '../views/AcceptOrgInvite.vue';
 import AcceptPlayerInvite from '../views/AcceptPlayerInvite.vue';
 
 const Login          = () => import('../views/Login.vue');
@@ -72,6 +73,12 @@ const routes = [
         path: '/accept-invite',
         name: 'AcceptInvite',
         component: AcceptInvite,
+        meta: { requiresAuth: false },
+    },
+    {
+        path: '/accept-org-invite',
+        name: 'AcceptOrgInvite',
+        component: AcceptOrgInvite,
         meta: { requiresAuth: false },
     },
     {
