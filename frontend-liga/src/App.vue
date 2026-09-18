@@ -10,6 +10,7 @@
       </router-view>
     </main>
     <NotifyModal />
+    <SportsLoader />
   </div>
 </template>
 
@@ -18,6 +19,7 @@ import { computed } from 'vue';
 import { useAuthStore } from './stores/auth';
 import Navbar from './components/Navbar.vue';
 import NotifyModal from './components/NotifyModal.vue';
+import { SportsLoader } from './components/common/loaders';
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated.value);

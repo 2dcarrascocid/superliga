@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { useLoaderStore } from '../stores/loader';
 
 // Configuración base de la API
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
@@ -13,6 +14,12 @@ const apiClient = axios.create({
     }
 });
 
+// SportsLoader.vue (montado una única vez en App.vue) es el único indicador
+// de carga global del sistema. Cada request/response que pasa por acá
+// alimenta el contador de useLoaderStore en vez de que cada vista maneje su
+// propio `loading` local.
+const loaderStore = useLoaderStore();
+
 // Interceptor para agregar el token de autenticación
 apiClient.interceptors.request.use(
     (config) => {
@@ -20,6 +27,24 @@ apiClient.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
+        // Permite personalizar el loader por request:
+        // apiClient.get(url, { meta: { loaderMessage: 'Cargando fixture...', sport: 'basketball' } })
+        // Si el caller ya trae su propio AbortSignal, se respeta (no se crea
+        // uno propio) y esa petición queda fuera del botón "Cancelar / Salir".
+        let controller;
+        if (!config.signal) {
+            controller = new AbortController();
+            config.signal = controller.signal;
+        }
+
+        const requestId = loaderStore.startRequest({
+            message: config.meta?.loaderMessage,
+            sport: config.meta?.sport,
+            controller,
+        });
+        config.meta = { ...(config.meta || {}), requestId };
+
         return config;
     },
     (error) => {
@@ -27,10 +52,15 @@ apiClient.interceptors.request.use(
     }
 );
 
-// Interceptor para manejar errores de autenticación
+// Interceptor para manejar errores de autenticación y liberar el loader
 apiClient.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        loaderStore.endRequest(response.config?.meta?.requestId);
+        return response;
+    },
     (error) => {
+        loaderStore.endRequest(error.config?.meta?.requestId);
+
         // Manejo global de errores (401 → logout + redirect a /login)
         if (error.response?.status === 401) {
             localStorage.removeItem('accessToken');
