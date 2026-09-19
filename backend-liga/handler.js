@@ -758,6 +758,44 @@ const ROUTES = [
     },
   })),
 
+  // ── Catálogo de castigos (Parámetros → Castigos) ────────────────────────
+
+  route('GET', '/penalty-catalog', (_pp, _body, qs) => ({
+    type: 'LIST_PENALTY_CATALOG', domain: 'club_finance',
+    input: { orgId: qs.org_id },
+  })),
+
+  route('POST', '/penalty-catalog', (_pp, body) => ({
+    type: 'CREATE_PENALTY_CATALOG_ITEM', domain: 'club_finance',
+    input: {
+      orgId: body.org_id,
+      name: body.name,
+      code: body.code,
+      description: body.description,
+      amount: body.amount !== undefined ? Number(body.amount) : undefined,
+      businessRule: body.business_rule,
+    },
+  })),
+
+  route('PATCH', '/penalty-catalog/{penaltyId}', (pp, body) => ({
+    type: 'UPDATE_PENALTY_CATALOG_ITEM', domain: 'club_finance',
+    input: {
+      penaltyId: pp.penaltyId,
+      orgId: body.org_id,
+      name: body.name,
+      code: body.code,
+      description: body.description,
+      amount: body.amount !== undefined ? Number(body.amount) : undefined,
+      businessRule: body.business_rule,
+      active: body.active,
+    },
+  })),
+
+  route('DELETE', '/penalty-catalog/{penaltyId}', (pp, _body, qs) => ({
+    type: 'DELETE_PENALTY_CATALOG_ITEM', domain: 'club_finance',
+    input: { penaltyId: pp.penaltyId, orgId: qs.org_id },
+  })),
+
   route('GET', '/ledger-entries', (_pp, _body, qs) => ({
     type: 'LIST_LEDGER_ENTRIES', domain: 'club_finance',
     input: {
@@ -777,6 +815,7 @@ const ROUTES = [
       clubId: body.club_id,
       seriesId: body.series_id,
       tournamentId: body.tournament_id,
+      matchId: body.match_id,
       category: body.category,
       direction: body.direction,
       amount: body.amount !== undefined ? Number(body.amount) : undefined,
@@ -1090,12 +1129,38 @@ const ROUTES = [
       eventType: body.event_type,
       minute:    body.minute,
       notes:     body.notes,
+      penaltyId: body.penalty_id,
     },
   })),
 
   route('DELETE', '/matches/{matchId}/events/{eventId}', (pp) => ({
     type: 'DELETE_MATCH_EVENT', domain: 'matches',
     input: { matchId: pp.matchId, eventId: pp.eventId },
+  })),
+
+  // ── Documentos de Partido (Planilla de Control de Partido) ──────────────
+
+  route('GET', '/matches/{matchId}/documents', (pp) => ({
+    type: 'LIST_MATCH_DOCUMENTS', domain: 'matches',
+    input: { matchId: pp.matchId },
+  })),
+
+  route('POST', '/matches/{matchId}/documents', (pp, body) => ({
+    type: 'REGISTER_MATCH_DOCUMENT', domain: 'matches',
+    input: {
+      matchId:        pp.matchId,
+      nombreOriginal: body.nombre_original,
+      mimeType:       body.mime_type,
+      size:           body.size,
+      path:           body.path,
+      bucket:         body.bucket,
+      urlPublica:     body.url_publica,
+    },
+  })),
+
+  route('DELETE', '/matches/{matchId}/documents/{documentId}', (pp) => ({
+    type: 'DELETE_MATCH_DOCUMENT', domain: 'matches',
+    input: { matchId: pp.matchId, documentId: pp.documentId },
   })),
 
   // ── Programación de Fecha (match_scheduling) ─────────────────────────────
@@ -1222,6 +1287,161 @@ const ROUTES = [
   route('GET', '/tournaments/{tournamentId}/costs/summary', (pp) => ({
     type: 'GET_COSTS_SUMMARY', domain: 'tournament_costs',
     input: { tournamentId: pp.tournamentId },
+  })),
+
+  // ── Tribunal de Disciplina / Código de Faltas ──────────────────────────
+
+  route('GET', '/disciplinary/articles', (_pp, _body, qs) => ({
+    type: 'LIST_ARTICLES', domain: 'disciplinary',
+    input: { orgId: qs.org_id, sportId: qs.sport_id, active: qs.active },
+  })),
+
+  route('POST', '/disciplinary/articles', (_pp, body) => ({
+    type: 'CREATE_ARTICLE', domain: 'disciplinary',
+    input: {
+      orgId: body.org_id, sportId: body.sport_id, variant: body.variant,
+      code: body.code, title: body.title, description: body.description, severity: body.severity,
+    },
+  })),
+
+  route('PATCH', '/disciplinary/articles/{articleId}', (pp, body) => ({
+    type: 'UPDATE_ARTICLE', domain: 'disciplinary',
+    input: {
+      articleId: pp.articleId, sportId: body.sport_id, variant: body.variant,
+      code: body.code, title: body.title, description: body.description,
+      severity: body.severity, active: body.active,
+    },
+  })),
+
+  route('DELETE', '/disciplinary/articles/{articleId}', (pp) => ({
+    type: 'DELETE_ARTICLE', domain: 'disciplinary',
+    input: { articleId: pp.articleId },
+  })),
+
+  route('GET', '/disciplinary/infractions', (_pp, _body, qs) => ({
+    type: 'LIST_INFRACTIONS', domain: 'disciplinary',
+    input: { orgId: qs.org_id, sportId: qs.sport_id, sanctionedType: qs.sanctioned_type, active: qs.active },
+  })),
+
+  route('POST', '/disciplinary/infractions', (_pp, body) => ({
+    type: 'CREATE_INFRACTION', domain: 'disciplinary',
+    input: {
+      orgId: body.org_id, articleId: body.article_id, sportId: body.sport_id, variant: body.variant,
+      code: body.code, name: body.name, description: body.description,
+      sanctionedType: body.sanctioned_type, sanctionKind: body.sanction_kind,
+      defaultQuantity: body.default_quantity !== undefined ? Number(body.default_quantity) : undefined,
+      autoTrigger: body.auto_trigger, autoRule: body.auto_rule,
+    },
+  })),
+
+  route('PATCH', '/disciplinary/infractions/{infractionId}', (pp, body) => ({
+    type: 'UPDATE_INFRACTION', domain: 'disciplinary',
+    input: {
+      infractionId: pp.infractionId, articleId: body.article_id, sportId: body.sport_id, variant: body.variant,
+      code: body.code, name: body.name, description: body.description,
+      sanctionedType: body.sanctioned_type, sanctionKind: body.sanction_kind,
+      defaultQuantity: body.default_quantity !== undefined ? Number(body.default_quantity) : undefined,
+      autoTrigger: body.auto_trigger, autoRule: body.auto_rule, active: body.active,
+    },
+  })),
+
+  route('DELETE', '/disciplinary/infractions/{infractionId}', (pp) => ({
+    type: 'DELETE_INFRACTION', domain: 'disciplinary',
+    input: { infractionId: pp.infractionId },
+  })),
+
+  route('GET', '/clubs/{clubId}/staff', (pp, _body, qs) => ({
+    type: 'LIST_TEAM_STAFF', domain: 'disciplinary',
+    input: { clubId: pp.clubId, active: qs.active },
+  })),
+
+  route('POST', '/clubs/{clubId}/staff', (pp, body) => ({
+    type: 'CREATE_TEAM_STAFF', domain: 'disciplinary',
+    input: { clubId: pp.clubId, fullName: body.full_name, role: body.role },
+  })),
+
+  route('PATCH', '/clubs/{clubId}/staff/{staffId}', (pp, body) => ({
+    type: 'UPDATE_TEAM_STAFF', domain: 'disciplinary',
+    input: { staffId: pp.staffId, fullName: body.full_name, role: body.role, active: body.active },
+  })),
+
+  route('DELETE', '/clubs/{clubId}/staff/{staffId}', (pp) => ({
+    type: 'DELETE_TEAM_STAFF', domain: 'disciplinary',
+    input: { staffId: pp.staffId },
+  })),
+
+  route('GET', '/disciplinary/cases', (_pp, _body, qs) => ({
+    type: 'LIST_CASES', domain: 'disciplinary',
+    input: {
+      orgId: qs.org_id, tournamentId: qs.tournament_id, clubId: qs.club_id,
+      status: qs.status, sanctionedType: qs.sanctioned_type,
+      limit: qs.limit ? parseInt(qs.limit, 10) : 20, nextToken: qs.next_token,
+    },
+  })),
+
+  route('GET', '/disciplinary/cases/{caseId}', (pp) => ({
+    type: 'GET_CASE', domain: 'disciplinary',
+    input: { caseId: pp.caseId },
+  })),
+
+  route('POST', '/disciplinary/cases', (_pp, body) => ({
+    type: 'CREATE_CASE', domain: 'disciplinary',
+    input: {
+      orgId: body.org_id, tournamentId: body.tournament_id, matchId: body.match_id, matchEventId: body.match_event_id,
+      sanctionedType: body.sanctioned_type, sanctionedId: body.sanctioned_id,
+      infractionId: body.infraction_id, articleId: body.article_id,
+      source: body.source, title: body.title, description: body.description,
+    },
+  })),
+
+  route('PATCH', '/disciplinary/cases/{caseId}/status', (pp, body) => ({
+    type: 'UPDATE_CASE_STATUS', domain: 'disciplinary',
+    input: { caseId: pp.caseId, status: body.status },
+  })),
+
+  route('POST', '/disciplinary/cases/{caseId}/resolutions', (pp, body) => ({
+    type: 'CREATE_RESOLUTION', domain: 'disciplinary',
+    input: {
+      caseId: pp.caseId, tournamentId: body.tournament_id,
+      sanctionKind: body.sanction_kind, quantity: body.quantity !== undefined ? Number(body.quantity) : undefined,
+      startDate: body.start_date, resolutionText: body.resolution_text,
+    },
+  })),
+
+  route('GET', '/disciplinary/resolutions', (_pp, _body, qs) => ({
+    type: 'LIST_RESOLUTIONS', domain: 'disciplinary',
+    input: {
+      orgId: qs.org_id, sanctionedType: qs.sanctioned_type, sanctionedId: qs.sanctioned_id,
+      tournamentId: qs.tournament_id, status: qs.status,
+    },
+  })),
+
+  route('PATCH', '/disciplinary/resolutions/{resolutionId}/status', (pp, body) => ({
+    type: 'UPDATE_RESOLUTION_STATUS', domain: 'disciplinary',
+    input: { resolutionId: pp.resolutionId, statusCumplimiento: body.status_cumplimiento },
+  })),
+
+  route('GET', '/disciplinary/sanctioned', (_pp, _body, qs) => ({
+    type: 'LIST_SANCTIONED', domain: 'disciplinary',
+    input: {
+      orgId: qs.org_id, tournamentId: qs.tournament_id, clubId: qs.club_id, sanctionedType: qs.sanctioned_type,
+      limit: qs.limit ? parseInt(qs.limit, 10) : 20, nextToken: qs.next_token,
+    },
+  })),
+
+  route('GET', '/disciplinary/eligibility', (_pp, _body, qs) => ({
+    type: 'CHECK_ELIGIBILITY', domain: 'disciplinary',
+    input: { sanctionedType: qs.sanctioned_type, sanctionedId: qs.sanctioned_id, tournamentId: qs.tournament_id },
+  })),
+
+  route('POST', '/matches/{matchId}/disciplinary/evaluate-cards', (pp, body) => ({
+    type: 'EVALUATE_CARD_ACCUMULATION', domain: 'disciplinary',
+    input: { matchId: pp.matchId, playerId: body.player_id, eventType: body.event_type, matchEventId: body.match_event_id },
+  })),
+
+  route('POST', '/matches/{matchId}/disciplinary/process-fulfillment', (pp) => ({
+    type: 'PROCESS_MATCHDAY_FULFILLMENT', domain: 'disciplinary',
+    input: { matchId: pp.matchId },
   })),
 ]
 

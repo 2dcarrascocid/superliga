@@ -19,7 +19,14 @@
  *   LIST_MATCHDAYS | CREATE_MATCHDAY
  *   LIST_MATCHES | GET_MATCH | UPDATE_MATCH_LOGISTICS | UPDATE_MATCH_RESULT
  *   LIST_MATCH_EVENTS | ADD_MATCH_EVENT | DELETE_MATCH_EVENT
- *   GET_TOP_SCORERS | GET_FAIRPLAY_RANKING
+ *   GET_TOP_SCORERS | GET_FAIRPLAY_RANKING | GET_VENUE_TIME_SLOTS
+ *   LIST_MATCH_DOCUMENTS | REGISTER_MATCH_DOCUMENT | DELETE_MATCH_DOCUMENT
+ *
+ * Documentos de partido (Planilla de Control de Partido):
+ *   - Los archivos se suben directo a Cloudinary desde el frontend; este
+ *     specialist solo guarda metadatos en lg_match_documents (mismo patrón
+ *     que player_documents_specialist.js para lg_player_documents).
+ *   - Soft-delete: cambiar estado a 'DELETED', nunca borrar la fila.
  */
 
 import { Skill } from '../contracts/skill_contract.js';
@@ -33,6 +40,7 @@ const CAPABILITIES = [
   'LIST_MATCHES', 'GET_MATCH', 'UPDATE_MATCH_LOGISTICS', 'UPDATE_MATCH_RESULT',
   'LIST_MATCH_EVENTS', 'ADD_MATCH_EVENT', 'DELETE_MATCH_EVENT',
   'GET_TOP_SCORERS', 'GET_FAIRPLAY_RANKING', 'GET_VENUE_TIME_SLOTS',
+  'LIST_MATCH_DOCUMENTS', 'REGISTER_MATCH_DOCUMENT', 'DELETE_MATCH_DOCUMENT',
 ];
 
 const MATCH_SELECT = `
@@ -55,6 +63,7 @@ export class MatchesSpecialist extends Skill {
         { name: 'operation', required: true, type: 'string' },
         { name: 'payload', required: true, type: 'object' },
         { name: 'db', required: true, type: 'object' },
+        { name: 'userId', required: false, type: 'string' },
       ],
       output: [
         { name: 'match', type: 'object' },
@@ -62,15 +71,20 @@ export class MatchesSpecialist extends Skill {
         { name: 'matchday', type: 'object' },
         { name: 'matchdays', type: 'array' },
         { name: 'events', type: 'array' },
+        { name: 'document', type: 'object' },
+        { name: 'documents', type: 'array' },
       ],
       rules: {
         do: [
           'Propagar ganador/perdedor de llave al finalizar un partido KNOCKOUT',
           'Resolver el global antes de propagar en cruces de ida y vuelta',
+          'Filtrar estado=ACTIVE en LIST_MATCH_DOCUMENTS',
+          'Soft-delete en DELETE_MATCH_DOCUMENT',
         ],
         dont: [
           'No crear ni administrar torneos/fixture',
           'No gestionar costos',
+          'No subir archivos (cliente sube a Cloudinary directamente)',
         ],
       },
       checklist: [
@@ -81,7 +95,7 @@ export class MatchesSpecialist extends Skill {
   }
 
   async execute(task) {
-    const { operation, payload, db } = task.input;
+    const { operation, payload, db, userId } = task.input;
 
     if (!this.capabilities.includes(operation)) {
       return createSkillResult({ success: false, errorCode: 'UNKNOWN_OPERATION', errorMessage: `Operación desconocida: "${operation}"` });
@@ -101,6 +115,9 @@ export class MatchesSpecialist extends Skill {
         case 'GET_TOP_SCORERS': return this._getTopScorers(payload, db);
         case 'GET_FAIRPLAY_RANKING': return this._getFairplayRanking(payload, db);
         case 'GET_VENUE_TIME_SLOTS': return this._getVenueTimeSlots(payload, db);
+        case 'LIST_MATCH_DOCUMENTS': return this._listMatchDocuments(payload, db);
+        case 'REGISTER_MATCH_DOCUMENT': return this._registerMatchDocument(payload, db, userId);
+        case 'DELETE_MATCH_DOCUMENT': return this._deleteMatchDocument(payload, db);
       }
     } catch (err) {
       return createSkillResult({ success: false, errorCode: 'MATCHES_SPECIALIST_ERROR', errorMessage: err.message });
@@ -329,7 +346,7 @@ export class MatchesSpecialist extends Skill {
   async _listEvents({ matchId }, db) {
     const { data: events, error } = await db
       .from('lg_match_events')
-      .select('*, player:lg_players(id,first_name,last_name), series:lg_club_series(id,name,club:lg_clubs(id,name,short_name))')
+      .select('*, player:lg_players(id,first_name,last_name), series:lg_club_series(id,name,club:lg_clubs(id,name,short_name)), penalty:lg_penalty_catalog(id,name,code,amount)')
       .eq('match_id', matchId)
       .order('minute', { ascending: true, nullsFirst: false })
       .order('created_at', { ascending: true });
@@ -337,14 +354,14 @@ export class MatchesSpecialist extends Skill {
     return createSkillResult({ success: true, data: { events } });
   }
 
-  async _addEvent({ matchId, seriesId, playerId, eventType, minute, notes }, db) {
+  async _addEvent({ matchId, seriesId, playerId, eventType, minute, notes, penaltyId }, db) {
     if (!matchId || !seriesId || !eventType) {
       return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'matchId, seriesId y eventType son requeridos' });
     }
     const { data: event, error } = await db
       .from('lg_match_events')
-      .insert({ match_id: matchId, series_id: seriesId, player_id: playerId ?? null, event_type: eventType, minute: minute ?? null, notes: notes ?? null })
-      .select('*, player:lg_players(id,first_name,last_name), series:lg_club_series(id,name,club:lg_clubs(id,name,short_name))')
+      .insert({ match_id: matchId, series_id: seriesId, player_id: playerId ?? null, event_type: eventType, minute: minute ?? null, notes: notes ?? null, penalty_id: penaltyId ?? null })
+      .select('*, player:lg_players(id,first_name,last_name), series:lg_club_series(id,name,club:lg_clubs(id,name,short_name)), penalty:lg_penalty_catalog(id,name,code,amount)')
       .single();
     if (error) return createSkillResult({ success: false, errorCode: 'ADD_EVENT_FAILED', errorMessage: error.message });
     return createSkillResult({ success: true, data: { event } });
@@ -457,5 +474,71 @@ export class MatchesSpecialist extends Skill {
       .map((row, i) => ({ ...row, position: i + 1 }));
 
     return createSkillResult({ success: true, data: { ranking } });
+  }
+
+  // ── Documentos de Partido (Planilla de Control de Partido) ─────────────
+
+  async _listMatchDocuments({ matchId }, db) {
+    const { data: documents, error } = await db
+      .from('lg_match_documents')
+      .select('*')
+      .eq('match_id', matchId)
+      .eq('estado', 'ACTIVE')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      return createSkillResult({ success: false, errorCode: 'LIST_MATCH_DOCUMENTS_FAILED', errorMessage: error.message });
+    }
+
+    return createSkillResult({ success: true, data: { documents: documents ?? [] } });
+  }
+
+  async _registerMatchDocument({ matchId, nombreOriginal, mimeType, size, path, bucket, urlPublica }, db, userId) {
+    if (!matchId || !nombreOriginal || !mimeType || !size || !path) {
+      return createSkillResult({
+        success: false,
+        errorCode: 'VALIDATION_FAILED',
+        errorMessage: 'Se requiere matchId, nombreOriginal, mimeType, size y path',
+      });
+    }
+
+    const { data: doc, error } = await db
+      .from('lg_match_documents')
+      .insert({
+        match_id:        matchId,
+        uploaded_by:     userId,
+        nombre_original: nombreOriginal,
+        mime_type:       mimeType,
+        size:            parseInt(size, 10),
+        bucket:          bucket || 'cloudinary',
+        path,
+        url_publica:     urlPublica || null,
+        estado:          'ACTIVE',
+      })
+      .select()
+      .single();
+
+    if (error) {
+      return createSkillResult({ success: false, errorCode: 'REGISTER_MATCH_DOCUMENT_FAILED', errorMessage: error.message });
+    }
+
+    return createSkillResult({ success: true, data: { document: doc } });
+  }
+
+  async _deleteMatchDocument({ matchId, documentId }, db) {
+    const { data: doc, error } = await db
+      .from('lg_match_documents')
+      .update({ estado: 'DELETED' })
+      .eq('id', documentId)
+      .eq('match_id', matchId)
+      .eq('estado', 'ACTIVE')
+      .select()
+      .single();
+
+    if (error || !doc) {
+      return createSkillResult({ success: false, errorCode: 'DELETE_MATCH_DOCUMENT_FAILED', errorMessage: 'Documento no encontrado o ya eliminado' });
+    }
+
+    return createSkillResult({ success: true, data: { document: doc } });
   }
 }

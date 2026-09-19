@@ -35,6 +35,7 @@
  *   GET_CLUB_PAYMENT_STATUS | GET_PAYMENT_STATS
  *   CREATE_EVENT | LIST_EVENTS | GET_EVENT_DETAIL | SET_EVENT_PLAYERS
  *   RECORD_EVENT_PLAYER_PAYMENT | DELETE_EVENT
+ *   LIST_PENALTY_CATALOG | CREATE_PENALTY_CATALOG_ITEM | UPDATE_PENALTY_CATALOG_ITEM | DELETE_PENALTY_CATALOG_ITEM
  */
 
 import { Skill } from '../contracts/skill_contract.js';
@@ -54,6 +55,7 @@ const CAPABILITIES = [
   'RECORD_EVENT_PLAYER_PAYMENT', 'DELETE_EVENT',
   'CREATE_ORG_EVENT', 'LIST_ORG_EVENTS', 'GET_ORG_EVENT_DETAIL',
   'SET_CLUB_EXEMPT', 'RECORD_ORG_EVENT_CLUB_PAYMENT', 'CLOSE_ORG_EVENT',
+  'LIST_PENALTY_CATALOG', 'CREATE_PENALTY_CATALOG_ITEM', 'UPDATE_PENALTY_CATALOG_ITEM', 'DELETE_PENALTY_CATALOG_ITEM',
 ];
 
 export class ClubFinanceSpecialist extends Skill {
@@ -81,6 +83,8 @@ export class ClubFinanceSpecialist extends Skill {
         { name: 'charge', type: 'object' },
         { name: 'orgEvent', type: 'object' },
         { name: 'orgEvents', type: 'array' },
+        { name: 'penalty', type: 'object' },
+        { name: 'penalties', type: 'array' },
       ],
       rules: {
         do: [
@@ -92,6 +96,7 @@ export class ClubFinanceSpecialist extends Skill {
           'CREATE_ORG_EVENT/LIST_ORG_EVENTS/GET_ORG_EVENT_DETAIL/SET_CLUB_EXEMPT/RECORD_ORG_EVENT_CLUB_PAYMENT/CLOSE_ORG_EVENT verifican isOrgAdmin — un evento de organización es 100% admin, sin autoservicio de club',
           'SET_CLUB_EXEMPT/RECORD_ORG_EVENT_CLUB_PAYMENT rechazan si el evento de organización ya está CERRADO',
           'CLOSE_ORG_EVENT es un traspaso de un solo sentido: inserta en lg_ledger_entries (category=EVENTO_ORG) un movimiento por cada charge no exento, y bloquea al evento contra más cambios',
+          'CREATE_PENALTY_CATALOG_ITEM/UPDATE_PENALTY_CATALOG_ITEM/DELETE_PENALTY_CATALOG_ITEM verifican isOrgAdmin — el catálogo de castigos lo administra solo el admin de organización',
         ],
         dont: [
           'No gestionar gastos del organizador ni inscripciones/fixture',
@@ -109,6 +114,7 @@ export class ClubFinanceSpecialist extends Skill {
         'CREATE_ORG_EVENT genera un lg_org_event_charges por cada club participante de la temporada (getSeasonParticipantClubIds)',
         'SET_CLUB_EXEMPT/RECORD_ORG_EVENT_CLUB_PAYMENT rechazan sobre un evento CERRADO',
         'CLOSE_ORG_EVENT es idempotente contra doble cierre (rechaza si status ya es CERRADO) y excluye los charges exentos del traspaso',
+        'CREATE/UPDATE/DELETE_PENALTY_CATALOG_ITEM verifican isOrgAdmin',
       ],
     };
   }
@@ -145,6 +151,10 @@ export class ClubFinanceSpecialist extends Skill {
         case 'SET_CLUB_EXEMPT':              return this._setClubExempt(payload, db, userId);
         case 'RECORD_ORG_EVENT_CLUB_PAYMENT': return this._recordOrgEventClubPayment(payload, db, userId);
         case 'CLOSE_ORG_EVENT':              return this._closeOrgEvent(payload, db, userId);
+        case 'LIST_PENALTY_CATALOG':          return this._listPenaltyCatalog(payload, db);
+        case 'CREATE_PENALTY_CATALOG_ITEM':   return this._createPenaltyCatalogItem(payload, db, userId);
+        case 'UPDATE_PENALTY_CATALOG_ITEM':   return this._updatePenaltyCatalogItem(payload, db, userId);
+        case 'DELETE_PENALTY_CATALOG_ITEM':   return this._deletePenaltyCatalogItem(payload, db, userId);
       }
     } catch (err) {
       return createSkillResult({
@@ -229,7 +239,7 @@ export class ClubFinanceSpecialist extends Skill {
     return createSkillResult({ success: true, data: { entries: (entries ?? []).map(decorateLedgerEntry) } });
   }
 
-  async _createLedgerEntry({ orgId, clubId, seriesId, tournamentId, category, direction = 'INGRESO', amount, description, dueDate }, db, userId) {
+  async _createLedgerEntry({ orgId, clubId, seriesId, tournamentId, matchId, category, direction = 'INGRESO', amount, description, dueDate }, db, userId) {
     if (!orgId || !clubId || !category || amount === undefined || amount === null) {
       return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'orgId, clubId, category y amount son requeridos' });
     }
@@ -250,6 +260,7 @@ export class ClubFinanceSpecialist extends Skill {
         club_id: clubId,
         series_id: seriesId ?? null,
         tournament_id: tournamentId ?? null,
+        match_id: matchId ?? null,
         category,
         direction,
         amount,
@@ -955,5 +966,100 @@ export class ClubFinanceSpecialist extends Skill {
     }
 
     return createSkillResult({ success: true, data: { orgEvent: closedEvent } });
+  }
+
+  // ── Catálogo de castigos (Parámetros → Castigos) ─────────────────────────
+
+  async _listPenaltyCatalog({ orgId }, db) {
+    if (!orgId) {
+      return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'orgId es requerido' });
+    }
+    const { data: penalties, error } = await db
+      .from('lg_penalty_catalog')
+      .select('*')
+      .eq('org_id', orgId)
+      .order('name', { ascending: true });
+    if (error) {
+      return createSkillResult({ success: false, errorCode: 'LIST_PENALTY_CATALOG_FAILED', errorMessage: error.message });
+    }
+    return createSkillResult({ success: true, data: { penalties: penalties ?? [] } });
+  }
+
+  async _createPenaltyCatalogItem({ orgId, name, code, description, amount, businessRule }, db, userId) {
+    if (!orgId || !name || !code || amount === undefined || amount === null) {
+      return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'orgId, name, code y amount son requeridos' });
+    }
+    if (!(await isOrgAdmin(userId, orgId, db))) {
+      return createSkillResult({ success: false, errorCode: 'FORBIDDEN', errorMessage: 'Solo el administrador de la organización puede configurar el catálogo de castigos' });
+    }
+
+    const { data: penalty, error } = await db
+      .from('lg_penalty_catalog')
+      .insert({
+        org_id: orgId,
+        name,
+        code,
+        description: description ?? null,
+        amount,
+        business_rule: businessRule ?? null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      if (error.code === '23505') {
+        return createSkillResult({ success: false, errorCode: 'DUPLICATE_CODE', errorMessage: 'Ya existe un castigo con ese código' });
+      }
+      return createSkillResult({ success: false, errorCode: 'CREATE_PENALTY_CATALOG_ITEM_FAILED', errorMessage: error.message });
+    }
+    return createSkillResult({ success: true, data: { penalty } });
+  }
+
+  async _updatePenaltyCatalogItem({ penaltyId, orgId, name, code, description, amount, businessRule, active }, db, userId) {
+    if (!penaltyId || !orgId) {
+      return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'penaltyId y orgId son requeridos' });
+    }
+    if (!(await isOrgAdmin(userId, orgId, db))) {
+      return createSkillResult({ success: false, errorCode: 'FORBIDDEN', errorMessage: 'Solo el administrador de la organización puede configurar el catálogo de castigos' });
+    }
+
+    const patch = { updated_at: new Date().toISOString() };
+    if (name !== undefined) patch.name = name;
+    if (code !== undefined) patch.code = code;
+    if (description !== undefined) patch.description = description;
+    if (amount !== undefined) patch.amount = amount;
+    if (businessRule !== undefined) patch.business_rule = businessRule;
+    if (active !== undefined) patch.active = active;
+
+    const { data: penalty, error } = await db
+      .from('lg_penalty_catalog')
+      .update(patch)
+      .eq('id', penaltyId)
+      .eq('org_id', orgId)
+      .select()
+      .single();
+
+    if (error) {
+      if (error.code === '23505') {
+        return createSkillResult({ success: false, errorCode: 'DUPLICATE_CODE', errorMessage: 'Ya existe un castigo con ese código' });
+      }
+      return createSkillResult({ success: false, errorCode: 'UPDATE_PENALTY_CATALOG_ITEM_FAILED', errorMessage: error.message });
+    }
+    return createSkillResult({ success: true, data: { penalty } });
+  }
+
+  async _deletePenaltyCatalogItem({ penaltyId, orgId }, db, userId) {
+    if (!penaltyId || !orgId) {
+      return createSkillResult({ success: false, errorCode: 'MISSING_FIELDS', errorMessage: 'penaltyId y orgId son requeridos' });
+    }
+    if (!(await isOrgAdmin(userId, orgId, db))) {
+      return createSkillResult({ success: false, errorCode: 'FORBIDDEN', errorMessage: 'Solo el administrador de la organización puede configurar el catálogo de castigos' });
+    }
+
+    const { error } = await db.from('lg_penalty_catalog').delete().eq('id', penaltyId).eq('org_id', orgId);
+    if (error) {
+      return createSkillResult({ success: false, errorCode: 'DELETE_PENALTY_CATALOG_ITEM_FAILED', errorMessage: error.message });
+    }
+    return createSkillResult({ success: true, data: { deleted: true, penaltyId } });
   }
 }

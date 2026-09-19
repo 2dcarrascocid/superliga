@@ -40,6 +40,7 @@
               <th>Local</th>
               <th class="text-center">Resultado</th>
               <th>Visita</th>
+              <th class="text-center">Horario</th>
               <th class="text-center">Estado</th>
               <th title="Cancha / Árbitro">Cancha/Árb.</th>
               <th>Acciones</th>
@@ -55,6 +56,7 @@
                 <span v-else class="text-muted">vs</span>
               </td>
               <td>{{ seriesLabel(match.away_series) || (match.status === 'WALKOVER' ? '' : 'Por definir') }}</td>
+              <td class="text-center text-sm">{{ match.match_time ? match.match_time.slice(0, 5) : '—' }}</td>
               <td class="text-center">
                 <span class="status-badge" :class="`status-badge--${match.status?.toLowerCase()}`">{{ statusLabel(match.status) }}</span>
               </td>
@@ -98,6 +100,10 @@
             <span class="status-badge" :class="`status-badge--${match.status?.toLowerCase()}`">{{ statusLabel(match.status) }}</span>
           </div>
           <div class="data-card__body">
+            <div class="data-card__row">
+              <span class="data-card__row-label">Horario</span>
+              <span class="data-card__row-value">{{ match.match_time ? match.match_time.slice(0, 5) : 'Sin horario' }}</span>
+            </div>
             <div class="data-card__row">
               <span class="data-card__row-label">Cancha/Árb.</span>
               <span class="data-card__row-value">{{ match.venue?.name || 'Sin cancha' }} · {{ match.referee?.full_name || 'Sin árbitro' }}</span>

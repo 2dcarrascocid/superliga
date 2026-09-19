@@ -127,6 +127,22 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><polyline points="12 9 12 13 14.5 14.5"/><path d="M9 2h6"/><path d="M19 5l-1.5-1.5"/></svg>
                 Duración de Partidos
               </router-link>
+              <router-link to="/penalty-catalog" class="nav-dropdown__item" @click="closeAllMenus" role="menuitem">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="14" rx="2"/><line x1="2" y1="9" x2="22" y2="9"/><line x1="6" y1="14" x2="10" y2="14"/></svg>
+                Castigos
+              </router-link>
+              <router-link to="/disciplinary/articles" class="nav-dropdown__item" @click="closeAllMenus" role="menuitem">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                Reglamento y Faltas
+              </router-link>
+              <router-link to="/disciplinary/tribunal" class="nav-dropdown__item" @click="closeAllMenus" role="menuitem">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"/><path d="M5 7l-3 6a4 4 0 0 0 6 0z"/><path d="M19 7l-3 6a4 4 0 0 0 6 0z"/><path d="M3 21h18"/><path d="M5 7h14"/></svg>
+                Tribunal de Disciplina
+              </router-link>
+              <router-link to="/disciplinary/sanctions" class="nav-dropdown__item" @click="closeAllMenus" role="menuitem">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                Sancionados Vigentes
+              </router-link>
             </div>
           </div>
         </template>
@@ -250,7 +266,7 @@ const showAdminSettings = ref(false);
 const myClub = computed(() => authStore.myClub());
 
 const isParamsRouteActive = computed(() =>
-  route.path.startsWith('/referees') || route.path.startsWith('/venues') || route.path.startsWith('/schedules') || route.path.startsWith('/categories') || route.path.startsWith('/match-scheduling') || route.path.startsWith('/scheduling-settings')
+  route.path.startsWith('/referees') || route.path.startsWith('/venues') || route.path.startsWith('/schedules') || route.path.startsWith('/categories') || route.path.startsWith('/match-scheduling') || route.path.startsWith('/scheduling-settings') || route.path.startsWith('/penalty-catalog') || route.path.startsWith('/disciplinary')
 );
 
 const isSeasonsRouteActive = computed(() =>

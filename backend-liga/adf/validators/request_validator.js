@@ -352,6 +352,23 @@ export const ValidationRules = {
       { field: 'entryId', required: true, type: 'string', format: 'uuid' },
       { field: 'amount', required: true, type: 'number' },
     ],
+    LIST_PENALTY_CATALOG: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+    ],
+    CREATE_PENALTY_CATALOG_ITEM: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+      { field: 'name', required: true, type: 'string' },
+      { field: 'code', required: true, type: 'string' },
+      { field: 'amount', required: true, type: 'number' },
+    ],
+    UPDATE_PENALTY_CATALOG_ITEM: [
+      { field: 'penaltyId', required: true, type: 'string', format: 'uuid' },
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+    ],
+    DELETE_PENALTY_CATALOG_ITEM: [
+      { field: 'penaltyId', required: true, type: 'string', format: 'uuid' },
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+    ],
     GET_CLUB_PAYMENT_STATUS: [
       { field: 'clubId', required: true, type: 'string', format: 'uuid' },
     ],
@@ -589,6 +606,98 @@ export const ValidationRules = {
     REMOVE_ORG_ADMIN: [
       { field: 'orgId',       required: true, type: 'string', format: 'uuid' },
       { field: 'adminUserId', required: true, type: 'string', format: 'uuid' },
+    ],
+  },
+  disciplinary: {
+    LIST_ARTICLES: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+    ],
+    CREATE_ARTICLE: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+      { field: 'code', required: true, type: 'string', minLength: 1, maxLength: 30 },
+      { field: 'title', required: true, type: 'string', minLength: 2, maxLength: 200 },
+      { field: 'severity', required: false, type: 'string', enum: ['LEVE', 'GRAVE', 'GRAVISIMA'] },
+    ],
+    UPDATE_ARTICLE: [
+      { field: 'articleId', required: true, type: 'string', format: 'uuid' },
+      { field: 'severity', required: false, type: 'string', enum: ['LEVE', 'GRAVE', 'GRAVISIMA'] },
+    ],
+    DELETE_ARTICLE: [
+      { field: 'articleId', required: true, type: 'string', format: 'uuid' },
+    ],
+    LIST_INFRACTIONS: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+    ],
+    CREATE_INFRACTION: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+      { field: 'code', required: true, type: 'string', minLength: 1, maxLength: 30 },
+      { field: 'name', required: true, type: 'string', minLength: 2, maxLength: 200 },
+      { field: 'sanctionedType', required: true, type: 'string', enum: ['CLUB', 'TEAM', 'PLAYER', 'COACH'] },
+      { field: 'sanctionKind', required: true, type: 'string', enum: ['MATCHES_SUSPENSION', 'DAYS_SUSPENSION', 'FINE', 'POINTS_DEDUCTION', 'WALKOVER', 'LOCALIA_SUSPENSION', 'DISQUALIFICATION', 'EXPULSION'] },
+    ],
+    UPDATE_INFRACTION: [
+      { field: 'infractionId', required: true, type: 'string', format: 'uuid' },
+      { field: 'sanctionedType', required: false, type: 'string', enum: ['CLUB', 'TEAM', 'PLAYER', 'COACH'] },
+      { field: 'sanctionKind', required: false, type: 'string', enum: ['MATCHES_SUSPENSION', 'DAYS_SUSPENSION', 'FINE', 'POINTS_DEDUCTION', 'WALKOVER', 'LOCALIA_SUSPENSION', 'DISQUALIFICATION', 'EXPULSION'] },
+    ],
+    DELETE_INFRACTION: [
+      { field: 'infractionId', required: true, type: 'string', format: 'uuid' },
+    ],
+    LIST_TEAM_STAFF: [
+      { field: 'clubId', required: true, type: 'string', format: 'uuid' },
+    ],
+    CREATE_TEAM_STAFF: [
+      { field: 'clubId', required: true, type: 'string', format: 'uuid' },
+      { field: 'fullName', required: true, type: 'string', minLength: 2, maxLength: 150 },
+    ],
+    UPDATE_TEAM_STAFF: [
+      { field: 'staffId', required: true, type: 'string', format: 'uuid' },
+    ],
+    DELETE_TEAM_STAFF: [
+      { field: 'staffId', required: true, type: 'string', format: 'uuid' },
+    ],
+    LIST_CASES: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+    ],
+    GET_CASE: [
+      { field: 'caseId', required: true, type: 'string', format: 'uuid' },
+    ],
+    CREATE_CASE: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+      { field: 'sanctionedType', required: true, type: 'string', enum: ['CLUB', 'TEAM', 'PLAYER', 'COACH'] },
+      { field: 'sanctionedId', required: true, type: 'string', format: 'uuid' },
+      { field: 'title', required: true, type: 'string', minLength: 2, maxLength: 200 },
+    ],
+    UPDATE_CASE_STATUS: [
+      { field: 'caseId', required: true, type: 'string', format: 'uuid' },
+      { field: 'status', required: true, type: 'string', enum: ['PENDING', 'IN_REVIEW', 'SANCTIONED', 'DISMISSED'] },
+    ],
+    CREATE_RESOLUTION: [
+      { field: 'caseId', required: true, type: 'string', format: 'uuid' },
+      { field: 'sanctionKind', required: true, type: 'string', enum: ['MATCHES_SUSPENSION', 'DAYS_SUSPENSION', 'FINE', 'POINTS_DEDUCTION', 'WALKOVER', 'LOCALIA_SUSPENSION', 'DISQUALIFICATION', 'EXPULSION'] },
+      { field: 'quantity', required: true, type: 'number', min: 0 },
+    ],
+    LIST_RESOLUTIONS: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+    ],
+    UPDATE_RESOLUTION_STATUS: [
+      { field: 'resolutionId', required: true, type: 'string', format: 'uuid' },
+      { field: 'statusCumplimiento', required: true, type: 'string', enum: ['PENDING', 'IN_FULFILLMENT', 'COMPLETED', 'APPEALED'] },
+    ],
+    LIST_SANCTIONED: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+    ],
+    CHECK_ELIGIBILITY: [
+      { field: 'sanctionedType', required: true, type: 'string', enum: ['CLUB', 'TEAM', 'PLAYER', 'COACH'] },
+      { field: 'sanctionedId', required: true, type: 'string', format: 'uuid' },
+    ],
+    EVALUATE_CARD_ACCUMULATION: [
+      { field: 'matchId', required: true, type: 'string', format: 'uuid' },
+      { field: 'playerId', required: true, type: 'string', format: 'uuid' },
+      { field: 'eventType', required: true, type: 'string' },
+    ],
+    PROCESS_MATCHDAY_FULFILLMENT: [
+      { field: 'matchId', required: true, type: 'string', format: 'uuid' },
     ],
   },
 };

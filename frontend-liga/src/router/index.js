@@ -28,6 +28,10 @@ const RefereesList = () => import('../views/RefereesList.vue');
 const CategoriesList = () => import('../views/CategoriesList.vue');
 const VenuesList = () => import('../views/VenuesList.vue');
 const SchedulesList = () => import('../views/SchedulesList.vue');
+const PenaltyCatalogView = () => import('../views/PenaltyCatalogView.vue');
+const DisciplinaryArticlesView = () => import('../views/DisciplinaryArticlesView.vue');
+const DisciplinaryTribunalView = () => import('../views/DisciplinaryTribunalView.vue');
+const DisciplinarySanctionsView = () => import('../views/DisciplinarySanctionsView.vue');
 const TransfersView = () => import('../views/TransfersView.vue');
 const TransfersKpiDashboard = () => import('../views/TransfersKpiDashboard.vue');
 const SeasonsList = () => import('../views/SeasonsList.vue');
@@ -236,6 +240,30 @@ const routes = [
         name: 'SchedulesList',
         component: SchedulesList,
         meta: { requiresAuth: true, requiresOrg: true, orgAdminOnly: true },
+    },
+    {
+        path: '/penalty-catalog',
+        name: 'PenaltyCatalogView',
+        component: PenaltyCatalogView,
+        meta: { requiresAuth: true, requiresOrg: true, orgAdminOnly: true },
+    },
+    {
+        path: '/disciplinary/articles',
+        name: 'DisciplinaryArticlesView',
+        component: DisciplinaryArticlesView,
+        meta: { requiresAuth: true, requiresOrg: true, orgAdminOnly: true },
+    },
+    {
+        path: '/disciplinary/tribunal',
+        name: 'DisciplinaryTribunalView',
+        component: DisciplinaryTribunalView,
+        meta: { requiresAuth: true, requiresOrg: true, orgAdminOnly: true },
+    },
+    {
+        path: '/disciplinary/sanctions',
+        name: 'DisciplinarySanctionsView',
+        component: DisciplinarySanctionsView,
+        meta: { requiresAuth: true, requiresOrg: true },
     },
     {
         path: '/match-scheduling',

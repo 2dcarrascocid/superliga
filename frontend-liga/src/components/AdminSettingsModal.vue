@@ -424,7 +424,8 @@ onUnmounted(() => {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0 16px;
 }
-.admin-form__actions { display: flex; justify-content: flex-end; margin-top: var(--spacing-sm); }
+.admin-form__actions { display: flex; justify-content: flex-end; gap: var(--spacing-sm); margin-top: var(--spacing-sm); }
+.table-actions { display: flex; gap: var(--spacing-xs, 8px); flex-wrap: wrap; }
 
 @media (max-width: 640px) {
   .admin-modal__dialog { padding: 16px; }
