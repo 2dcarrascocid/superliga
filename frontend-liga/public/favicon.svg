@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <radialGradient id="ballShine" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="65%" stop-color="#f1f5f9"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </radialGradient>
+    <linearGradient id="patchGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Base del Balón -->
+  <circle cx="50" cy="50" r="46" fill="url(#ballShine)" stroke="#0f172a" stroke-width="4"/>
+
+  <!-- Costuras conectores -->
+  <path d="M 50 32 L 50 14" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 67 44 L 85 38" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 61 65 L 75 83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 39 65 L 25 83" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 33 44 L 15 38" stroke="#0f172a" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Pentágono Central -->
+  <polygon points="50,32 67,44 61,65 39,65 33,44" fill="url(#patchGrad)" stroke="#0f172a" stroke-width="2.5" stroke-linejoin="round"/>
+
+  <!-- Parches exteriores (Paneles) -->
+  <!-- Superior -->
+  <polygon points="50,14 36,4 64,4" fill="url(#patchGrad)" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M 36 4 L 15 15" stroke="#0f172a" stroke-width="2.5"/>
+  <path d="M 64 4 L 85 15" stroke="#0f172a" stroke-width="2.5"/>
+  <path d="M 15 15 L 15 38" stroke="#0f172a" stroke-width="2.5"/>
+  <path d="M 85 15 L 85 38" stroke="#0f172a" stroke-width="2.5"/>
+
+  <!-- Superior Derecho -->
+  <polygon points="85,38 96,24 94,54" fill="url(#patchGrad)" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M 94 54 L 88 72" stroke="#0f172a" stroke-width="2.5"/>
+
+  <!-- Inferior Derecho -->
+  <polygon points="75,83 88,72 63,95" fill="url(#patchGrad)" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M 63 95 L 37 95" stroke="#0f172a" stroke-width="2.5"/>
+
+  <!-- Inferior Izquierdo -->
+  <polygon points="25,83 37,95 12,72" fill="url(#patchGrad)" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M 12 72 L 6 54" stroke="#0f172a" stroke-width="2.5"/>
+
+  <!-- Superior Izquierdo -->
+  <polygon points="15,38 6,54 4,24" fill="url(#patchGrad)" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+</svg>

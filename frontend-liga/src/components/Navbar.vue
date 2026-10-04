@@ -5,10 +5,19 @@
       <!-- Logo -->
       <div class="navbar-brand">
         <router-link to="/home" class="logo" aria-label="SuperLigas inicio">
-          <svg class="logo-icon" width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
-            <circle cx="15" cy="15" r="14" fill="url(#nav-grad)"/>
-            <path d="M9 15c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
-            <circle cx="15" cy="18.5" r="3" fill="white"/>
+          <svg class="logo-icon" width="30" height="30" viewBox="0 0 100 100" fill="none" aria-hidden="true">
+            <circle cx="50" cy="50" r="46" fill="url(#nav-grad)" stroke="#ffffff" stroke-width="4"/>
+            <path d="M 50 32 L 50 14" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <path d="M 67 44 L 85 38" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <path d="M 61 65 L 75 83" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <path d="M 39 65 L 25 83" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <path d="M 33 44 L 15 38" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <polygon points="50,32 67,44 61,65 39,65 33,44" fill="#ffffff" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round"/>
+            <polygon points="50,14 36,4 64,4" fill="#ffffff" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
+            <polygon points="85,38 96,24 94,54" fill="#ffffff" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
+            <polygon points="75,83 88,72 63,95" fill="#ffffff" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
+            <polygon points="25,83 37,95 12,72" fill="#ffffff" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
+            <polygon points="15,38 6,54 4,24" fill="#ffffff" stroke="#ffffff" stroke-width="2" stroke-linejoin="round"/>
             <defs>
               <linearGradient id="nav-grad" x1="0" y1="0" x2="30" y2="30">
                 <stop offset="0%" stop-color="var(--primary-dark)"/>
