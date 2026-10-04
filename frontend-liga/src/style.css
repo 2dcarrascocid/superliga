@@ -86,24 +86,24 @@
    [data-theme="light"]) para no inventar colores nuevos, solo mapeados a
    los nombres de variable que realmente usa este stylesheet activo. ── */
 [data-theme="light"] {
-  --bg-primary:   #f2f4fa;
+  --bg-primary:   #f3f7f5;
   --bg-secondary: #ffffff;
-  --bg-tertiary:  #f8f9fc;
+  --bg-tertiary:  #f8fbf9;
   --bg-card:      #ffffff;
-  --bg-hover:     #e8eaf2;
+  --bg-hover:     #e7f1eb;
 
-  --neu-bg:          #f2f4fa;
-  --neu-shadow-dark: rgba(15, 23, 42, 0.12);
-  --neu-shadow-lite: rgba(255, 255, 255, 0.7);
+  --neu-bg:          #ffffff;
+  --neu-shadow-dark: rgba(24, 61, 42, 0.11);
+  --neu-shadow-lite: rgba(255, 255, 255, 0.9);
 
-  --text-primary:   #0d0e12;
-  --text-secondary: #363a48;
-  --text-muted:     #737a94;
+  --text-primary:   #10231a;
+  --text-secondary: #334b3e;
+  --text-muted:     #526b5e;
 
-  --border-color: #d0d4e8;
+  --border-color: #7e9387;
 
-  --primary-solid: #00a050;
-  --primary-dark:  #007a3d;
+  --primary-solid: #087a3b;
+  --primary-dark:  #065f31;
 }
 
 body {
@@ -632,13 +632,13 @@ select.input { cursor: pointer; }
 
 [data-theme="light"] {
   color-scheme: light;
-  --surface-base: #f1f6f3;
+  --surface-base: #f3f7f5;
   --surface-raised: #ffffff;
-  --surface-overlay: #f7faf8;
+  --surface-overlay: #f8fbf9;
   --surface-card: #ffffff;
-  --surface-input: #f6faf7;
-  --surface-hover: #e8f2ec;
-  --surface-border: #c5d6cc;
+  --surface-input: #f7faf8;
+  --surface-hover: #e7f1eb;
+  --surface-border: #7e9387;
   --sport-green: #087a3b;
   --sport-green-strong: #065f31;
   --sport-blue: #0369a1;
@@ -648,13 +648,30 @@ select.input { cursor: pointer; }
   --text-secondary: #334b3e;
   --text-muted: #526b5e;
   --text-on-accent: #ffffff;
-  --neu-shadow-dark: rgba(24, 61, 42, .13);
-  --neu-shadow-lite: rgba(255, 255, 255, .8);
-  --shadow-sm: 0 1px 3px rgba(24, 61, 42, .11);
-  --shadow-md: 0 8px 24px rgba(24, 61, 42, .12);
-  --shadow-lg: 0 16px 42px rgba(24, 61, 42, .14);
-  --shadow-xl: 0 24px 64px rgba(24, 61, 42, .17);
+  --neu-shadow-dark: rgba(24, 61, 42, .11);
+  --neu-shadow-lite: rgba(255, 255, 255, .9);
+  --shadow-sm: 0 1px 3px rgba(24, 61, 42, .09), 0 1px 2px rgba(24, 61, 42, .06);
+  --shadow-md: 0 8px 24px rgba(24, 61, 42, .10), 0 2px 6px rgba(24, 61, 42, .06);
+  --shadow-lg: 0 16px 42px rgba(24, 61, 42, .13);
+  --shadow-xl: 0 24px 64px rgba(24, 61, 42, .16);
+  --shadow-pressed: inset 0 0 0 2px rgba(8, 122, 59, .16);
+  --success-bg: rgba(8, 122, 59, .10);
+  --info-bg: rgba(3, 105, 161, .10);
+  --gold-bg: rgba(138, 98, 0, .10);
+  --danger-bg: rgba(185, 28, 28, .09);
 }
+
+[data-theme="light"] body {
+  background-color: var(--surface-base);
+  background-image:
+    radial-gradient(circle at 12% -8%, rgba(8, 122, 59, .08), transparent 32rem),
+    radial-gradient(circle at 92% 4%, rgba(3, 105, 161, .055), transparent 28rem);
+  background-attachment: fixed;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb { background: #9eb2a7; }
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: #758d80; }
+[data-theme="light"] ::selection { background: rgba(8, 122, 59, .2); }
 
 /* ── Acento por deporte de la liga (data-sport, seteado en runtime por
    useTheme().applySport() según lg_orgs.sport_id) ──

@@ -32,10 +32,10 @@ export const sendPasswordResetEmail = async (toEmail, resetLink) => {
               <table cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="background:linear-gradient(135deg,#0891B2,#22D3EE);border-radius:50%;width:48px;height:48px;text-align:center;vertical-align:middle;">
-                    <span style="color:#fff;font-size:22px;font-weight:700;line-height:48px;">L</span>
+                    <span style="color:#fff;font-size:22px;font-weight:700;line-height:48px;">S</span>
                   </td>
                   <td style="padding-left:12px;font-size:22px;font-weight:700;color:#0891B2;vertical-align:middle;letter-spacing:-0.5px;">
-                    Liga App
+                    SuperLigas
                   </td>
                 </tr>
               </table>
@@ -73,7 +73,7 @@ export const sendPasswordResetEmail = async (toEmail, resetLink) => {
                 <tr>
                   <td align="center" style="padding-bottom:32px;">
                     <p style="margin:0;font-size:15px;color:#475569;line-height:1.7;max-width:400px;">
-                      Recibimos una solicitud para restablecer la contraseña de tu cuenta en Liga App.
+                      Recibimos una solicitud para restablecer la contraseña de tu cuenta en SuperLigas.
                       Haz clic en el botón de abajo para crear una nueva contraseña.
                     </p>
                   </td>
@@ -127,7 +127,7 @@ export const sendPasswordResetEmail = async (toEmail, resetLink) => {
           <tr>
             <td align="center" style="padding-top:24px;">
               <p style="margin:0;font-size:12px;color:#94A3B8;">
-                © ${new Date().getFullYear()} Liga App · Fairplay Chile ·
+                © ${new Date().getFullYear()} SuperLigas ·
                 <a href="#" style="color:#0891B2;text-decoration:none;">Soporte</a>
               </p>
             </td>
@@ -142,17 +142,17 @@ export const sendPasswordResetEmail = async (toEmail, resetLink) => {
 `
 
   await transporter.sendMail({
-    from: process.env.SMTP_FROM || '"Liga App" <no-reply@ligaapp.com>',
+    from: process.env.SMTP_FROM || '"SuperLigas" <no-reply@superligas.com>',
     to: toEmail,
-    subject: '🔑 Restablecer tu contraseña — Liga App',
+    subject: '🔑 Restablecer tu contraseña — SuperLigas',
     html,
   })
 }
 
 export const sendClubAdminInviteEmail = async (toEmail, clubName, inviteLink, isNewUser) => {
   const subject = isNewUser
-    ? `Invitación para administrar ${clubName} — Liga App`
-    : `Acceso asignado: administrador de ${clubName} — Liga App`;
+    ? `Invitación para administrar ${clubName} — SuperLigas`
+    : `Acceso asignado: administrador de ${clubName} — SuperLigas`;
 
   const headline = isNewUser
     ? `Fuiste invitado a administrar <strong>${clubName}</strong>`
@@ -176,9 +176,9 @@ export const sendClubAdminInviteEmail = async (toEmail, clubName, inviteLink, is
         <tr><td align="center" style="padding-bottom:28px;">
           <table cellpadding="0" cellspacing="0"><tr>
             <td style="background:linear-gradient(135deg,#0891B2,#22D3EE);border-radius:50%;width:48px;height:48px;text-align:center;vertical-align:middle;">
-              <span style="color:#fff;font-size:22px;font-weight:700;line-height:48px;">L</span>
+              <span style="color:#fff;font-size:22px;font-weight:700;line-height:48px;">S</span>
             </td>
-            <td style="padding-left:12px;font-size:22px;font-weight:700;color:#0891B2;vertical-align:middle;">Liga App</td>
+            <td style="padding-left:12px;font-size:22px;font-weight:700;color:#0891B2;vertical-align:middle;">SuperLigas</td>
           </tr></table>
         </td></tr>
 
@@ -218,7 +218,7 @@ export const sendClubAdminInviteEmail = async (toEmail, clubName, inviteLink, is
         </td></tr>
 
         <tr><td align="center" style="padding-top:24px;">
-          <p style="margin:0;font-size:12px;color:#94A3B8;">© ${new Date().getFullYear()} Liga App · Fairplay Chile</p>
+          <p style="margin:0;font-size:12px;color:#94A3B8;">© ${new Date().getFullYear()} SuperLigas</p>
         </td></tr>
 
       </table>
@@ -228,7 +228,7 @@ export const sendClubAdminInviteEmail = async (toEmail, clubName, inviteLink, is
 </html>`;
 
   await transporter.sendMail({
-    from: process.env.SMTP_FROM || '"Liga App" <no-reply@ligaapp.com>',
+    from: process.env.SMTP_FROM || '"SuperLigas" <no-reply@superligas.com>',
     to: toEmail,
     subject,
     html,
@@ -237,8 +237,8 @@ export const sendClubAdminInviteEmail = async (toEmail, clubName, inviteLink, is
 
 export const sendOrgAdminInviteEmail = async (toEmail, orgName, inviteLink, isNewUser) => {
   const subject = isNewUser
-    ? `Invitación para administrar la liga ${orgName} — Liga App`
-    : `Acceso asignado: administrador de la liga ${orgName} — Liga App`;
+    ? `Invitación para administrar la liga ${orgName} — SuperLigas`
+    : `Acceso asignado: administrador de la liga ${orgName} — SuperLigas`;
 
   const headline = isNewUser
     ? `Fuiste invitado a ser administrador de la liga <strong>${orgName}</strong>`
@@ -262,9 +262,9 @@ export const sendOrgAdminInviteEmail = async (toEmail, orgName, inviteLink, isNe
         <tr><td align="center" style="padding-bottom:28px;">
           <table cellpadding="0" cellspacing="0"><tr>
             <td style="background:linear-gradient(135deg,#0891B2,#22D3EE);border-radius:50%;width:48px;height:48px;text-align:center;vertical-align:middle;">
-              <span style="color:#fff;font-size:22px;font-weight:700;line-height:48px;">L</span>
+              <span style="color:#fff;font-size:22px;font-weight:700;line-height:48px;">S</span>
             </td>
-            <td style="padding-left:12px;font-size:22px;font-weight:700;color:#0891B2;vertical-align:middle;">Liga App</td>
+            <td style="padding-left:12px;font-size:22px;font-weight:700;color:#0891B2;vertical-align:middle;">SuperLigas</td>
           </tr></table>
         </td></tr>
 
@@ -304,7 +304,7 @@ export const sendOrgAdminInviteEmail = async (toEmail, orgName, inviteLink, isNe
         </td></tr>
 
         <tr><td align="center" style="padding-top:24px;">
-          <p style="margin:0;font-size:12px;color:#94A3B8;">© ${new Date().getFullYear()} Liga App · Fairplay Chile</p>
+          <p style="margin:0;font-size:12px;color:#94A3B8;">© ${new Date().getFullYear()} SuperLigas</p>
         </td></tr>
 
       </table>
@@ -314,7 +314,7 @@ export const sendOrgAdminInviteEmail = async (toEmail, orgName, inviteLink, isNe
 </html>`;
 
   await transporter.sendMail({
-    from: process.env.SMTP_FROM || '"Liga App" <no-reply@ligaapp.com>',
+    from: process.env.SMTP_FROM || '"SuperLigas" <no-reply@superligas.com>',
     to: toEmail,
     subject,
     html,
@@ -322,7 +322,7 @@ export const sendOrgAdminInviteEmail = async (toEmail, orgName, inviteLink, isNe
 };
 
 export const sendPlayerInviteEmail = async (toEmail, playerName, clubName, inviteLink) => {
-  const subject = `Invitación a tu perfil de jugador en ${clubName} — Liga App`;
+  const subject = `Invitación a tu perfil de jugador en ${clubName} — SuperLigas`;
   const headline = `${playerName ? playerName + ', fuiste' : 'Fuiste'} invitado a tu perfil de jugador en <strong>${clubName}</strong>`;
   const bodyText = `Inicia sesión con tu cuenta de Google para aceptar la invitación y acceder a tu perfil, tu serie y las estadísticas de tu equipo.`;
   const btnText = 'Aceptar invitación con Google';
@@ -339,9 +339,9 @@ export const sendPlayerInviteEmail = async (toEmail, playerName, clubName, invit
         <tr><td align="center" style="padding-bottom:28px;">
           <table cellpadding="0" cellspacing="0"><tr>
             <td style="background:linear-gradient(135deg,#0891B2,#22D3EE);border-radius:50%;width:48px;height:48px;text-align:center;vertical-align:middle;">
-              <span style="color:#fff;font-size:22px;font-weight:700;line-height:48px;">L</span>
+              <span style="color:#fff;font-size:22px;font-weight:700;line-height:48px;">S</span>
             </td>
-            <td style="padding-left:12px;font-size:22px;font-weight:700;color:#0891B2;vertical-align:middle;">Liga App</td>
+            <td style="padding-left:12px;font-size:22px;font-weight:700;color:#0891B2;vertical-align:middle;">SuperLigas</td>
           </tr></table>
         </td></tr>
 
@@ -381,7 +381,7 @@ export const sendPlayerInviteEmail = async (toEmail, playerName, clubName, invit
         </td></tr>
 
         <tr><td align="center" style="padding-top:24px;">
-          <p style="margin:0;font-size:12px;color:#94A3B8;">© ${new Date().getFullYear()} Liga App · Fairplay Chile</p>
+          <p style="margin:0;font-size:12px;color:#94A3B8;">© ${new Date().getFullYear()} SuperLigas</p>
         </td></tr>
 
       </table>
@@ -391,7 +391,7 @@ export const sendPlayerInviteEmail = async (toEmail, playerName, clubName, invit
 </html>`;
 
   await transporter.sendMail({
-    from: process.env.SMTP_FROM || '"Liga App" <no-reply@ligaapp.com>',
+    from: process.env.SMTP_FROM || '"SuperLigas" <no-reply@superligas.com>',
     to: toEmail,
     subject,
     html,

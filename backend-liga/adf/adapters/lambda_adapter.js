@@ -132,11 +132,16 @@ export function resolveStatusCode(errorCode) {
  */
 export function taskResultToLambdaResponse(taskResult) {
   const debug = process.env.ADF_DEBUG === 'true';
+  const corsHeaders = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Credentials': 'true',
+  };
 
   if (taskResult.success) {
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: corsHeaders,
       body: JSON.stringify({
         success: true,
         data: taskResult.data,
@@ -149,7 +154,7 @@ export function taskResultToLambdaResponse(taskResult) {
 
   return {
     statusCode,
-    headers: { 'Content-Type': 'application/json' },
+    headers: corsHeaders,
     body: JSON.stringify({
       success: false,
       error: {

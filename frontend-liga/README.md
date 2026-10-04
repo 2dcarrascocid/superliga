@@ -1,6 +1,6 @@
-# Fair Play Chile - Frontend
+# SuperLigas - Frontend
 
-Frontend moderno para la aplicación de gestión de clubes deportivos Fair Play Chile.
+Frontend moderno para la aplicación de gestión deportiva SuperLigas.
 
 ## 🚀 Características
 

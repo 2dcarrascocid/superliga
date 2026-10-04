@@ -1,0 +1,17 @@
+path: frontend-liga/src/styles
+tags: [frontend, ui-ux, light-theme, accessibility]
+standard_applied: standards/frontend-sports-ui.md
+validated_by: qa-tester
+date: 2026-10-04
+agent: codex
+files_touched:
+  - frontend-liga/src/style.css
+  - frontend-liga/src/styles/tokens.css
+  - frontend-liga/src/components/Navbar.vue
+tests_passed: true
+commit: null
+notes: >
+  Tema claro renovado y validado mediante checks estaticos. Contraste de bordes
+  superior a 3:1 sobre blanco, superficie de input y fondo base; contraste de
+  texto WCAG AA, sombras sincronizadas y git diff --check correcto. El build no
+  pudo ejecutarse porque node y npm no estan disponibles en el entorno.

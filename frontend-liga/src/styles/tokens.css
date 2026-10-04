@@ -147,24 +147,32 @@
 
 /* ── Light mode override (opt-in) ── */
 [data-theme="light"] {
-  --surface-base:    #f2f4fa;
+  --surface-base:    #f3f7f5;
   --surface-raised:  #ffffff;
-  --surface-overlay: #f8f9fc;
+  --surface-overlay: #f8fbf9;
   --surface-card:    #ffffff;
-  --surface-input:   #f2f4fa;
-  --surface-hover:   #e8eaf2;
-  --surface-border:  #d0d4e8;
-  --surface-muted:   #e4e7f2;
+  --surface-input:   #f7faf8;
+  --surface-hover:   #e7f1eb;
+  --surface-border:  #7e9387;
+  --surface-muted:   #e9f0ec;
 
-  --text-primary:   #0d0e12;
-  --text-secondary: #363a48;
-  --text-muted:     #737a94;
-  --text-disabled:  #9aa0bb;
-  --text-accent:    #00a050;
+  --text-primary:   #10231a;
+  --text-secondary: #334b3e;
+  --text-muted:     #526b5e;
+  --text-disabled:  #7b9185;
+  --text-accent:    #087a3b;
+  --text-link:      #0369a1;
+  --text-on-accent: #ffffff;
 
-  --border-subtle:  #e4e7f2;
-  --border-default: #d0d4e8;
-  --border-strong:  #9aa0bb;
+  --border-subtle:  #e1ebe5;
+  --border-default: #7e9387;
+  --border-strong:  #657e70;
+
+  --shadow-sm:  0 1px 3px rgba(24, 61, 42, .09), 0 1px 2px rgba(24, 61, 42, .06);
+  --shadow-md:  0 8px 24px rgba(24, 61, 42, .10), 0 2px 6px rgba(24, 61, 42, .06);
+  --shadow-lg:  0 16px 42px rgba(24, 61, 42, .13);
+  --shadow-xl:  0 24px 64px rgba(24, 61, 42, .16);
+  --shadow-pressed: inset 0 0 0 2px rgba(8, 122, 59, .16);
 }
 
 /* ── Acento por deporte de la liga (data-sport, seteado en runtime por

@@ -19,7 +19,7 @@
               </linearGradient>
             </defs>
           </svg>
-          <span>Liga App</span>
+          <span>SuperLigas</span>
         </div>
 
         <nav class="lp-nav__links" aria-label="Navegación de la página">
@@ -203,7 +203,7 @@
     </section>
 
     <footer class="lp-footer">
-      <span>© {{ year }} Liga App</span>
+      <span>© {{ year }} SuperLigas</span>
       <router-link to="/login">Iniciar sesión</router-link>
     </footer>
   </div>

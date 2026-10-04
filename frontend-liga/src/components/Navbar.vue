@@ -4,7 +4,7 @@
 
       <!-- Logo -->
       <div class="navbar-brand">
-        <router-link to="/home" class="logo" aria-label="Liga App inicio">
+        <router-link to="/home" class="logo" aria-label="SuperLigas inicio">
           <svg class="logo-icon" width="30" height="30" viewBox="0 0 30 30" fill="none" aria-hidden="true">
             <circle cx="15" cy="15" r="14" fill="url(#nav-grad)"/>
             <path d="M9 15c0-3.3 2.7-6 6-6s6 2.7 6 6" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
@@ -16,7 +16,7 @@
               </linearGradient>
             </defs>
           </svg>
-          <span class="logo-text">Liga App</span>
+          <span class="logo-text">SuperLigas</span>
         </router-link>
       </div>
 
@@ -496,6 +496,17 @@ const handleLogout = async () => {
 .theme-toggle:hover {
   background: var(--success-bg);
   color: var(--primary-solid);
+}
+
+:global([data-theme="light"]) .navbar {
+  background: color-mix(in srgb, var(--surface-raised) 94%, transparent);
+  border-color: color-mix(in srgb, var(--surface-border) 86%, var(--primary-solid));
+  box-shadow: 0 12px 34px rgba(24, 61, 42, 0.12), 0 1px 3px rgba(24, 61, 42, 0.08);
+}
+
+:global([data-theme="light"]) .theme-toggle {
+  background: var(--surface-overlay);
+  color: var(--text-secondary);
 }
 
 .user-menu {

@@ -1456,6 +1456,20 @@ export const handler = async (event, context) => {
 
   const path = event.rawPath ?? event.path ?? '/'
 
+  // Manejo de CORS Preflight (OPTIONS)
+  if (method === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-api-key, X-Amz-Date, X-Api-Key, X-Amz-Security-Token',
+        'Access-Control-Allow-Credentials': 'true',
+      },
+      body: '',
+    }
+  }
+
   // Ruta especial: health check del ADF
   if (method === 'GET' && path === '/adf/health') {
     return adfHealthHandler(event, context)

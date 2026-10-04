@@ -1,4 +1,4 @@
-# superliga
+# SuperLigas
 
 ## Descripción
 Plataforma de gestión de una liga deportiva: inscripción de clubes/equipos/series
