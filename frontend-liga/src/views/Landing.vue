@@ -368,7 +368,7 @@
 
 <script setup>
 import { reactive, ref } from 'vue';
-import { authAPI } from '../api';
+import { sendContact } from '../services/contact.service';
 
 const year = new Date().getFullYear();
 
@@ -499,11 +499,12 @@ async function submitContact() {
 
   sending.value = true;
   try {
-    await authAPI.contact({ ...form });
+    await sendContact({ ...form });
     sentName.value = form.name.split(' ')[0];
     Object.assign(form, emptyForm());
     contactSent.value = true;
-  } catch {
+  } catch (err) {
+    console.error(err);
     contactError.value = 'No pudimos enviar tu solicitud. Intenta de nuevo en unos minutos.';
   } finally {
     sending.value = false;
