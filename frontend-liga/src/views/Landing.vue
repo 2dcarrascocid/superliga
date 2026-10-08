@@ -534,6 +534,12 @@ function formatMoney(n) {
   --lp-radius-md: 16px;
   --lp-radius-lg: 24px;
 
+  /* La landing es siempre oscura: se fijan los tokens globales para que
+     h1–h6 y p (style.css) no tomen los colores oscuros del tema claro. */
+  --text-primary: var(--lp-text);
+  --text-secondary: var(--lp-text-secondary);
+  --text-muted: var(--lp-text-muted);
+
   position: relative;
   min-height: 100vh;
   background: var(--lp-bg);
@@ -640,8 +646,7 @@ function formatMoney(n) {
 .lp-btn--ghost:hover { border-color: var(--lp-green); color: var(--lp-green); }
 .lp-btn--lg { padding: 14px 28px; font-size: 1rem; border-radius: var(--lp-radius-md); }
 .lp-btn--block { width: 100%; }
-.lp-nav__cta { display: none; }
-@media (min-width: 640px) { .lp-nav__cta { display: inline-flex; } }
+.lp-nav__cta { flex-shrink: 0; }
 
 /* ── Hero ── */
 .lp-hero {
@@ -979,4 +984,30 @@ function formatMoney(n) {
 }
 .lp-footer a { color: var(--lp-text-muted); text-decoration: none; }
 .lp-footer a:hover { color: var(--lp-green); }
+
+/* ── Móvil ── */
+@media (max-width: 600px) {
+  .lp-nav__inner { padding: 12px 16px; gap: 12px; }
+  .lp-nav__cta { padding: 8px 14px; font-size: .82rem; }
+
+  .lp-hero { padding: 56px 16px 48px; }
+  .lp-hero__subtitle { font-size: .98rem; margin-bottom: 28px; }
+  .lp-hero__actions { flex-direction: column; align-items: stretch; margin-bottom: 40px; }
+  .lp-hero__stats { gap: 20px 28px; }
+  .lp-hero__stat strong { font-size: 1.35rem; }
+
+  .lp-section { padding: 48px 16px; }
+  .lp-section h2 { font-size: 1.5rem; }
+  .lp-card { padding: 18px; }
+  .lp-contact__card { padding: 20px; }
+
+  .lp-table th, .lp-table td { padding-left: 4px; padding-right: 4px; }
+  .lp-table__club { gap: 6px; }
+  .lp-case__grid { grid-template-columns: 1fr; }
+  .lp-checks { gap: 10px; }
+
+  .lp-cta { padding: 48px 16px 40px; }
+  .lp-cta h2 { font-size: 1.6rem; }
+  .lp-footer { flex-direction: column; gap: 10px; padding: 20px 16px; text-align: center; }
+}
 </style>
