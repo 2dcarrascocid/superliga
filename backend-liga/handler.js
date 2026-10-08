@@ -111,9 +111,24 @@ const ROUTES = [
     input: { token: body.token, idToken: body.id_token ?? body.idToken },
   })),
 
+  // Formulario de contacto del landing (sección Contacto). Pública: notifica
+  // por mail al equipo comercial (CONTACT_EMAIL). "website" es un honeypot
+  // anti-bots — el campo está oculto en el form y un humano nunca lo completa.
+  route('POST', '/auth/contact', (_pp, body) => ({
+    type: 'CONTACT_REQUEST', domain: 'auth',
+    input: {
+      name:         body.name,
+      email:        body.email,
+      phone:        body.phone,
+      organization: body.organization,
+      message:      body.message,
+      website:      body.website,
+    },
+  })),
+
   // ── Clubs ─────────────────────────────────────────────────────────────────
 
-  route('POST', '/clubs', (_pp, body) => ({
+  route('POST', '/clubs',(_pp, body) => ({
     type: 'CREATE_CLUB', domain: 'clubs',
     input: {
       orgId:       body.org_id,
@@ -1442,6 +1457,52 @@ const ROUTES = [
   route('POST', '/matches/{matchId}/disciplinary/process-fulfillment', (pp) => ({
     type: 'PROCESS_MATCHDAY_FULFILLMENT', domain: 'disciplinary',
     input: { matchId: pp.matchId },
+  })),
+
+  // ── Votaciones (elección por club, vota el representante ADMIN_CLUB) ───
+
+  route('POST', '/polls', (_pp, body) => ({
+    type: 'CREATE_POLL', domain: 'polls',
+    input: {
+      orgId: body.org_id,
+      seasonId: body.season_id || undefined,
+      title: body.title,
+      description: body.description || undefined,
+      options: body.options,
+      opensAt: body.opens_at || undefined,
+      closesAt: body.closes_at,
+      isSecret: body.is_secret,
+    },
+  })),
+
+  route('GET', '/polls', (_pp, _body, qs) => ({
+    type: 'LIST_POLLS', domain: 'polls',
+    input: { orgId: qs.org_id, status: qs.status },
+  })),
+
+  route('GET', '/polls/{pollId}', (pp) => ({
+    type: 'GET_POLL', domain: 'polls',
+    input: { pollId: pp.pollId },
+  })),
+
+  route('POST', '/polls/{pollId}/votes', (pp, body) => ({
+    type: 'CAST_VOTE', domain: 'polls',
+    input: { pollId: pp.pollId, clubId: body.club_id, optionId: body.option_id },
+  })),
+
+  route('POST', '/polls/{pollId}/close', (pp, body) => ({
+    type: 'CLOSE_POLL', domain: 'polls',
+    input: { pollId: pp.pollId, resolution: body.resolution ?? undefined },
+  })),
+
+  route('PUT', '/polls/{pollId}/resolution', (pp, body) => ({
+    type: 'UPDATE_POLL_RESOLUTION', domain: 'polls',
+    input: { pollId: pp.pollId, resolution: body.resolution ?? undefined },
+  })),
+
+  route('DELETE', '/polls/{pollId}', (pp) => ({
+    type: 'DELETE_POLL', domain: 'polls',
+    input: { pollId: pp.pollId },
   })),
 ]
 

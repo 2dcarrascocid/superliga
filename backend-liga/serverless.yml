@@ -16,6 +16,7 @@ provider:
     SMTP_USER: ${env:SMTP_USER, ''}
     SMTP_PASS: ${env:SMTP_PASS, ''}
     SMTP_FROM: ${env:SMTP_FROM, ''}
+    CONTACT_EMAIL: ${env:CONTACT_EMAIL, ''}
 
   httpApi:
     cors:

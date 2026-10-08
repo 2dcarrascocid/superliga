@@ -206,6 +206,7 @@ export class AgentOrchestrator {
       'FORGOT_PASSWORD', 'RESET_PASSWORD',
       'INVITE_INFO', 'ACCEPT_CLUB_INVITE', 'ACCEPT_PLAYER_INVITE',
       'ORG_INVITE_INFO', 'ACCEPT_ORG_INVITE',
+      'CONTACT_REQUEST',
     ]);
     const requireAuth = !PUBLIC_OPERATIONS.has(type);
 

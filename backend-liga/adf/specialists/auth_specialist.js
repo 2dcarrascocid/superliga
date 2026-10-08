@@ -29,7 +29,7 @@ import { Skill } from '../contracts/skill_contract.js';
 import { createSkillResult } from '../contracts/task_schema.js';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
-import { sendPasswordResetEmail } from '../../utils/mailer.js';
+import { sendPasswordResetEmail, sendContactRequestEmail } from '../../utils/mailer.js';
 
 const SPORTS_CATALOG = [
   { name: 'Futbol', slug: 'futbol' },
@@ -80,7 +80,7 @@ export class AuthSpecialist extends Skill {
   constructor() {
     super('auth_specialist', '1.0.0');
     this.domain = 'auth';
-    this.capabilities = ['LOGIN_LOCAL', 'LOGIN_GOOGLE', 'LOGIN_FACEBOOK', 'BOOTSTRAP', 'FORGOT_PASSWORD', 'RESET_PASSWORD', 'INVITE_INFO', 'ACCEPT_CLUB_INVITE', 'ACCEPT_PLAYER_INVITE', 'ORG_INVITE_INFO', 'ACCEPT_ORG_INVITE'];
+    this.capabilities = ['LOGIN_LOCAL', 'LOGIN_GOOGLE', 'LOGIN_FACEBOOK', 'BOOTSTRAP', 'FORGOT_PASSWORD', 'RESET_PASSWORD', 'INVITE_INFO', 'ACCEPT_CLUB_INVITE', 'ACCEPT_PLAYER_INVITE', 'ORG_INVITE_INFO', 'ACCEPT_ORG_INVITE', 'CONTACT_REQUEST'];
 
     this.contract = {
       input: [
@@ -139,6 +139,7 @@ export class AuthSpecialist extends Skill {
         case 'ACCEPT_PLAYER_INVITE': return this._acceptPlayerInvite(payload, supabase);
         case 'ORG_INVITE_INFO':      return this._orgInviteInfo(payload, supabase);
         case 'ACCEPT_ORG_INVITE':    return this._acceptOrgInvite(payload, supabase);
+        case 'CONTACT_REQUEST':      return this._contactRequest(payload);
       }
     } catch (err) {
       return createSkillResult({
@@ -656,5 +657,33 @@ export class AuthSpecialist extends Skill {
       success: true,
       data: { org, role: 'ADMIN' },
     });
+  }
+
+  // Formulario de contacto del landing — no toca la DB, solo notifica por
+  // mail al buzón comercial (CONTACT_EMAIL, con fallback a SMTP_USER).
+  async _contactRequest({ name, email, phone, organization, message, website }) {
+    // Honeypot: si un bot completó el campo oculto, se responde OK sin enviar.
+    if (website) {
+      return createSkillResult({ success: true, data: { sent: true } });
+    }
+
+    const to = process.env.CONTACT_EMAIL || process.env.SMTP_USER;
+    if (!to) {
+      return createSkillResult({
+        success: false,
+        errorCode: 'CONTACT_NOT_CONFIGURED',
+        errorMessage: 'El correo de contacto no está configurado.',
+      });
+    }
+
+    await sendContactRequestEmail(to, {
+      name:         name.trim(),
+      email:        email.trim(),
+      phone:        phone?.trim(),
+      organization: organization?.trim(),
+      message:      message?.trim(),
+    });
+
+    return createSkillResult({ success: true, data: { sent: true } });
   }
 }

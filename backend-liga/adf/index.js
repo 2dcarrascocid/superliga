@@ -70,6 +70,7 @@ export { MatchSchedulingSpecialist } from './specialists/match_scheduling_specia
 export { SchedulingSettingsSpecialist } from './specialists/scheduling_settings_specialist.js';
 export { OrgSpecialist } from './specialists/org_specialist.js';
 export { DisciplinarySpecialist } from './specialists/disciplinary_specialist.js';
+export { PollsSpecialist } from './specialists/polls_specialist.js';
 
 // Orchestrator
 export { AgentOrchestrator } from './orchestrator/agent_orchestrator.js';
@@ -111,6 +112,7 @@ import { MatchSchedulingSpecialist as _MatchSchedulingSpecialist } from './speci
 import { SchedulingSettingsSpecialist as _SchedulingSettingsSpecialist } from './specialists/scheduling_settings_specialist.js';
 import { OrgSpecialist as _OrgSpecialist } from './specialists/org_specialist.js';
 import { DisciplinarySpecialist as _DisciplinarySpecialist } from './specialists/disciplinary_specialist.js';
+import { PollsSpecialist as _PollsSpecialist } from './specialists/polls_specialist.js';
 import { supabaseAdmin } from '../services/db.js';
 
 const _validators = {
@@ -140,6 +142,7 @@ const _specialists = {
   scheduling_settings: new _SchedulingSettingsSpecialist(),
   org: new _OrgSpecialist(),
   disciplinary: new _DisciplinarySpecialist(),
+  polls: new _PollsSpecialist(),
 };
 
 const _orchestrator = new _AgentOrchestrator({

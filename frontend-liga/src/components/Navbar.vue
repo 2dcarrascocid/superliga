@@ -1,5 +1,10 @@
 <template>
-  <nav class="navbar" role="navigation" aria-label="Navegación principal">
+  <nav
+    class="navbar"
+    :class="{ 'navbar--sidebar': navLayout === 'sidebar', 'navbar--top': navLayout === 'top' }"
+    role="navigation"
+    aria-label="Navegación principal"
+  >
     <div class="container navbar-content">
 
       <!-- Logo -->
@@ -61,6 +66,12 @@
           <router-link to="/ledger" class="nav-link" @click="closeMobileMenu" aria-label="Ir a finanzas">
             <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             Finanzas
+          </router-link>
+
+          <!-- Votaciones (elecciones por club) -->
+          <router-link to="/votaciones" class="nav-link" @click="closeMobileMenu" aria-label="Ir a votaciones">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><path d="M5 7V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><rect x="3" y="7" width="18" height="14" rx="2"/></svg>
+            Votaciones
           </router-link>
 
           <!-- Jugadores (con submenú de Transferencias) -->
@@ -187,6 +198,11 @@
             <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             Finanzas
           </router-link>
+
+          <router-link to="/votaciones" class="nav-link" @click="closeMobileMenu" aria-label="Ir a votaciones">
+            <svg class="nav-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><path d="M5 7V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><rect x="3" y="7" width="18" height="14" rx="2"/></svg>
+            Votaciones
+          </router-link>
         </template>
 
         <!-- Jugador puro (vinculado vía lg_player_users, sin org ni club admin) -->
@@ -203,43 +219,80 @@
 
       </div>
 
-      <!-- Acciones de usuario -->
+      <!-- Acciones de usuario y controles -->
       <div class="navbar-actions">
-        <button
-          v-if="authStore.isOrgAdmin()"
-          type="button"
-          class="theme-toggle"
-          @click="showAdminSettings = true"
-          aria-label="Abrir configuración de administrador"
-          title="Configuración de administrador"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </button>
+        <div class="control-buttons">
+          <button
+            v-if="authStore.isOrgAdmin()"
+            type="button"
+            class="icon-btn"
+            @click="showAdminSettings = true"
+            aria-label="Abrir configuración de administrador"
+            title="Configuración de administrador"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
 
-        <button
-          type="button"
-          class="theme-toggle"
-          @click="toggleTheme"
-          :aria-label="theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
-          :title="theme === 'dark' ? 'Modo claro' : 'Modo oscuro'"
-          :aria-pressed="theme === 'dark'"
-        >
-          <svg v-if="theme === 'dark'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        </button>
+          <!-- Botón de cambio de posición de barra (Superior / Lateral) -->
+          <button
+            type="button"
+            class="icon-btn layout-toggle-btn"
+            @click="toggleNavLayout"
+            :aria-label="navLayout === 'sidebar' ? 'Cambiar a barra superior' : 'Cambiar a barra lateral izquierda'"
+            :title="navLayout === 'sidebar' ? 'Cambiar a barra superior' : 'Cambiar a barra lateral izquierda'"
+          >
+            <!-- Ícono barra superior activa (muestra opción de lateral) -->
+            <svg v-if="navLayout === 'top'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+              <path d="M14 9l3 3-3 3"/>
+            </svg>
+            <!-- Ícono barra lateral activa (muestra opción de superior) -->
+            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <line x1="3" y1="9" x2="21" y2="9"/>
+              <path d="M9 14l3-3 3 3"/>
+            </svg>
+          </button>
 
-        <button class="mobile-menu-toggle" @click="toggleMobileMenu" :aria-expanded="mobileMenuOpen" :aria-label="mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'" aria-controls="navbar-menu">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
+          <!-- Tema Claro / Oscuro -->
+          <button
+            type="button"
+            class="icon-btn theme-toggle"
+            @click="toggleTheme"
+            :aria-label="theme === 'dark' ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
+            :title="theme === 'dark' ? 'Modo claro' : 'Modo oscuro'"
+            :aria-pressed="theme === 'dark'"
+          >
+            <svg v-if="theme === 'dark'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
 
+          <!-- Toggle Menú Móvil -->
+          <button class="mobile-menu-toggle" @click="toggleMobileMenu" :aria-expanded="mobileMenuOpen" :aria-label="mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'" aria-controls="navbar-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+
+        <!-- Menú de Usuario -->
         <div class="user-menu" @click="toggleUserMenu" @keydown.enter.prevent="toggleUserMenu" @keydown.space.prevent="toggleUserMenu" role="button" tabindex="0" :aria-expanded="userMenuOpen" aria-haspopup="true" :aria-label="`Menú de ${userName}`">
           <div class="user-avatar" aria-hidden="true">{{ userInitials }}</div>
-          <span class="user-name" :title="userName">{{ userName }}</span>
+          <div class="user-info">
+            <span class="user-name" :title="userName">{{ userName }}</span>
+            <span class="user-role-label">{{ authStore.isOrgAdmin() ? 'Administrador' : (myClub ? 'Club' : 'Jugador') }}</span>
+          </div>
           <svg class="dropdown-arrow" :class="{ 'is-rotated': userMenuOpen }" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
 
           <div class="user-dropdown" v-if="userMenuOpen" role="menu">
+            <button @click="toggleNavLayout" class="dropdown-item" role="menuitem">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <line x1="9" y1="3" x2="9" y2="21"/>
+              </svg>
+              {{ navLayout === 'sidebar' ? 'Cambiar a Barra Superior' : 'Cambiar a Barra Lateral' }}
+            </button>
             <button @click="handleLogout" class="dropdown-item logout" role="menuitem">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
               Cerrar Sesión
@@ -259,12 +312,14 @@ import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import { useTheme } from '../composables/useTheme';
+import { useNavLayout } from '../composables/useNavLayout';
 import AdminSettingsModal from './AdminSettingsModal.vue';
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const { theme, toggleTheme } = useTheme();
+const { navLayout, toggleNavLayout } = useNavLayout();
 
 const mobileMenuOpen = ref(false);
 const userMenuOpen   = ref(false);
@@ -345,6 +400,7 @@ const handleLogout = async () => {
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-lg);
   z-index: 1000;
+  transition: all var(--transition-base, 0.3s ease);
 }
 
 .navbar-content {
@@ -357,7 +413,7 @@ const handleLogout = async () => {
   align-items: center;
   justify-content: space-between;
   padding: 0 24px;
-  gap: var(--spacing-xl);
+  gap: var(--spacing-xl, 24px);
   min-width: 0;
 }
 
@@ -367,28 +423,29 @@ const handleLogout = async () => {
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   text-decoration: none;
   color: var(--text-primary);
   font-family: var(--font-ui);
   font-weight: 700;
   font-size: 1.2rem;
-  transition: opacity var(--transition-fast);
+  transition: opacity var(--transition-fast, 0.15s ease);
 }
-.logo:hover { opacity: 0.8; }
+.logo:hover { opacity: 0.85; }
 .logo-icon { flex-shrink: 0; }
 .logo-text {
-  background: linear-gradient(135deg, var(--primary-solid), var(--sport-blue));
+  background: linear-gradient(135deg, var(--primary-solid), var(--sport-blue, #29b6f6));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  letter-spacing: -0.02em;
 }
 
 /* ── Nav menu container ──────────────────────────────────────────────────── */
 .navbar-menu {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-sm, 8px);
   flex: 1;
   min-width: 0;
 }
@@ -397,32 +454,33 @@ const handleLogout = async () => {
 .nav-link {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 0.45rem 0.9rem;
+  gap: 8px;
+  padding: 0.5rem 0.95rem;
   color: var(--text-muted);
   text-decoration: none;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-full, 9999px);
   font-family: var(--font-ui);
   font-weight: 600;
   font-size: 0.9rem;
   background: none;
   border: none;
   cursor: pointer;
+  transition: all var(--transition-fast, 0.15s ease);
 }
 
 .nav-link:hover {
   color: var(--primary-solid);
-  background: var(--success-bg);
+  background: var(--success-bg, rgba(0, 230, 118, 0.12));
 }
 .nav-link.router-link-active {
   color: var(--primary-solid);
-  background: var(--success-bg);
+  background: var(--success-bg, rgba(0, 230, 118, 0.12));
   box-shadow: inset 0 0 0 1px var(--primary-solid);
 }
 
 .nav-icon { flex-shrink: 0; }
 
-/* ── Nav item con submenú (Parámetros) ──────────────────────────────────── */
+/* ── Nav item con submenú (Parámetros / Jugadores) ───────────────────────── */
 .nav-item {
   position: relative;
 }
@@ -435,14 +493,14 @@ const handleLogout = async () => {
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  min-width: 180px;
-  background: var(--surface-overlay);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  min-width: 190px;
+  background: var(--surface-overlay, #1a1c23);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-radius: 16px;
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-xl);
-  padding: var(--spacing-sm);
+  padding: var(--spacing-sm, 8px);
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -454,24 +512,25 @@ const handleLogout = async () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 44px;
+  min-height: 40px;
   box-sizing: border-box;
-  padding: 0.6rem 0.8rem;
+  padding: 0.5rem 0.8rem;
   color: var(--text-muted);
   text-decoration: none;
-  border-radius: 12px;
+  border-radius: 10px;
   font-family: var(--font-ui);
   font-weight: 600;
   font-size: 0.875rem;
   white-space: nowrap;
+  transition: all var(--transition-fast, 0.15s ease);
 }
 .nav-dropdown__item:hover {
   color: var(--primary-solid);
-  background: var(--success-bg);
+  background: var(--success-bg, rgba(0, 230, 118, 0.12));
 }
 .nav-dropdown__item.router-link-active {
   color: var(--primary-solid);
-  background: var(--success-bg);
+  background: var(--success-bg, rgba(0, 230, 118, 0.12));
 }
 
 @keyframes dropdownIn {
@@ -479,42 +538,50 @@ const handleLogout = async () => {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── User menu ───────────────────────────────────────────────────────────── */
+/* ── User menu & actions ─────────────────────────────────────────────────── */
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: var(--spacing-md);
+  gap: var(--spacing-md, 12px);
   min-width: 0;
   margin-left: auto;
   flex: 0 1 auto;
 }
 
-.theme-toggle {
+.control-buttons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
   background: var(--surface-hover);
   border: 1px solid var(--border-color);
   border-radius: 50%;
   color: var(--text-muted);
   cursor: pointer;
+  transition: all var(--transition-fast, 0.15s ease);
 }
-.theme-toggle:hover {
-  background: var(--success-bg);
+.icon-btn:hover {
+  background: var(--success-bg, rgba(0, 230, 118, 0.12));
   color: var(--primary-solid);
+  border-color: var(--primary-solid);
 }
 
 :global([data-theme="light"]) .navbar {
-  background: color-mix(in srgb, var(--surface-raised) 94%, transparent);
-  border-color: color-mix(in srgb, var(--surface-border) 86%, var(--primary-solid));
+  background: color-mix(in srgb, var(--surface-raised, #ffffff) 94%, transparent);
+  border-color: color-mix(in srgb, var(--surface-border, #e2e8f0) 86%, var(--primary-solid));
   box-shadow: 0 12px 34px rgba(24, 61, 42, 0.12), 0 1px 3px rgba(24, 61, 42, 0.08);
 }
 
-:global([data-theme="light"]) .theme-toggle {
-  background: var(--surface-overlay);
+:global([data-theme="light"]) .icon-btn {
+  background: var(--surface-overlay, #f8fafc);
   color: var(--text-secondary);
 }
 
@@ -522,52 +589,68 @@ const handleLogout = async () => {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px 6px 6px;
+  gap: 10px;
+  padding: 4px 12px 4px 5px;
   background: var(--surface-hover);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-full, 9999px);
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   min-width: 0;
   max-width: min(220px, 100%);
-  min-height: 44px;
+  min-height: 42px;
   flex: 0 1 auto;
+  transition: all var(--transition-fast, 0.15s ease);
 }
 .user-menu:hover {
   background: var(--surface-overlay);
+  border-color: var(--border-strong, var(--border-color));
 }
 
 .user-avatar {
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-dark), var(--sport-blue));
+  background: linear-gradient(135deg, var(--primary-dark), var(--sport-blue, #29b6f6));
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 0.8125rem;
-  color: var(--text-on-accent);
+  color: #ffffff;
   flex-shrink: 0;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.2;
 }
 
 .user-name {
   font-family: var(--font-ui);
   font-weight: 600;
-  font-size: 0.875rem;
-  line-height: 1.4;
+  font-size: 0.85rem;
   color: var(--text-primary);
   min-width: 0;
-  max-width: 18ch;
+  max-width: 14ch;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.user-role-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
 .dropdown-arrow {
   color: var(--text-muted);
-  transition: transform var(--transition-base);
+  transition: transform var(--transition-base, 0.3s ease);
   flex-shrink: 0;
+  margin-left: auto;
 }
 .dropdown-arrow.is-rotated { transform: rotate(180deg); }
 
@@ -575,15 +658,19 @@ const handleLogout = async () => {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
-  min-width: 200px;
-  background: var(--surface-overlay);
-  backdrop-filter: blur(12px);
-  border-radius: 18px;
+  min-width: 220px;
+  background: var(--surface-overlay, #1a1c23);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 16px;
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-xl);
-  padding: var(--spacing-sm);
+  padding: var(--spacing-sm, 8px);
   animation: dropdownIn 0.18s ease-out;
   z-index: 40;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .dropdown-item {
@@ -591,20 +678,21 @@ const handleLogout = async () => {
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 0.7rem 1rem;
+  padding: 0.65rem 0.9rem;
   background: none;
   border: none;
   color: var(--text-muted);
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
   font-family: var(--font-ui);
-  font-size: 0.875rem;
+  font-size: 0.85rem;
   font-weight: 600;
   text-align: left;
+  transition: all var(--transition-fast, 0.15s ease);
 }
-.dropdown-item:hover        { background: var(--success-bg); color: var(--primary-solid); }
-.dropdown-item.logout       { color: var(--accent-red); }
-.dropdown-item.logout:hover { background: var(--danger-bg); color: var(--accent-red); }
+.dropdown-item:hover        { background: var(--success-bg, rgba(0, 230, 118, 0.12)); color: var(--primary-solid); }
+.dropdown-item.logout       { color: var(--accent-red, #ef5350); }
+.dropdown-item.logout:hover { background: rgba(239, 83, 80, 0.12); color: var(--accent-red, #ef5350); }
 
 /* ── Mobile hamburger ────────────────────────────────────────────────────── */
 .mobile-menu-toggle {
@@ -612,32 +700,167 @@ const handleLogout = async () => {
   flex-direction: column;
   gap: 5px;
   background: none;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   align-items: center;
   justify-content: center;
   border: none;
   cursor: pointer;
   padding: 8px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-md, 10px);
 }
 .mobile-menu-toggle:hover {
   background: var(--surface-hover);
 }
 .mobile-menu-toggle span {
-  width: 22px;
+  width: 20px;
   height: 2px;
   background: var(--text-primary);
   border-radius: 2px;
   display: block;
-  transition: transform var(--transition-base), opacity var(--transition-base);
+  transition: transform var(--transition-base, 0.3s ease), opacity var(--transition-base, 0.3s ease);
 }
 
-/* ── Responsive ──────────────────────────────────────────────────────────── */
-/* La navegación horizontal completa necesita el ancho máximo del navbar.
-   Antes de que compita con las acciones de usuario, pasa a un panel compacto. */
+/* ==========================================================================
+   BARRA LATERAL (SIDEBAR MODE)
+   ========================================================================== */
+@media (min-width: 992px) {
+  .navbar.navbar--sidebar {
+    top: 14px;
+    left: 14px;
+    bottom: 14px;
+    transform: none;
+    width: 250px;
+    max-width: 250px;
+    height: calc(100vh - 28px);
+    border-radius: 22px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .navbar.navbar--sidebar .navbar-content {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 20px 14px 16px 14px;
+    gap: 14px;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .navbar.navbar--sidebar .navbar-brand {
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+    width: 100%;
+  }
+
+  .navbar.navbar--sidebar .navbar-menu {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 2px;
+    gap: 4px;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    background: none;
+    box-shadow: none;
+    border: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    max-height: none;
+  }
+
+  /* Scrollbar estético */
+  .navbar.navbar--sidebar .navbar-menu::-webkit-scrollbar {
+    width: 4px;
+  }
+  .navbar.navbar--sidebar .navbar-menu::-webkit-scrollbar-thumb {
+    background: var(--surface-hover);
+    border-radius: 4px;
+  }
+
+  .navbar.navbar--sidebar .nav-link {
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0.62rem 0.85rem;
+    border-radius: 12px;
+  }
+
+  .navbar.navbar--sidebar .nav-item {
+    width: 100%;
+  }
+
+  .navbar.navbar--sidebar .nav-dropdown {
+    position: static;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    box-shadow: none;
+    border: 1px solid var(--border-color);
+    background: var(--surface-hover);
+    padding: 6px;
+    border-radius: 12px;
+    gap: 2px;
+    animation: none;
+  }
+
+  .navbar.navbar--sidebar .nav-dropdown__item {
+    min-height: 36px;
+    padding: 0.45rem 0.65rem;
+    font-size: 0.825rem;
+    white-space: normal;
+  }
+
+  .navbar.navbar--sidebar .navbar-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+    gap: 10px;
+    margin-left: 0;
+  }
+
+  .navbar.navbar--sidebar .control-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 6px;
+  }
+
+  .navbar.navbar--sidebar .icon-btn {
+    flex: 1;
+    border-radius: 12px;
+  }
+
+  .navbar.navbar--sidebar .user-menu {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 14px;
+    padding: 6px 10px;
+  }
+
+  .navbar.navbar--sidebar .user-dropdown {
+    top: auto;
+    bottom: calc(100% + 8px);
+    right: 0;
+    left: 0;
+    min-width: 100%;
+  }
+}
+
+/* ── Responsive para modo Top Bar o pantallas pequeñas ───────────────────── */
 @media (max-width: 1360px) {
-  .navbar-menu {
+  /* Si está en modo top (o en pantallas intermedias sin sidebar), el menú se colapsa */
+  .navbar--top .navbar-menu {
     position: absolute;
     top: calc(100% + 10px);
     left: 0;
@@ -660,6 +883,66 @@ const handleLogout = async () => {
     overflow-y: auto;
     z-index: 30;
   }
+  .navbar--top .navbar-menu.is-active {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+  }
+
+  .navbar--top .nav-link { width: 100%; justify-content: flex-start; }
+  .navbar--top .nav-item { width: 100%; }
+  .navbar--top .nav-dropdown {
+    position: static;
+    margin-top: 4px;
+    box-shadow: none;
+    border-color: transparent;
+    background: var(--surface-hover);
+  }
+
+  .navbar--top .mobile-menu-toggle { display: flex; }
+}
+
+@media (max-width: 991px) {
+  /* En pantallas móviles y tablets, el sidebar se convierte en top bar drawer */
+  .navbar {
+    top: 0;
+    left: 0;
+    transform: none;
+    width: 100%;
+    border-radius: 0 0 20px 20px;
+    max-width: 100%;
+  }
+
+  .navbar-content {
+    padding-inline: var(--spacing-md, 16px);
+    gap: var(--spacing-md, 16px);
+  }
+
+  .navbar-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 12px;
+    right: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    background: var(--surface-overlay);
+    backdrop-filter: blur(14px);
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-xl);
+    padding: var(--spacing-md);
+    gap: 4px;
+    transform: translateY(-10px);
+    opacity: 0;
+    visibility: hidden;
+    transition: transform var(--transition-base), opacity var(--transition-base);
+    pointer-events: none;
+    max-height: calc(100dvh - 84px);
+    overflow-y: auto;
+    z-index: 30;
+  }
+
   .navbar-menu.is-active {
     transform: translateY(0);
     opacity: 1;
@@ -668,7 +951,6 @@ const handleLogout = async () => {
   }
 
   .nav-link { width: 100%; justify-content: flex-start; }
-
   .nav-item { width: 100%; }
   .nav-dropdown {
     position: static;
@@ -679,27 +961,10 @@ const handleLogout = async () => {
   }
 
   .mobile-menu-toggle { display: flex; }
-}
-
-@media (max-width: 768px) {
-  .navbar {
-    top: 0;
-    width: 100%;
-    border-radius: 0 0 24px 24px;
-  }
-
-  .navbar-content {
-    padding-inline: var(--spacing-md);
-    gap: var(--spacing-md);
-  }
-
-  .navbar-menu {
-    top: calc(100% + 10px);
-    left: 12px;
-    right: 12px;
-    max-height: calc(100dvh - 84px);
-  }
-
+  .user-role-label { display: none; }
   .user-name { display: none; }
+  .user-menu { padding: 4px; }
+  .user-menu .dropdown-arrow { display: none; }
+  .layout-toggle-btn { display: none; } /* Ocultar toggle en móviles ya que el sidebar es solo desktop */
 }
 </style>

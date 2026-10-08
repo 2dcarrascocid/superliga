@@ -192,6 +192,13 @@ export const ValidationRules = {
       { field: 'token',    required: true, type: 'string', minLength: 10 },
       { field: 'password', required: true, type: 'string', minLength: 8 },
     ],
+    CONTACT_REQUEST: [
+      { field: 'name',         required: true,  type: 'string', minLength: 2, maxLength: 100 },
+      { field: 'email',        required: true,  type: 'string', format: 'email', maxLength: 150 },
+      { field: 'phone',        required: false, type: 'string', maxLength: 30 },
+      { field: 'organization', required: false, type: 'string', maxLength: 120 },
+      { field: 'message',      required: false, type: 'string', maxLength: 2000 },
+    ],
   },
   clubs: {
     CREATE_CLUB: [
@@ -698,6 +705,41 @@ export const ValidationRules = {
     ],
     PROCESS_MATCHDAY_FULFILLMENT: [
       { field: 'matchId', required: true, type: 'string', format: 'uuid' },
+    ],
+  },
+  polls: {
+    CREATE_POLL: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+      { field: 'seasonId', required: false, type: 'string', format: 'uuid' },
+      { field: 'title', required: true, type: 'string', minLength: 3, maxLength: 300 },
+      { field: 'description', required: false, type: 'string', maxLength: 2000 },
+      { field: 'options', required: true, type: 'array' },
+      { field: 'opensAt', required: false, type: 'string' },
+      { field: 'closesAt', required: true, type: 'string' },
+      { field: 'isSecret', required: false, type: 'boolean' },
+    ],
+    LIST_POLLS: [
+      { field: 'orgId', required: true, type: 'string', format: 'uuid' },
+      { field: 'status', required: false, type: 'string', enum: ['ABIERTA', 'CERRADA'] },
+    ],
+    GET_POLL: [
+      { field: 'pollId', required: true, type: 'string', format: 'uuid' },
+    ],
+    CAST_VOTE: [
+      { field: 'pollId', required: true, type: 'string', format: 'uuid' },
+      { field: 'clubId', required: true, type: 'string', format: 'uuid' },
+      { field: 'optionId', required: true, type: 'string', format: 'uuid' },
+    ],
+    CLOSE_POLL: [
+      { field: 'pollId', required: true, type: 'string', format: 'uuid' },
+      { field: 'resolution', required: false, type: 'string', maxLength: 5000 },
+    ],
+    UPDATE_POLL_RESOLUTION: [
+      { field: 'pollId', required: true, type: 'string', format: 'uuid' },
+      { field: 'resolution', required: false, type: 'string', maxLength: 5000 },
+    ],
+    DELETE_POLL: [
+      { field: 'pollId', required: true, type: 'string', format: 'uuid' },
     ],
   },
 };

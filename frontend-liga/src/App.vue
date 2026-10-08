@@ -1,8 +1,15 @@
 <template>
-  <div id="app">
+  <div id="app" :class="[isAuthenticated ? `layout-${navLayout}` : '']">
     <a class="skip-link" href="#main-content">Saltar al contenido principal</a>
     <Navbar v-if="isAuthenticated" />
-    <main id="main-content" :class="{ 'with-navbar': isAuthenticated }">
+    <main
+      id="main-content"
+      :class="{
+        'with-navbar': isAuthenticated,
+        'layout-main-sidebar': isAuthenticated && navLayout === 'sidebar',
+        'layout-main-top': isAuthenticated && navLayout === 'top'
+      }"
+    >
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <component :is="Component" />
@@ -17,11 +24,13 @@
 <script setup>
 import { computed } from 'vue';
 import { useAuthStore } from './stores/auth';
+import { useNavLayout } from './composables/useNavLayout';
 import Navbar from './components/Navbar.vue';
 import NotifyModal from './components/NotifyModal.vue';
 import { SportsLoader } from './components/common/loaders';
 
 const authStore = useAuthStore();
+const { navLayout } = useNavLayout();
 const isAuthenticated = computed(() => authStore.isAuthenticated.value);
 </script>
 
@@ -32,11 +41,26 @@ const isAuthenticated = computed(() => authStore.isAuthenticated.value);
 
 main {
   min-height: 100dvh;
-  transition: opacity var(--transition-base);
+  transition: opacity var(--transition-base), padding var(--transition-base);
 }
 
-main.with-navbar {
+main.with-navbar.layout-main-top {
   padding-top: 86px;
+}
+
+@media (min-width: 992px) {
+  main.with-navbar.layout-main-sidebar {
+    padding-top: 24px;
+    padding-left: 276px;
+    padding-right: 24px;
+    padding-bottom: 40px;
+  }
+}
+
+@media (max-width: 991px) {
+  main.with-navbar.layout-main-sidebar {
+    padding-top: 86px;
+  }
 }
 
 /* Transiciones entre vistas */

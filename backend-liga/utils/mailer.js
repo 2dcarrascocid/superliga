@@ -397,3 +397,88 @@ export const sendPlayerInviteEmail = async (toEmail, playerName, clubName, invit
     html,
   });
 };
+
+// Escapa datos ingresados por visitantes anónimos antes de interpolarlos en el HTML del mail.
+const escapeHtml = (value = '') =>
+  String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+export const sendContactRequestEmail = async (toEmail, { name, email, phone, organization, message }) => {
+  const rows = [
+    ['Nombre', name],
+    ['Correo', email],
+    ['Teléfono', phone],
+    ['Liga / organización', organization],
+  ]
+    .filter(([, value]) => value)
+    .map(([label, value]) => `
+            <tr>
+              <td style="padding:10px 0;font-size:13px;color:#64748B;width:160px;vertical-align:top;">${label}</td>
+              <td style="padding:10px 0;font-size:14px;color:#164E63;font-weight:600;">${escapeHtml(value)}</td>
+            </tr>`)
+    .join('');
+
+  const messageBlock = message
+    ? `
+        <tr><td style="padding-top:20px;">
+          <p style="margin:0 0 8px;font-size:13px;color:#64748B;">Mensaje</p>
+          <div style="background:#ffffff;border-radius:12px;padding:16px;font-size:14px;color:#334155;line-height:1.6;white-space:pre-wrap;">${escapeHtml(message)}</div>
+        </td></tr>`
+    : '';
+
+  const html = `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head>
+<body style="margin:0;padding:0;background:#E8F0F5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#E8F0F5;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+
+        <tr><td align="center" style="padding-bottom:28px;">
+          <table cellpadding="0" cellspacing="0"><tr>
+            <td style="background:linear-gradient(135deg,#0891B2,#22D3EE);border-radius:50%;width:48px;height:48px;text-align:center;vertical-align:middle;">
+              <span style="color:#fff;font-size:22px;font-weight:700;line-height:48px;">S</span>
+            </td>
+            <td style="padding-left:12px;font-size:22px;font-weight:700;color:#0891B2;vertical-align:middle;">SuperLigas</td>
+          </tr></table>
+        </td></tr>
+
+        <tr><td style="background:#E8F0F5;border-radius:24px;padding:36px 40px;box-shadow:-8px -8px 20px rgba(255,255,255,0.85),8px 8px 20px rgba(184,197,208,0.7);">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="padding-bottom:8px;">
+              <h1 style="margin:0;font-size:22px;font-weight:700;color:#164E63;">📩 Nueva solicitud de contacto</h1>
+            </td></tr>
+            <tr><td style="padding-bottom:16px;">
+              <p style="margin:0;font-size:14px;color:#475569;">Alguien completó el formulario de contacto del landing.</p>
+            </td></tr>
+            <tr><td>
+              <table width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #CBD5E1;">${rows}
+              </table>
+            </td></tr>
+            ${messageBlock}
+          </table>
+        </td></tr>
+
+        <tr><td align="center" style="padding-top:24px;">
+          <p style="margin:0;font-size:12px;color:#94A3B8;">Responde directamente a este correo para contactar a ${escapeHtml(name)}.</p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM || '"SuperLigas" <no-reply@superligas.com>',
+    to: toEmail,
+    replyTo: `"${name.replace(/["\r\n]/g, '')}" <${email}>`,
+    subject: 'Nuevo contacto desde el landing — SuperLigas',
+    html,
+  });
+};

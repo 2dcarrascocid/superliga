@@ -89,6 +89,9 @@ export const authAPI = {
     // Rol Jugador: acepta invitación (token del email) + login con Google en un
     // solo paso. Pública (no requiere JWT previo). body: { token, id_token }.
     acceptPlayerInvite: (data) => apiClient.post('/auth/accept-player-invite', data),
+    // Formulario de contacto del landing (pública). body: { name, email, phone,
+    // organization, plan, message, website (honeypot) }.
+    contact: (data) => apiClient.post('/auth/contact', data, { meta: { loaderMessage: 'Enviando tu solicitud...' } }),
 };
 
 // ==================== CLUBS API ====================

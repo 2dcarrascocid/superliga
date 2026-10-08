@@ -32,6 +32,7 @@ const PenaltyCatalogView = () => import('../views/PenaltyCatalogView.vue');
 const DisciplinaryArticlesView = () => import('../views/DisciplinaryArticlesView.vue');
 const DisciplinaryTribunalView = () => import('../views/DisciplinaryTribunalView.vue');
 const DisciplinarySanctionsView = () => import('../views/DisciplinarySanctionsView.vue');
+const PollsView = () => import('../views/PollsView.vue');
 const TransfersView = () => import('../views/TransfersView.vue');
 const TransfersKpiDashboard = () => import('../views/TransfersKpiDashboard.vue');
 const SeasonsList = () => import('../views/SeasonsList.vue');
@@ -263,6 +264,13 @@ const routes = [
         path: '/disciplinary/sanctions',
         name: 'DisciplinarySanctionsView',
         component: DisciplinarySanctionsView,
+        meta: { requiresAuth: true, requiresOrg: true },
+    },
+    {
+        // Admin de org (crea/cierra) y representante de club (vota) — no orgAdminOnly.
+        path: '/votaciones',
+        name: 'PollsView',
+        component: PollsView,
         meta: { requiresAuth: true, requiresOrg: true },
     },
     {
